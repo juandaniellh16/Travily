@@ -1,0 +1,4 @@
+es\agrobitacora\MyResource.class
+es\agrobitacora\dao\SessionUtil.class
+es\agrobitacora\dao\EventoDAO.class
+es\agrobitacora\dao\Evento.class

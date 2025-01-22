@@ -2,7 +2,7 @@
 GET http://localhost:3000/itineraries
 
 ### Recuperar un itinerario por id
-GET http://localhost:3000/itineraries/12345
+GET http://localhost:3000/itineraries/3f6686ed-d8fe-11ef-8ced-0a0027000006
 
 ### Recuperar todos los itinerarios por un destino
 GET http://localhost:3000/itineraries?location=Italia
@@ -14,21 +14,21 @@ Content-Type: application/json
 {
   "title": "Escapada a Londres",
   "description": "Un itinerario de 5 días explorando Londres en Reino Unido.",
-    "startDate": "2025-06-10",
-    "endDate": "2025-06-15",
-    "location": [
-      "Reino Unido",
-      "Londres"
-    ]
+  "startDate": "2025-06-10",
+  "endDate": "2025-06-15",
+  "locations": [
+    "Reino Unido",
+    "Londres"
+  ]
 }
 
 ### Borrar un itinerario
-DELETE http://localhost:3000/itineraries/af94e388-3c25-4157-8cf9-697e1ee81250
+DELETE http://localhost:3000/itineraries/01e12550-17d2-4190-89e7-e3bc6e18b597
 
 ### Actualizar un itinerario
-PATCH http://localhost:3000/itineraries/12345
+PATCH http://localhost:3000/itineraries/52f87e12-d902-11ef-8ced-0a0027000006
 Content-Type: application/json
 
 {
-  "title": "Escapada a la Toscana - actualizado"
+  "title": "Itinerario actualizado"
 }

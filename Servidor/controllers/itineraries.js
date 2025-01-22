@@ -1,4 +1,4 @@
-import { ItineraryModel } from '../models/local-file-system/itinerary.js'
+import { ItineraryModel } from '../models/mysql/itinerary.js'
 import { validateItinerary, validatePartialItinerary } from '../schemas/itineraries.js'
 
 export class ItineraryController {

@@ -22,11 +22,11 @@ const itinerarySchema = z.object({
       required_error: 'Itinerary endDate is required.'
     })
   ),
-  location: z.array(
+  locations: z.array(
     z.string(),
     {
-      required_error: 'Itinerary location is required.',
-      invalid_type_error: 'Itinerary location must be an array of string'
+      required_error: 'Itinerary locations is required.',
+      invalid_type_error: 'Itinerary locations must be an array of string'
     }
   )
 })

@@ -7,7 +7,7 @@ export class ItineraryModel {
   static async getAll ({ location }) {
     if (location) {
       return itineraries.filter(
-        itinerary => itinerary.location.some(l => l.toLowerCase() === location.toLowerCase())
+        itinerary => itinerary.locations.some(l => l.toLowerCase() === location.toLowerCase())
       )
     }
 

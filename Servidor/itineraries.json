@@ -1,0 +1,18 @@
+[
+  {
+    "id": "12345",
+    "title": "Escapada a la Toscana",
+    "description": "Un itinerario de 5 días explorando la región de la Toscana en Italia.",
+    "startDate": "2025-03-10",
+    "endDate": "2025-03-15",
+    "location": ["Italia", "Toscana"]
+  },
+  {
+    "id": "98765",
+    "title": "Escapada a Mykonos",
+    "description": "Un itinerario de 5 días explorando la región de Mykonos en Grecia.",
+    "startDate": "2026-03-10",
+    "endDate": "2026-03-15",
+    "location": ["Grecia", "Mykonos"]
+  }
+]

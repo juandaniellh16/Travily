@@ -1,0 +1,29 @@
+### Recuperar todos los usuarios
+GET http://localhost:3000/users
+
+### Recuperar un usuario por id
+GET http://localhost:3000/users/d010d3c3-62b9-47fb-9019-4af424216487
+
+### Recuperar un usuario por username
+GET http://localhost:3000/users/juandaniel16
+
+### Crear un usuario con POST
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "username": "juandaniel16",
+  "name": "Juan Daniel",
+  "password": "1234abcd"
+}
+
+### Borrar un usuario
+DELETE http://localhost:3000/users/38b70716-0a78-44e0-9928-baed05c0314a
+
+### Actualizar un usuario
+PATCH http://localhost:3000/users/81803972-aa7e-46a5-89c4-5473ea3cb63e
+Content-Type: application/json
+
+{
+  "name": "Usuario actualizado"
+}

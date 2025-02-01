@@ -1,0 +1,27 @@
+### Registro de un usuario
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "username": "juandaniel16",
+  "name": "Juan Daniel",
+  "password": "1234abcd"
+}
+
+### Login de un usuario
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "username": "juandaniel16",
+  "password": "1234abcd"
+}
+
+### Logout de un usuario
+POST http://localhost:3000/auth/logout
+Content-Type: application/json
+
+{
+  "username": "juandaniel16",
+  "password": "1234abcd"
+}

@@ -1,36 +1,49 @@
-import { ItineraryModel } from '../models/mysql/itinerary.js'
 import { validateItinerary, validatePartialItinerary } from '../schemas/itineraries.js'
 
 export class ItineraryController {
-  static async getAll (req, res) {
+  constructor ({ itineraryModel }) {
+    this.itineraryModel = itineraryModel
+  }
+
+  getAll = async (req, res) => {
     const { location } = req.query
-    const itineraries = await ItineraryModel.getAll({ location })
+    const itineraries = await this.itineraryModel.getAll({ location })
     res.json(itineraries)
   }
 
-  static async getById (req, res) {
+  getById = async (req, res) => {
     const { id } = req.params
-    const itinerary = await ItineraryModel.getById({ id })
+    const itinerary = await this.itineraryModel.getById({ id })
     if (itinerary) return res.json(itinerary)
     res.status(404).json({ message: 'Itinerary not found' })
   }
 
-  static async create (req, res) {
+  getPopular = async (req, res) => {
+    const itineraries = await this.itineraryModel.getPopular()
+    res.json(itineraries)
+  }
+
+  create = async (req, res) => {
+    const { user } = req.session
+    if (!user) return res.status(401).json({ message: 'Access not authorized' })
+
     const result = validateItinerary(req.body)
 
     if (!result.success) {
       return res.status(400).json({ error: JSON.parse(result.error.message) })
     }
 
-    const newItinerary = await ItineraryModel.create({ input: result.data })
+    // Unir decodeToken con result.data
+
+    const newItinerary = await this.itineraryModel.create({ input: result.data })
 
     res.status(201).json(newItinerary)
   }
 
-  static async delete (req, res) {
+  delete = async (req, res) => {
     const { id } = req.params
 
-    const result = await ItineraryModel.delete({ id })
+    const result = await this.itineraryModel.delete({ id })
 
     if (result === false) {
       return res.status(404).json({ message: 'Itinerary not found' })
@@ -39,7 +52,7 @@ export class ItineraryController {
     return res.json({ message: 'Itinerary deleted' })
   }
 
-  static async update (req, res) {
+  update = async (req, res) => {
     const result = validatePartialItinerary(req.body)
 
     if (!result.success) {
@@ -48,8 +61,48 @@ export class ItineraryController {
 
     const { id } = req.params
 
-    const updatedItinerary = await ItineraryModel.update({ id, input: result.data })
+    const updatedItinerary = await this.itineraryModel.update({ id, input: result.data })
 
     return res.json(updatedItinerary)
+  }
+
+  like = async (req, res) => {
+    const { userId } = req.body
+    const itineraryId = req.params.id
+
+    try {
+      const result = await this.itineraryModel.likeItinerary(userId, itineraryId)
+      res.json(result)
+    } catch {
+      res.status(400).json({ message: 'Error liking itinerary' })
+    }
+  }
+
+  unlike = async (req, res) => {
+    const { userId } = req.body
+    const itineraryId = req.params.id
+
+    try {
+      const result = await this.itineraryModel.unlikeItinerary(userId, itineraryId)
+      res.json(result)
+    } catch {
+      res.status(400).json({ message: 'Error unliking itinerary' })
+    }
+  }
+
+  liked = async (req, res) => {
+    const { userId } = req.query
+    const itineraryId = req.params.id
+
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' })
+    }
+
+    try {
+      const result = await this.itineraryModel.likedItinerary(userId, itineraryId)
+      res.json(result)
+    } catch {
+      res.status(400).json({ message: 'Error checking if itinerary is liked' })
+    }
   }
 }

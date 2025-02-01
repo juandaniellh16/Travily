@@ -2,10 +2,13 @@
 GET http://localhost:3000/itineraries
 
 ### Recuperar un itinerario por id
-GET http://localhost:3000/itineraries/3f6686ed-d8fe-11ef-8ced-0a0027000006
+GET http://localhost:3000/itineraries/1
 
 ### Recuperar todos los itinerarios por un destino
 GET http://localhost:3000/itineraries?location=Italia
+
+### Recuperar los itinerarios con más me gusta en la última semana
+GET http://localhost:3000/itineraries/popular
 
 ### Crear un itinerario con POST
 POST http://localhost:3000/itineraries
@@ -31,4 +34,20 @@ Content-Type: application/json
 
 {
   "title": "Itinerario actualizado"
+}
+
+### Dar me gusta a un itinerario
+POST http://localhost:3000/itineraries/5/like
+Content-Type: application/json
+
+{
+  "userId": "db038ae8-e09c-11ef-8ced-0a0027000006"
+}
+
+### Quitar me gusta a un itinerario
+POST http://localhost:3000/itineraries/1/unlike
+Content-Type: application/json
+
+{
+  "userId": "db038ae8-e09c-11ef-8ced-0a0027000006"
 }

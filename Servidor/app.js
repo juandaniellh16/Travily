@@ -1,5 +1,4 @@
 import express, { json } from 'express'
-import dotenv from 'dotenv'
 import { corsMiddleware } from './middlewares/cors.js'
 import cookieParser from 'cookie-parser'
 import { createItinerariesRouter } from './routes/itineraries.js'
@@ -10,8 +9,6 @@ import { UserModel } from './models/mysql/user.js'
 import { auth } from './middlewares/auth.js'
 import { upload } from './middlewares/upload.js'
 import { PORT } from './consts/consts.js'
-
-dotenv.config()
 
 const app = express()
 app.disable('x-powered-by')
@@ -32,6 +29,14 @@ app.post('/upload-avatar', upload.single('file'), (req, res) => {
   }
   const avatarUrl = `http://localhost:${PORT}/uploads/avatars/${req.file.filename}`
   res.json({ avatarUrl })
+})
+
+app.post('/upload-itinerary', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' })
+  }
+  const itineraryImageUrl = `http://localhost:${PORT}/uploads/itineraries/${req.file.filename}`
+  res.json({ itineraryImageUrl })
 })
 
 app.listen(PORT, () => {

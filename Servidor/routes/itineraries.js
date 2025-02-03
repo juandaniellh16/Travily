@@ -10,6 +10,8 @@ export const createItinerariesRouter = ({ itineraryModel }) => {
   itinerariesRouter.post('/', itineraryController.create)
 
   itinerariesRouter.get('/popular', itineraryController.getPopular)
+  itinerariesRouter.get('/user/:userId', itineraryController.getUserItineraries)
+  itinerariesRouter.get('/user/:userId/liked', itineraryController.getUserLikedItineraries)
 
   itinerariesRouter.get('/:id', itineraryController.getById)
   itinerariesRouter.post('/:id/like', itineraryController.like)

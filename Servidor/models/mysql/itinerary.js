@@ -4,28 +4,55 @@ export class ItineraryModel {
   static async getAll ({ location }) {
     const connection = await getConnection()
     try {
+      let itineraries
       if (location) {
         const lowerCaseLocation = location.toLowerCase()
 
-        const [itineraries] = await connection.query(
-          `SELECT itineraries.*
-          FROM itineraries
-          JOIN itinerary_locations ON itineraries.id = itinerary_locations.itinerary_id
-          JOIN locations ON itinerary_locations.location_id = locations.id
-          WHERE LOWER(locations.name) = ?;`,
+        itineraries = await connection.query(
+          `SELECT 
+              i.id,
+              i.title,
+              i.description,
+              i.image,
+              i.start_date,
+              i.end_date,
+              COALESCE(GROUP_CONCAT(DISTINCT l.name ORDER BY l.name SEPARATOR ', '), '') AS locations,
+              BIN_TO_UUID(i.user_id) user_id,
+              i.likes
+          FROM itineraries i
+          LEFT JOIN itinerary_locations il ON i.id = il.itinerary_id
+          LEFT JOIN locations l ON il.location_id = l.id
+          WHERE LOWER(l.name) = ?
+          GROUP BY i.id;`,
           [lowerCaseLocation]
         )
-
-        return itineraries
+      } else {
+        itineraries = await connection.query(
+          `SELECT 
+              i.id,
+              i.title,
+              i.description,
+              i.image,
+              i.start_date,
+              i.end_date,
+              COALESCE(GROUP_CONCAT(DISTINCT l.name ORDER BY l.name SEPARATOR ', '), '') AS locations,
+              BIN_TO_UUID(i.user_id) user_id,
+              i.likes
+          FROM itineraries i
+          LEFT JOIN itinerary_locations il ON i.id = il.itinerary_id
+          LEFT JOIN locations l ON il.location_id = l.id
+          GROUP BY i.id;`
+        )
       }
 
-      const [itineraries] = await connection.query(
-        'SELECT itineraries.* FROM itineraries;'
-      )
+      const formattedItineraries = [itineraries].map(itinerary => ({
+        ...itinerary,
+        locations: itinerary.locations ? itinerary.locations.split(', ') : []
+      }))
 
-      return itineraries
+      return formattedItineraries
     } catch (e) {
-      throw new Error('Error creating user')
+      throw new Error('Error getting itineraries')
     } finally {
       connection.release()
     }
@@ -34,18 +61,99 @@ export class ItineraryModel {
   static async getById ({ id }) {
     const connection = await getConnection()
     try {
-      const [itineraries] = await connection.query(
-        `SELECT itineraries.* 
-        FROM itineraries 
-        WHERE id = ?;`,
+      const [itineraryRows] = await connection.query(
+        `SELECT 
+            i.id,
+            i.title,
+            i.description,
+            i.image,
+            i.start_date,
+            i.end_date,
+            COALESCE(GROUP_CONCAT(DISTINCT l.name ORDER BY l.name SEPARATOR ', '), '') AS locations,
+            BIN_TO_UUID(i.user_id) user_id,
+            i.likes
+        FROM itineraries i
+        LEFT JOIN itinerary_locations il ON i.id = il.itinerary_id
+        LEFT JOIN locations l ON il.location_id = l.id
+        WHERE i.id = ?
+        GROUP BY i.id;`,
+        [id]
+      )
+      if (itineraryRows.length === 0) throw new Error('Itinerary not found')
+
+      const itinerary = {
+        id: itineraryRows[0].id,
+        title: itineraryRows[0].title,
+        description: itineraryRows[0].description,
+        image: itineraryRows[0].image,
+        start_date: itineraryRows[0].start_date,
+        end_date: itineraryRows[0].end_date,
+        locations: itineraryRows[0].locations ? itineraryRows[0].locations.split(', ') : [],
+        user_id: itineraryRows[0].user_id,
+        likes: itineraryRows[0].likes,
+        days: []
+      }
+
+      // Obtener los días
+      const [daysRows] = await connection.query(
+        `SELECT 
+            id AS day_id,
+            itinerary_id,
+            label,
+            day_number
+        FROM itinerary_days
+        WHERE itinerary_id = ?
+        ORDER BY day_number;`,
         [id]
       )
 
-      if (itineraries.length === 0) return null
+      // Obtener los eventos
+      const [eventsRows] = await connection.query(
+        `SELECT 
+            id AS event_id,
+            day_id,
+            label,
+            description,
+            image,
+            content
+        FROM itinerary_events
+        WHERE day_id IN (SELECT id FROM itinerary_days WHERE itinerary_id = ?)
+        ORDER BY day_id, event_id;`,
+        [id]
+      )
 
-      return itineraries[0]
+      const dayMap = new Map()
+
+      daysRows.forEach(day => {
+        dayMap.set(day.day_id, {
+          id: day.day_id,
+          label: day.label,
+          day_number: day.day_number,
+          events: []
+        })
+      })
+
+      eventsRows.forEach(event => {
+        if (dayMap.has(event.day_id)) {
+          dayMap.get(event.day_id).events.push({
+            id: event.event_id,
+            label: event.label,
+            description: event.description,
+            image: event.image,
+            content: event.content
+          })
+        }
+      })
+
+      itinerary.days = Array.from(dayMap.values())
+
+      return itinerary
     } catch (e) {
-      throw new Error('Error creating user')
+      if (e instanceof Error) {
+        throw new Error(e.message)
+      } else {
+        throw new Error('Error getting itinerary')
+      }
     } finally {
       connection.release()
     }
@@ -56,21 +164,117 @@ export class ItineraryModel {
     const connection = await getConnection()
     try {
       const [itineraries] = await connection.query(
-      `SELECT itineraries.*, 
-              COALESCE(like_count_week.likes_last_week, 0) AS likes_last_week
-      FROM itineraries
-      LEFT JOIN (
-          SELECT itinerary_id, COUNT(*) AS likes_last_week
-          FROM likes
-          WHERE created_at >= NOW() - INTERVAL 7 DAY
-          GROUP BY itinerary_id
-      ) AS like_count_week ON itineraries.id = like_count_week.itinerary_id
-      ORDER BY likes_last_week DESC, itineraries.likes DESC
-      LIMIT 10;`)
+        `SELECT 
+            i.id,
+            i.title,
+            i.description,
+            i.image,
+            i.start_date,
+            i.end_date,
+            COALESCE(locations.locations, '') AS locations,
+            BIN_TO_UUID(i.user_id) user_id,
+            i.likes,
+            COALESCE(like_count_week.likes_last_week, 0) AS likes_last_week
+        FROM itineraries i
+        LEFT JOIN (
+            SELECT 
+                itinerary_id, 
+                GROUP_CONCAT(DISTINCT l.name ORDER BY l.name SEPARATOR ', ') AS locations
+            FROM itinerary_locations il
+            LEFT JOIN locations l ON il.location_id = l.id
+            GROUP BY itinerary_id
+        ) AS locations ON i.id = locations.itinerary_id
+        LEFT JOIN (
+            SELECT itinerary_id, COUNT(*) AS likes_last_week
+            FROM likes
+            WHERE created_at >= NOW() - INTERVAL 7 DAY
+            GROUP BY itinerary_id
+        ) AS like_count_week ON i.id = like_count_week.itinerary_id
+        ORDER BY likes_last_week DESC, i.likes DESC
+        LIMIT 10;`
+      )
 
-      return itineraries
+      const formattedItineraries = itineraries.map(itinerary => ({
+        ...itinerary,
+        locations: itinerary.locations ? itinerary.locations.split(', ') : []
+      }))
+
+      return formattedItineraries
     } catch (e) {
       throw new Error('Error getting popular itineraries')
+    } finally {
+      connection.release()
+    }
+  }
+
+  // Obtener los itinerarios de un usuario
+  static async getUserItineraries ({ userId }) {
+    const connection = await getConnection()
+    try {
+      const [itineraries] = await connection.query(
+        `SELECT 
+            i.id,
+            i.title,
+            i.description,
+            i.image,
+            i.start_date,
+            i.end_date,
+            COALESCE(GROUP_CONCAT(DISTINCT l.name ORDER BY l.name SEPARATOR ', '), '') AS locations,
+            BIN_TO_UUID(i.user_id) user_id,
+            i.likes
+        FROM itineraries i
+        LEFT JOIN itinerary_locations il ON i.id = il.itinerary_id
+        LEFT JOIN locations l ON il.location_id = l.id
+        WHERE i.user_id = UUID_TO_BIN(?)
+        GROUP BY i.id;`,
+        [userId]
+      )
+
+      const formattedItineraries = itineraries.map(itinerary => ({
+        ...itinerary,
+        locations: itinerary.locations ? itinerary.locations.split(', ') : []
+      }))
+
+      return formattedItineraries
+    } catch (e) {
+      throw new Error('Error getting user itineraries')
+    } finally {
+      connection.release()
+    }
+  }
+
+  // Obtener los itinerarios a los que un usuario ha dado like
+  static async getUserLikedItineraries ({ userId }) {
+    const connection = await getConnection()
+    try {
+      const [itineraries] = await connection.query(
+        `SELECT 
+            i.id,
+            i.title,
+            i.description,
+            i.image,
+            i.start_date,
+            i.end_date,
+            COALESCE(GROUP_CONCAT(DISTINCT l.name ORDER BY l.name SEPARATOR ', '), '') AS locations,
+            BIN_TO_UUID(i.user_id) user_id,
+            i.likes
+        FROM itineraries i
+        LEFT JOIN itinerary_locations il ON i.id = il.itinerary_id
+        LEFT JOIN locations l ON il.location_id = l.id
+        JOIN likes ON i.id = likes.itinerary_id
+        WHERE likes.user_id = UUID_TO_BIN(?)
+        GROUP BY i.id;`,
+        [userId]
+      )
+
+      const formattedItineraries = itineraries.map(itinerary => ({
+        ...itinerary,
+        locations: itinerary.locations ? itinerary.locations.split(', ') : []
+      }))
+
+      return formattedItineraries
+    } catch (e) {
+      throw new Error('Error getting user liked itineraries')
     } finally {
       connection.release()
     }
@@ -83,7 +287,8 @@ export class ItineraryModel {
       image,
       startDate,
       endDate,
-      locations: locationsInput
+      locations: locationsInput,
+      userId
     } = input
 
     const connection = await getConnection()
@@ -91,9 +296,9 @@ export class ItineraryModel {
       await connection.beginTransaction()
 
       const [itineraryResult] = await connection.query(
-        `INSERT INTO itineraries (title, description, image, start_date, end_date)
-        VALUES (?, ?, ?, ?, ?);`,
-        [title, description, image, startDate, endDate]
+        `INSERT INTO itineraries (title, description, image, start_date, end_date, user_id)
+        VALUES (?, ?, ?, ?, ?, UUID_TO_BIN(?));`,
+        [title, description, image, startDate, endDate, userId]
       )
 
       const itineraryId = itineraryResult.insertId
@@ -126,7 +331,17 @@ export class ItineraryModel {
 
       await connection.commit()
 
-      return { id: itineraryId, title, description, image, startDate, endDate }
+      const [locations] = await connection.query(
+        `SELECT l.name 
+        FROM locations l
+        JOIN itinerary_locations il ON l.id = il.location_id
+        WHERE il.itinerary_id = ?;`,
+        [itineraryId]
+      )
+
+      const locationNames = locations.map(loc => loc.name)
+
+      return { id: itineraryId, title, description, image, startDate, endDate, locations: locationNames, userId }
     } catch (e) {
       await connection.rollback()
       throw new Error('Error creating itinerary')
@@ -234,9 +449,21 @@ export class ItineraryModel {
       await connection.commit()
 
       const [itineraries] = await connection.query(
-        `SELECT itineraries.* 
-        FROM itineraries 
-        WHERE id = ?;`,
+        `SELECT 
+            i.id,
+            i.title,
+            i.description,
+            i.image,
+            i.start_date,
+            i.end_date,
+            COALESCE(GROUP_CONCAT(DISTINCT l.name ORDER BY l.name SEPARATOR ', '), '') AS locations,
+            BIN_TO_UUID(i.user_id) user_id,
+            i.likes
+        FROM itineraries i
+        LEFT JOIN itinerary_locations il ON i.id = il.itinerary_id
+        LEFT JOIN locations l ON il.location_id = l.id
+        WHERE i.id = ?
+        GROUP BY i.id;`,
         [id]
       )
 

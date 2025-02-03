@@ -23,6 +23,34 @@ export class ItineraryController {
     res.json(itineraries)
   }
 
+  getUserItineraries = async (req, res) => {
+    const { userId } = req.params
+
+    try {
+      const itineraries = await this.itineraryModel.getUserItineraries({ userId })
+      res.json(itineraries)
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message })
+      }
+      res.status(500).json({ message: 'Error getting user itineraries' })
+    }
+  }
+
+  getUserLikedItineraries = async (req, res) => {
+    const { userId } = req.params
+
+    try {
+      const itineraries = await this.itineraryModel.getUserLikedItineraries({ userId })
+      res.json(itineraries)
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message })
+      }
+      res.status(500).json({ message: 'Error getting user liked itineraries' })
+    }
+  }
+
   create = async (req, res) => {
     const { user } = req.session
     if (!user) return res.status(401).json({ message: 'Access not authorized' })
@@ -32,8 +60,6 @@ export class ItineraryController {
     if (!result.success) {
       return res.status(400).json({ error: JSON.parse(result.error.message) })
     }
-
-    // Unir decodeToken con result.data
 
     const newItinerary = await this.itineraryModel.create({ input: result.data })
 

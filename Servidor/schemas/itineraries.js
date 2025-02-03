@@ -10,7 +10,7 @@ const itinerarySchema = z.object({
   }),
   image: z.string({
     invalid_type_error: 'Itinerary image must be a string'
-  }).url('Itinerary image must be a valid URL'),
+  }).url('Itinerary image must be a valid URL').nullable().optional(),
   startDate: z.preprocess(
     (arg) => (typeof arg === 'string' ? new Date(arg) : arg),
     z.date({
@@ -31,7 +31,11 @@ const itinerarySchema = z.object({
       invalid_type_error: 'Itinerary locations must be an array of string',
       required_error: 'Itinerary locations is required'
     }
-  )
+  ),
+  userId: z.string({
+    invalid_type_error: 'Itinerary userId must be a string',
+    required_error: 'Itinerary userId is required'
+  })
 })
 
 export function validateItinerary (input) {

@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/config/config'
+import { fetchWithAuth } from './fetchWithAuth'
 
 export const itineraryService = {
   getAll: async () => {
@@ -52,10 +53,9 @@ export const itineraryService = {
     locations: string[],
     userId: string
   ) => {
-    const response = await fetch(`${API_BASE_URL}/itineraries`, {
+    const response = await fetchWithAuth('/itineraries', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({
         title,
         description,
@@ -73,14 +73,11 @@ export const itineraryService = {
   },
 
   like: async (itineraryId: string, userId: string) => {
-    const response = await fetch(
-      `${API_BASE_URL}/itineraries/${itineraryId}/like`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-      }
-    )
+    const response = await fetchWithAuth(`/itineraries/${itineraryId}/like`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    })
 
     if (!response.ok) {
       throw new Error('Like error')
@@ -88,14 +85,11 @@ export const itineraryService = {
   },
 
   unlike: async (itineraryId: string, userId: string) => {
-    const response = await fetch(
-      `${API_BASE_URL}/itineraries/${itineraryId}/unlike`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-      }
-    )
+    const response = await fetchWithAuth(`/itineraries/${itineraryId}/unlike`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    })
 
     if (!response.ok) {
       throw new Error('Unlike error')

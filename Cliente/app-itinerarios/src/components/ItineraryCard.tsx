@@ -9,6 +9,7 @@ import {
   Avatar
 } from '@mantine/core'
 import { IoShareSocialSharp } from 'react-icons/io5'
+import { LikeButton } from './LikeButton'
 import { ItinerarySimpleType, User } from '@/types'
 import { userService } from '@/services/userService'
 import { useEffect, useState } from 'react'
@@ -80,6 +81,7 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
           </Center>
 
           <Group gap={0}>
+            <LikeButton itinerary={itinerary} />
             <ActionIcon variant='subtle' color='gray' size={24} p={3}>
               <IoShareSocialSharp size={16} color='black' />
             </ActionIcon>

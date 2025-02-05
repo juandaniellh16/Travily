@@ -93,6 +93,9 @@ export class ItineraryController {
   }
 
   like = async (req, res) => {
+    const { user } = req.session
+    if (!user) return res.status(401).json({ message: 'Access not authorized' })
+
     const { userId } = req.body
     const itineraryId = req.params.id
 
@@ -105,6 +108,9 @@ export class ItineraryController {
   }
 
   unlike = async (req, res) => {
+    const { user } = req.session
+    if (!user) return res.status(401).json({ message: 'Access not authorized' })
+
     const { userId } = req.body
     const itineraryId = req.params.id
 

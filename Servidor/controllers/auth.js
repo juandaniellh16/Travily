@@ -70,6 +70,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
+      path: '/auth/refresh-token',
       maxAge: 1000 * 60 * 60 * 24 * 7
     }).json({
       id: user.id,
@@ -83,7 +84,17 @@ export class AuthController {
   }
 
   logout = async (req, res) => {
-    res.clearCookie('access_token').json({ message: 'Logout' })
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    })
+      .clearCookie('refresh_token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/auth/refresh-token'
+      }).json({ message: 'Logged out' })
   }
 
   refreshToken = async (req, res) => {
@@ -92,8 +103,12 @@ export class AuthController {
     try {
       const data = jwt.verify(refreshToken, JWT_SECRET)
 
+      const tokenPayload = {
+        id: data.id,
+        username: data.username
+      }
       const newAccessToken = jwt.sign(
-        data.tokenPayload,
+        tokenPayload,
         JWT_SECRET,
         {
           expiresIn: '1h'

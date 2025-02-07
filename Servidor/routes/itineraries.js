@@ -16,6 +16,7 @@ export const createItinerariesRouter = ({ itineraryModel }) => {
   itinerariesRouter.get('/:id', itineraryController.getById)
   itinerariesRouter.post('/:id/like', itineraryController.like)
   itinerariesRouter.post('/:id/unlike', itineraryController.unlike)
+  itinerariesRouter.post('/:id/events', itineraryController.updateEventOrder)
   itinerariesRouter.get('/:id/liked', itineraryController.liked)
   itinerariesRouter.delete('/:id', itineraryController.delete)
   itinerariesRouter.patch('/:id', itineraryController.update)

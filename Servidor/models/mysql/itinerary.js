@@ -112,13 +112,14 @@ export class ItineraryModel {
         `SELECT 
             id AS event_id,
             day_id,
+            order_index,
             label,
             description,
             image,
             content
         FROM itinerary_events
         WHERE day_id IN (SELECT id FROM itinerary_days WHERE itinerary_id = ?)
-        ORDER BY day_id, event_id;`,
+        ORDER BY day_id, order_index ASC;`,
         [id]
       )
 
@@ -137,6 +138,7 @@ export class ItineraryModel {
         if (dayMap.has(event.day_id)) {
           dayMap.get(event.day_id).events.push({
             id: event.event_id,
+            order_index: event.order_index,
             label: event.label,
             description: event.description,
             image: event.image,
@@ -557,6 +559,31 @@ export class ItineraryModel {
       return { liked: result[0].liked > 0 }
     } catch (e) {
       throw new Error('Error checking if itinerary is liked')
+    } finally {
+      connection.release()
+    }
+  }
+
+  static async updateEventOrder (itineraryId, dayId, reorderedEvents) {
+    const connection = await getConnection()
+    try {
+      await connection.beginTransaction()
+
+      for (const e of reorderedEvents) {
+        const eventId = e.id
+        const orderIndex = e.order_index
+        await connection.query(
+          'UPDATE itinerary_events SET order_index = ? WHERE id = ?;',
+          [orderIndex, eventId]
+        )
+      }
+
+      await connection.commit()
+
+      return { message: 'Event order updated' }
+    } catch (e) {
+      await connection.rollback()
+      throw new Error('Error updating event order')
     } finally {
       connection.release()
     }

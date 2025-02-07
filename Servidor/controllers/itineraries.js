@@ -137,4 +137,24 @@ export class ItineraryController {
       res.status(400).json({ message: 'Error checking if itinerary is liked' })
     }
   }
+
+  updateEventOrder = async (req, res) => {
+    const { user } = req.session
+    if (!user) return res.status(401).json({ message: 'Access not authorized' })
+
+    const itineraryId = req.params.id
+    const { dayId } = req.body
+    const { reorderedEvents } = req.body
+
+    if (!dayId || !reorderedEvents) {
+      return res.status(400).json({ error: 'Invalid data' })
+    }
+
+    try {
+      const result = await this.itineraryModel.updateEventOrder(itineraryId, dayId, reorderedEvents)
+      res.json(result)
+    } catch {
+      res.status(400).json({ message: 'Error updating event order' })
+    }
+  }
 }

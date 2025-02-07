@@ -36,9 +36,9 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
   }, [itinerary.user_id])
 
   return (
-    <div className='flex h-full overflow-hidden border rounded-lg'>
-      <Card className='flex flex-col flex-grow rounded-lg group' padding='md'>
-        <Card.Section className='h-[60%] overflow-hidden'>
+    <div className='flex h-full overflow-hidden rounded-xl'>
+      <Card className='flex flex-col flex-grow rounded-xl group' padding='md'>
+        <Card.Section className='h-[55%] min-h-[55%] rounded-t-xl overflow-hidden'>
           <Link to={`/itinerary/${itinerary.id}`}>
             <Image
               src={itinerary.image}
@@ -49,44 +49,46 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
           </Link>
         </Card.Section>
 
-        <div className='flex flex-col gap-1 my-2'>
-          <Link to={`/itinerary/${itinerary.id}`}>
-            <Text size='sm' fw={500} lineClamp={1}>
-              {itinerary.title}
-            </Text>
-          </Link>
-          <div className='flex gap-1'>
-            <Badge size='xs' color='pink'>
-              Mountain
-            </Badge>
-            <Badge variant='light' size='xs' key={'Sea'} leftSection={'🌊'}>
-              Beach
-            </Badge>
-          </div>
-          <Text fz='sm' c='dimmed' lineClamp={2}>
-            {itinerary.description}
-          </Text>
-        </div>
-
-        <Group justify='space-between' gap={5} mt={'xs'}>
-          <Center>
-            <Link to={`/profile/${userData?.id}`}>
-              <Avatar src={userData?.avatar} size={22} radius='xl' mr='8' />
-            </Link>
-            <Link to={`/profile/${userData?.id}`}>
-              <Text size='14' inline>
-                {userData?.username}
+        <div className='flex flex-col justify-between flex-grow'>
+          <div className='flex flex-col gap-1 my-2'>
+            <Link to={`/itinerary/${itinerary.id}`}>
+              <Text size='sm' fw={500} lineClamp={1}>
+                {itinerary.title}
               </Text>
             </Link>
-          </Center>
+            <div className='flex gap-1 mb-1'>
+              <Badge size='xs' color='pink'>
+                Mountain
+              </Badge>
+              <Badge variant='light' size='xs' key={'Sea'} leftSection={'🌊'}>
+                Beach
+              </Badge>
+            </div>
+            <Text fz='sm' c='dimmed' lh={1.3} lineClamp={2}>
+              {itinerary.description}
+            </Text>
+          </div>
 
-          <Group gap={0}>
-            <LikeButton itinerary={itinerary} />
-            <ActionIcon variant='subtle' color='gray' size={24} p={3}>
-              <IoShareSocialSharp size={16} color='black' />
-            </ActionIcon>
+          <Group justify='space-between' gap={5} mt={'xs'}>
+            <Center>
+              <Link to={`/profile/${userData?.id}`}>
+                <Avatar src={userData?.avatar} size={22} radius='xl' mr='8' />
+              </Link>
+              <Link to={`/profile/${userData?.id}`}>
+                <Text size='14' inline>
+                  {userData?.username}
+                </Text>
+              </Link>
+            </Center>
+
+            <Group gap={0}>
+              <LikeButton itinerary={itinerary} />
+              <ActionIcon variant='subtle' color='gray' size={24} p={3}>
+                <IoShareSocialSharp size={16} color='black' />
+              </ActionIcon>
+            </Group>
           </Group>
-        </Group>
+        </div>
       </Card>
     </div>
   )

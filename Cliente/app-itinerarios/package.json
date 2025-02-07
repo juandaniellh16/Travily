@@ -10,11 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mantine/carousel": "~7.16.1",
-    "@mantine/core": "~7.16.1",
-    "@mantine/hooks": "~7.16.1",
+    "@hello-pangea/dnd": "^17.0.0",
+    "@mantine/carousel": "~7.16.2",
+    "@mantine/core": "~7.16.2",
+    "@mantine/dates": "~7.16.2",
+    "@mantine/hooks": "~7.16.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dayjs": "^1.11.13",
     "embla-carousel-react": "^7.1.0",
     "lucide-react": "^0.474.0",
     "react": "^18.3.1",

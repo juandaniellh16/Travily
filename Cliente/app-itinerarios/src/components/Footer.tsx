@@ -2,13 +2,13 @@ import { MdTravelExplore } from 'react-icons/md'
 
 export const Footer = () => {
   return (
-    <footer className='bg-primary-foreground py-4 px-10 mt-3'>
-      <div className='flex justify-between items-center max-w-6xl mx-auto'>
+    <footer className='px-10 pt-4 pb-20 mt-3 md:pb-4 bg-primary-foreground'>
+      <div className='flex items-center justify-between max-w-6xl mx-auto'>
         <aside className='flex items-center'>
           <MdTravelExplore size={32} className='mr-2' />
           <p>Copyright © {new Date().getFullYear()} - All rights reserved</p>
         </aside>
-        <nav className='flex gap-4 items-center'>
+        <nav className='flex items-center gap-4'>
           <a>
             <svg
               xmlns='http://www.w3.org/2000/svg'

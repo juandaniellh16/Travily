@@ -6,8 +6,7 @@ import {
   Group,
   PasswordInput,
   TextInput,
-  Title,
-  Text
+  Title
 } from '@mantine/core'
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -40,12 +39,12 @@ export const Login = () => {
   }
 
   return (
-    <div className='px-4 pb-6'>
+    <div className='px-8'>
       <Title order={2} ta='center' mb='xl'>
         Bienvenido a Itinerarios
       </Title>
       {error && <p className='text-center text-red-500'>{error}</p>}
-      <form onSubmit={handleSubmit} className='m-y-4'>
+      <form onSubmit={handleSubmit} className='mb-4'>
         <TextInput
           label='Usuario/Correo electrónico'
           placeholder=''
@@ -59,7 +58,7 @@ export const Login = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          mt='md'
+          mt='sm'
         />
         <Group justify='space-between' mt='lg'>
           <Checkbox label='Recuérdame' />
@@ -77,17 +76,6 @@ export const Login = () => {
           Entrar
         </Button>
       </form>
-
-      <Text size='sm' ta='center' mt='md'>
-        ¿No tienes una cuenta?{' '}
-        <Anchor<'a'>
-          href='#'
-          fw={500}
-          onClick={(event) => event.preventDefault()}
-        >
-          Regístrate
-        </Anchor>
-      </Text>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/config/config'
 import { fetchWithAuth } from './fetchWithAuth'
+import { Event } from '@/types'
 
 export const itineraryService = {
   getAll: async () => {
@@ -93,6 +94,36 @@ export const itineraryService = {
 
     if (!response.ok) {
       throw new Error('Unlike error')
+    }
+  },
+
+  updateEventOrder: async (
+    itineraryId: string,
+    dayId: string,
+    dayEvents: Event[]
+  ) => {
+    try {
+      const reorderedEvents = dayEvents.map((event, index) => ({
+        id: event.id,
+        newPosition: index
+      }))
+
+      const response = await fetchWithAuth(
+        `/itineraries/${itineraryId}/events`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ dayId, reorderedEvents })
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Error updating event order')
+      }
+    } catch {
+      throw new Error('Error updating event order')
     }
   }
 }

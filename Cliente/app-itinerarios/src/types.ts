@@ -1,4 +1,4 @@
-interface Event {
+export interface Event {
   id: string
   label: string
   description: string
@@ -6,7 +6,7 @@ interface Event {
   content: string
 }
 
-interface Day {
+export interface Day {
   id: string
   label: string
   day_number: number

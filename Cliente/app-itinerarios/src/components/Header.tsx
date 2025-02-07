@@ -21,21 +21,37 @@ export const Header = () => {
   }
 
   return (
-    <header className='sticky top-0 z-50 px-10 py-3 mb-3 bg-white border-b h-15'>
+    <header className='sticky top-0 z-50 px-10 py-3 mb-3 bg-white border-b'>
       <div className='flex items-center justify-between max-w-6xl mx-auto gap-y-0'>
         <Link to='/'>
           <img src='/logo.png' alt='Logo' className='h-9' />
         </Link>
 
         <div className='flex items-center gap-5'>
-          <Link to='/create-itinerary'>
-            <Button variant='filled'>Nuevo itinerario</Button>
-          </Link>
-          <Link to='/register'>Register</Link>
-          <Link to='/login'>Login</Link>
-          {user && <Button onClick={handleLogout}>Logout</Button>}
-          <Link to='/profile'>Profile</Link>
           <ColorSchemeToggle />
+          <Link to='/profile'>Profile</Link>
+          {user ? (
+            <Button
+              variant='outline'
+              color='teal'
+              radius='xl'
+              onClick={handleLogout}
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'black',
+                  color: 'white',
+                  borderColor: 'black'
+                }
+              }}
+            >
+              Logout
+            </Button>
+          ) : (
+            <>
+              <Link to='/login'>Login</Link>
+              <Link to='/register'>Register</Link>
+            </>
+          )}
         </div>
       </div>
     </header>

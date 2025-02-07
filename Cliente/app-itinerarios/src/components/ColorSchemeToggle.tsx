@@ -19,6 +19,7 @@ export const ColorSchemeToggle = () => {
       }
       variant='default'
       size='lg'
+      radius='md'
       aria-label='Cambiar tema de color'
     >
       {computedColorScheme === 'light' ? (

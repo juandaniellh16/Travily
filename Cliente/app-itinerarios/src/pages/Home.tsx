@@ -23,7 +23,7 @@ export const Home = () => {
 
   return (
     <>
-      <div className='flex flex-col items-center w-full p-8 bg-white rounded-xl'>
+      <div className='flex flex-col items-center w-full px-8 pb-8 bg-white rounded-xl'>
         <h2 className='mb-4 text-2xl font-medium text-center md:text-3xl'>
           Descubre actividades para tu viaje
         </h2>
@@ -33,7 +33,7 @@ export const Home = () => {
       <div className='w-full my-8'>
         <Carousel
           height={300}
-          slideSize={{ base: '70%', sm: '60%', md: '40%', lg: '33.33333%' }}
+          slideSize={{ base: '60%', sm: '45%', md: '55%', lg: '33.33333%' }}
           slideGap='xs'
           align='center'
           initialSlide={1}

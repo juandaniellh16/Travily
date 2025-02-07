@@ -1,13 +1,21 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { Button } from '@mantine/core'
+import {
+  Avatar,
+  Button,
+  FileButton,
+  PasswordInput,
+  TextInput,
+  Title
+} from '@mantine/core'
 
 const API_URL = 'http://localhost:3000'
 
 export const Register = () => {
   const { register } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -16,8 +24,7 @@ export const Register = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null
+  const handleAvatarChange = async (file: File | null) => {
     if (file) {
       try {
         const formData = new FormData()
@@ -47,7 +54,7 @@ export const Register = () => {
 
     try {
       await register(name, username, email, password, avatar)
-      navigate('/login')
+      navigate(location.state?.from?.pathname || '/')
     } catch (error) {
       setLoading(false)
       if (error instanceof Error) {
@@ -59,56 +66,65 @@ export const Register = () => {
   }
 
   return (
-    <div className='w-full'>
-      <h1 className='text-xl font-medium text-center'>Register</h1>
+    <div className='px-8'>
+      <Title order={2} ta='center' mb='xl'>
+        Bienvenido a Itinerarios
+      </Title>
       {error && <p className='text-center text-red-500'>{error}</p>}
-
-      <form onSubmit={handleSubmit} className='m-y-4'>
-        <input
-          type='text'
-          placeholder='Name'
+      <form onSubmit={handleSubmit} className='mb-4'>
+        <TextInput
+          label='Nombre'
+          placeholder=''
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className='w-full px-4 py-2 border rounded-lg'
           required
         />
-        <input
-          type='text'
-          placeholder='Username'
+        <TextInput
+          label='Nombre de usuario'
+          placeholder=''
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className='w-full px-4 py-2 border rounded-lg'
           required
+          mt='sm'
         />
-        <input
+        <TextInput
           type='email'
-          placeholder='Email'
+          label='Correo electrónico'
+          placeholder=''
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className='w-full px-4 py-2 border rounded-lg'
           required
+          mt='sm'
         />
-        <input
-          type='password'
-          placeholder='Password'
+        <PasswordInput
+          label='Contraseña'
+          placeholder=''
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className='w-full px-4 py-2 border rounded-lg'
           required
+          mt='sm'
         />
-        <input
-          type='file'
-          onChange={handleAvatarChange}
-          accept='.png, .jpg, .jpeg'
-        />
+        <div className='flex justify-center mt-4'>
+          <FileButton onChange={handleAvatarChange} accept='.png, .jpg, .jpeg'>
+            {(props) => (
+              <Avatar
+                src={avatar}
+                size={100}
+                radius={90}
+                className='transition cursor-pointer hover:opacity-80'
+                {...props}
+              />
+            )}
+          </FileButton>
+        </div>
         <Button
           type='submit'
           loading={loading}
           loaderProps={{ type: 'dots' }}
           fullWidth
-          className='py-2 text-white bg-blue-500 rounded-lg'
+          mt='lg'
         >
-          Register
+          Crear cuenta
         </Button>
       </form>
     </div>

@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt'
-import { SALT_ROUNDS } from '../../consts/consts.js'
-import { getConnection } from '../../db.js'
+import { SALT_ROUNDS } from '../../config/config.js'
+import { getConnection } from '../../config/db.js'
+import { ConflictError, DatabaseError, NotFoundError } from '../../errors/errors.js'
 
 export class UserModel {
   static async getAll () {
@@ -11,8 +12,8 @@ export class UserModel {
       )
 
       return users
-    } catch (e) {
-      throw new Error('Error creating user')
+    } catch (error) {
+      throw new DatabaseError('Error while fetching users: ' + error.message)
     } finally {
       connection.release()
     }
@@ -29,11 +30,15 @@ export class UserModel {
         [id]
       )
 
-      if (users.length === 0) return null
+      if (users.length === 0) throw new NotFoundError(`User with id ${id} not found`)
 
       return users[0]
-    } catch (e) {
-      throw new Error('Error getting user by id')
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error
+      } else {
+        throw new Error('Error getting user: ' + error.message)
+      }
     } finally {
       connection.release()
     }
@@ -50,11 +55,15 @@ export class UserModel {
         [username]
       )
 
-      if (users.length === 0) return null
+      if (users.length === 0) throw new NotFoundError(`User with username ${username} not found`)
 
       return users[0]
-    } catch (e) {
-      throw new Error('Error getting user by username')
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error
+      } else {
+        throw new Error('Error getting user: ' + error.message)
+      }
     } finally {
       connection.release()
     }
@@ -69,20 +78,20 @@ export class UserModel {
       avatar = null
     } = input
 
-    const user = await this.getByUsername({ username })
-    if (user) {
-      throw new Error('Username already exists')
-    }
-
     const connection = await getConnection()
 
     try {
-      const [existingEmails] = await connection.query(
+      const user = await this.getByUsername({ username })
+      if (user) {
+        throw new ConflictError('Username already used')
+      }
+
+      const [existingEmail] = await connection.query(
         'SELECT BIN_TO_UUID(id) id FROM users WHERE email = ?;',
         [email]
       )
-      if (existingEmails.length > 0) {
-        throw new Error('Email already used')
+      if (existingEmail.length > 0) {
+        throw new ConflictError('Email already used')
       }
 
       const passwordHash = await bcrypt.hash(password, parseInt(SALT_ROUNDS))
@@ -95,8 +104,12 @@ export class UserModel {
       )
 
       return { id: uuid, name, username, email, avatar, followers: 0, following: 0 }
-    } catch (e) {
-      throw new Error('Error creating user')
+    } catch (error) {
+      if (error instanceof ConflictError) {
+        throw error
+      } else {
+        throw new DatabaseError('Error creating user: ' + error.message)
+      }
     } finally {
       connection.release()
     }
@@ -110,9 +123,15 @@ export class UserModel {
         'DELETE FROM users WHERE id = UUID_TO_BIN(?);',
         [id]
       )
-      return result.affectedRows > 0
-    } catch (e) {
-      throw new Error('Error deleting user')
+      if (result.affectedRows === 0) {
+        throw new NotFoundError(`User with id ${id} not found`)
+      }
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error
+      } else {
+        throw new DatabaseError('Error deleting user: ' + error.message)
+      }
     } finally {
       connection.release()
     }
@@ -129,7 +148,13 @@ export class UserModel {
     const connection = await getConnection()
 
     try {
-      await connection.beginTransaction()
+      const [existingUser] = await connection.query(
+        'SELECT id FROM users WHERE id = ?;',
+        [id]
+      )
+      if (existingUser.length === 0) {
+        throw new NotFoundError(`User with id ${id} not found`)
+      }
 
       const updateFields = []
       const queryParams = []
@@ -159,19 +184,17 @@ export class UserModel {
                             SET ${updateFields.join(', ')}
                             WHERE id = UUID_TO_BIN(?);`
 
-        await connection.query(updateQuery, queryParams)
+        const [updateResult] = await connection.query(updateQuery, queryParams)
+        if (updateResult.affectedRows === 0) {
+          throw new DatabaseError('Failed to update user: ' + updateResult.message)
+        }
       }
-
-      const [users] = await connection.query(
-        `SELECT BIN_TO_UUID(id) id, name, username, email, password_hash, avatar, followers, following 
-        FROM users 
-        WHERE id = UUID_TO_BIN(?);`,
-        [id]
-      )
-
-      return users[0]
-    } catch (e) {
-      throw new Error('Error updating user')
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error
+      } else {
+        throw new DatabaseError('Error updating user: ' + error.message)
+      }
     } finally {
       connection.release()
     }

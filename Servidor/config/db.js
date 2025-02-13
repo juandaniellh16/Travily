@@ -1,5 +1,5 @@
 import mysql from 'mysql2/promise'
-import { DATABASE_URL } from './consts/consts.js'
+import { DATABASE_URL } from './config.js'
 
 const connectionString = DATABASE_URL
 

@@ -8,18 +8,13 @@ export const createItinerariesRouter = ({ itineraryModel }) => {
 
   itinerariesRouter.get('/', itineraryController.getAll)
   itinerariesRouter.post('/', itineraryController.create)
-
-  itinerariesRouter.get('/popular', itineraryController.getPopular)
-  itinerariesRouter.get('/user/:userId', itineraryController.getUserItineraries)
-  itinerariesRouter.get('/user/:userId/liked', itineraryController.getUserLikedItineraries)
-
   itinerariesRouter.get('/:id', itineraryController.getById)
-  itinerariesRouter.post('/:id/like', itineraryController.like)
-  itinerariesRouter.post('/:id/unlike', itineraryController.unlike)
-  itinerariesRouter.post('/:id/events', itineraryController.updateEventOrder)
-  itinerariesRouter.get('/:id/liked', itineraryController.liked)
   itinerariesRouter.delete('/:id', itineraryController.delete)
   itinerariesRouter.patch('/:id', itineraryController.update)
+
+  itinerariesRouter.post('/:id/likes', itineraryController.like)
+  itinerariesRouter.delete('/:id/likes', itineraryController.unlike)
+  itinerariesRouter.get('/:id/liked', itineraryController.liked)
 
   return itinerariesRouter
 }

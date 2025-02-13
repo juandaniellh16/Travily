@@ -1,3 +1,4 @@
+import { InvalidInputError, UnauthorizedError } from '../errors/errors.js'
 import { validateItinerary, validatePartialItinerary } from '../schemas/itineraries.js'
 
 export class ItineraryController {
@@ -5,156 +6,139 @@ export class ItineraryController {
     this.itineraryModel = itineraryModel
   }
 
-  getAll = async (req, res) => {
-    const { location } = req.query
-    const itineraries = await this.itineraryModel.getAll({ location })
-    res.json(itineraries)
-  }
-
-  getById = async (req, res) => {
-    const { id } = req.params
-    const itinerary = await this.itineraryModel.getById({ id })
-    if (itinerary) return res.json(itinerary)
-    res.status(404).json({ message: 'Itinerary not found' })
-  }
-
-  getPopular = async (req, res) => {
-    const itineraries = await this.itineraryModel.getPopular()
-    res.json(itineraries)
-  }
-
-  getUserItineraries = async (req, res) => {
-    const { userId } = req.params
-
+  getAll = async (req, res, next) => {
+    const { location, userId, likedBy, sort } = req.query
     try {
-      const itineraries = await this.itineraryModel.getUserItineraries({ userId })
+      const itineraries = await this.itineraryModel.getAll({ location, userId, likedBy, sort })
       res.json(itineraries)
     } catch (error) {
-      if (error instanceof Error) {
-        return res.status(400).json({ message: error.message })
-      }
-      res.status(500).json({ message: 'Error getting user itineraries' })
+      next(error)
     }
   }
 
-  getUserLikedItineraries = async (req, res) => {
-    const { userId } = req.params
-
+  getById = async (req, res, next) => {
+    const { id } = req.params
     try {
-      const itineraries = await this.itineraryModel.getUserLikedItineraries({ userId })
-      res.json(itineraries)
+      if (!id) throw new InvalidInputError('Id parameter is required')
+      const itinerary = await this.itineraryModel.getById({ id })
+      res.json(itinerary)
     } catch (error) {
-      if (error instanceof Error) {
-        return res.status(400).json({ message: error.message })
+      next(error)
+    }
+  }
+
+  create = async (req, res, next) => {
+    const { user } = req.session
+    try {
+      if (!user) throw new UnauthorizedError('Access not authorized')
+
+      const result = validateItinerary(req.body)
+
+      if (!result.success) {
+        throw new InvalidInputError('Invalid itinerary data: ' + JSON.stringify(result.error.message))
       }
-      res.status(500).json({ message: 'Error getting user liked itineraries' })
+
+      if (user.id !== req.body.userId) {
+        throw new UnauthorizedError('You are not authorized to create an itinerary for another user')
+      }
+
+      const itineraryId = await this.itineraryModel.create({ input: result.data })
+
+      const locationUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}/${itineraryId}`
+
+      res.status(201).set('Location', locationUrl).end()
+    } catch (error) {
+      next(error)
     }
   }
 
-  create = async (req, res) => {
+  delete = async (req, res, next) => {
     const { user } = req.session
-    if (!user) return res.status(401).json({ message: 'Access not authorized' })
-
-    const result = validateItinerary(req.body)
-
-    if (!result.success) {
-      return res.status(400).json({ error: JSON.parse(result.error.message) })
-    }
-
-    const newItinerary = await this.itineraryModel.create({ input: result.data })
-
-    res.status(201).json(newItinerary)
-  }
-
-  delete = async (req, res) => {
     const { id } = req.params
+    try {
+      if (!user) throw new UnauthorizedError('Access not authorized')
+      if (!id) throw new InvalidInputError('Id parameter is required')
 
-    const result = await this.itineraryModel.delete({ id })
+      const itinerary = await this.itineraryModel.getById({ id })
+      if (itinerary.userId !== user.id) {
+        throw new UnauthorizedError('You are not authorized to delete this itinerary')
+      }
 
-    if (result === false) {
-      return res.status(404).json({ message: 'Itinerary not found' })
+      await this.itineraryModel.delete({ id })
+      res.status(204).end()
+    } catch (error) {
+      next(error)
     }
-
-    return res.json({ message: 'Itinerary deleted' })
   }
 
-  update = async (req, res) => {
-    const result = validatePartialItinerary(req.body)
-
-    if (!result.success) {
-      return res.status(400).json({ error: JSON.parse(result.error.message) })
-    }
-
+  update = async (req, res, next) => {
+    const { user } = req.session
     const { id } = req.params
-
-    const updatedItinerary = await this.itineraryModel.update({ id, input: result.data })
-
-    return res.json(updatedItinerary)
-  }
-
-  like = async (req, res) => {
-    const { user } = req.session
-    if (!user) return res.status(401).json({ message: 'Access not authorized' })
-
-    const { userId } = req.body
-    const itineraryId = req.params.id
-
     try {
-      const result = await this.itineraryModel.likeItinerary(userId, itineraryId)
-      res.json(result)
-    } catch {
-      res.status(400).json({ message: 'Error liking itinerary' })
+      if (!user) throw new UnauthorizedError('Access not authorized')
+      if (!id) throw new InvalidInputError('Id parameter is required')
+
+      const result = validatePartialItinerary(req.body)
+
+      if (!result.success) {
+        throw new InvalidInputError('Invalid itinerary data: ' + JSON.stringify(result.error.message))
+      }
+
+      const itinerary = await this.itineraryModel.getById({ id })
+      if (itinerary.userId !== user.id) {
+        throw new UnauthorizedError('You are not authorized to update this itinerary')
+      }
+
+      await this.itineraryModel.update({ id, input: result.data })
+      res.status(204).end()
+    } catch (error) {
+      next(error)
     }
   }
 
-  unlike = async (req, res) => {
+  like = async (req, res, next) => {
     const { user } = req.session
-    if (!user) return res.status(401).json({ message: 'Access not authorized' })
-
-    const { userId } = req.body
     const itineraryId = req.params.id
-
     try {
-      const result = await this.itineraryModel.unlikeItinerary(userId, itineraryId)
-      res.json(result)
-    } catch {
-      res.status(400).json({ message: 'Error unliking itinerary' })
+      if (!user) throw new UnauthorizedError('Access not authorized')
+      if (!itineraryId) throw new InvalidInputError('Itinerary id parameter is required')
+
+      const userId = user.id
+
+      await this.itineraryModel.likeItinerary(userId, itineraryId)
+      res.end()
+    } catch (error) {
+      next(error)
     }
   }
 
-  liked = async (req, res) => {
+  unlike = async (req, res, next) => {
+    const { user } = req.session
+    const itineraryId = req.params.id
+    try {
+      if (!user) throw new UnauthorizedError('Access not authorized')
+      if (!itineraryId) throw new InvalidInputError('Itinerary id parameter is required')
+
+      const userId = user.id
+
+      await this.itineraryModel.unlikeItinerary(userId, itineraryId)
+      res.end()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  liked = async (req, res, next) => {
     const { userId } = req.query
     const itineraryId = req.params.id
-
-    if (!userId) {
-      return res.status(400).json({ message: 'User ID is required' })
-    }
-
     try {
+      if (!userId) throw new InvalidInputError('User id parameter is required')
+      if (!itineraryId) throw new InvalidInputError('Itinerary id parameter is required')
+
       const result = await this.itineraryModel.likedItinerary(userId, itineraryId)
       res.json(result)
-    } catch {
-      res.status(400).json({ message: 'Error checking if itinerary is liked' })
-    }
-  }
-
-  updateEventOrder = async (req, res) => {
-    const { user } = req.session
-    if (!user) return res.status(401).json({ message: 'Access not authorized' })
-
-    const itineraryId = req.params.id
-    const { dayId } = req.body
-    const { reorderedEvents } = req.body
-
-    if (!dayId || !reorderedEvents) {
-      return res.status(400).json({ error: 'Invalid data' })
-    }
-
-    try {
-      const result = await this.itineraryModel.updateEventOrder(itineraryId, dayId, reorderedEvents)
-      res.json(result)
-    } catch {
-      res.status(400).json({ message: 'Error updating event order' })
+    } catch (error) {
+      next(error)
     }
   }
 }

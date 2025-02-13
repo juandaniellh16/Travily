@@ -1,86 +1,96 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import { validateUser, validatePartialUser } from '../schemas/users.js'
-import { JWT_SECRET } from '../consts/consts.js'
+import { JWT_SECRET } from '../config/config.js'
+import { InvalidInputError, UnauthorizedError } from '../errors/errors.js'
 
 export class AuthController {
   constructor ({ userModel }) {
     this.userModel = userModel
   }
 
-  register = async (req, res) => {
-    const result = validateUser(req.body)
+  register = async (req, res, next) => {
+    try {
+      const result = validateUser(req.body)
 
-    if (!result.success) {
-      return res.status(400).json({ error: JSON.parse(result.error.message) })
+      if (!result.success) {
+        throw new InvalidInputError('Invalid user data: ' + JSON.stringify(result.error.message))
+      }
+
+      const userId = await this.userModel.create({ input: result.data })
+
+      const locationUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}/${userId}`
+
+      res.status(201).set('Location', locationUrl).end()
+    } catch (error) {
+      next(error)
     }
-
-    const newUser = await this.userModel.create({ input: result.data })
-
-    res.status(201).json(newUser)
   }
 
-  login = async (req, res) => {
-    const result = validatePartialUser(req.body)
+  login = async (req, res, next) => {
+    try {
+      const result = validatePartialUser(req.body)
 
-    if (!result.success) {
-      return res.status(400).json({ error: JSON.parse(result.error.message) })
-    }
+      if (!result.success) {
+        throw new InvalidInputError('Invalid user data: ' + JSON.stringify(result.error.message))
+      }
 
-    const { username, password } = result.data
-    const user = await this.userModel.getByUsername({ username })
+      const { username, password } = result.data
 
-    const passwordCorrect = user === null
-      ? false
-      : await bcrypt.compare(password, user.password_hash)
+      const user = await this.userModel.getByUsername({ username })
 
-    if (!(user && passwordCorrect)) {
-      return res.status(401).json({
-        error: 'Invalid user or password'
+      const passwordCorrect = user === null
+        ? false
+        : await bcrypt.compare(password, user.password_hash)
+
+      if (!(user && passwordCorrect)) {
+        throw new UnauthorizedError('Invalid user or password')
+      }
+
+      const tokenPayload = {
+        id: user.id,
+        username: user.username
+      }
+
+      const accessToken = jwt.sign(
+        tokenPayload,
+        JWT_SECRET,
+        {
+          expiresIn: '1h'
+        }
+      )
+
+      const refreshToken = jwt.sign(
+        tokenPayload,
+        JWT_SECRET,
+        {
+          expiresIn: '7d'
+        }
+      )
+
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 1000 * 60 * 60
+      }).cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/auth/refresh-token',
+        maxAge: 1000 * 60 * 60 * 24 * 7
+      }).json({
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        followers: user.followers,
+        following: user.following
       })
+    } catch (error) {
+      next(error)
     }
-
-    const tokenPayload = {
-      id: user.id,
-      username: user.username
-    }
-
-    const accessToken = jwt.sign(
-      tokenPayload,
-      JWT_SECRET,
-      {
-        expiresIn: '1h'
-      }
-    )
-
-    const refreshToken = jwt.sign(
-      tokenPayload,
-      JWT_SECRET,
-      {
-        expiresIn: '7d'
-      }
-    )
-
-    res.cookie('access_token', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 1000 * 60 * 60
-    }).cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/auth/refresh-token',
-      maxAge: 1000 * 60 * 60 * 24 * 7
-    }).json({
-      id: user.id,
-      name: user.name,
-      username: user.username,
-      email: user.email,
-      avatar: user.avatar,
-      followers: user.followers,
-      following: user.following
-    })
   }
 
   logout = async (req, res) => {
@@ -94,13 +104,13 @@ export class AuthController {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         path: '/auth/refresh-token'
-      }).json({ message: 'Logged out' })
+      }).status(204).end()
   }
 
-  refreshToken = async (req, res) => {
-    const refreshToken = req.cookies.refresh_token
-
+  refreshToken = async (req, res, next) => {
     try {
+      const refreshToken = req.cookies.refresh_token
+
       const data = jwt.verify(refreshToken, JWT_SECRET)
 
       const tokenPayload = {
@@ -120,9 +130,9 @@ export class AuthController {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         maxAge: 1000 * 60 * 60
-      }).end()
+      }).status(204).end()
     } catch (error) {
-      res.status(401).json({ message: 'Invalid refresh token' })
+      next(error)
     }
   }
 }

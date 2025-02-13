@@ -19,7 +19,7 @@ const userSchema = z.object({
   }),
   avatar: z.string({
     invalid_type_error: 'User avatar must be a string'
-  }).url('User avatar must be a valid URL').nullable().optional()
+  }).url('User avatar must be a valid URL').or(z.string().refine((value) => value.startsWith('/images/'))).nullable().optional()
 })
 
 export function validateUser (input) {

@@ -5,10 +5,12 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let uploadDir = 'uploads/others'
 
-    if (req.url.includes('/upload-avatar')) {
+    if (req.url.includes('/avatar')) {
       uploadDir = 'uploads/avatars'
-    } else if (req.url.includes('/upload-itinerary')) {
+    } else if (req.url.includes('/itinerary-image')) {
       uploadDir = 'uploads/itineraries'
+    } else if (req.url.includes('/event-image')) {
+      uploadDir = 'uploads/events'
     }
 
     if (!fs.existsSync(uploadDir)) {

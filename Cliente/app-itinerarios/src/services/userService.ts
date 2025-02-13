@@ -10,7 +10,8 @@ export const userService = {
     })
 
     if (!response.ok) {
-      throw new Error('Failed to fetch user data')
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to fetch user data')
     }
 
     const userData = await response.json()

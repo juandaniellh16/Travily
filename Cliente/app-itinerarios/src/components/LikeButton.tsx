@@ -45,15 +45,22 @@ export const LikeButton = ({ itinerary }: ItineraryCardProps) => {
 
     try {
       if (!liked) {
-        await itineraryService.like(itinerary.id, user.id)
+        setLiked(!liked)
         setLikes(likes + 1)
+        await itineraryService.like(itinerary.id)
       } else {
-        await itineraryService.unlike(itinerary.id, user.id)
+        setLiked(!liked)
         setLikes(likes - 1)
+        await itineraryService.unlike(itinerary.id)
       }
-      setLiked(!liked)
     } catch {
       console.error('Error liking/unliking itinerary')
+      if (liked) {
+        setLikes(likes - 1)
+      } else {
+        setLikes(likes + 1)
+      }
+      setLiked(!liked)
     }
   }
 

@@ -1,5 +1,6 @@
 export interface Event {
   id: string
+  orderIndex: number
   label: string
   description: string
   image: string | null
@@ -9,7 +10,7 @@ export interface Event {
 export interface Day {
   id: string
   label: string
-  day_number: number
+  dayNumber: number
   events: Event[]
 }
 
@@ -18,10 +19,10 @@ export interface ItineraryType {
   title: string
   description: string
   image: string | null
-  start_date: string
-  end_date: string
+  startDate: string
+  endDate: string
   locations: string[]
-  user_id: string
+  userId: string
   likes: number
   days: Day[]
 }
@@ -31,10 +32,10 @@ export interface ItinerarySimpleType {
   title: string
   description: string
   image: string | null
-  start_date: string
-  end_date: string
+  startDate: string
+  endDate: string
   locations: string[]
-  user_id: string
+  userId: string
   likes: number
 }
 

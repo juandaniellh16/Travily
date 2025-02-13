@@ -36,22 +36,22 @@ export const ProfileCard = () => {
       <Card.Section
         h={140}
         style={{
-          backgroundImage: 'url(/public/images/profile-header.png)'
+          backgroundImage: 'url(/images/profile-header.png)'
         }}
       />
       <Avatar
-        src={profileUser?.avatar}
+        src={profileUser?.avatar || '/images/avatar-placeholder.svg'}
         size={80}
-        radius={90}
         mx='auto'
         mt={-30}
         bg={'white'}
+        className='border-4 border-white'
       />
       <Text ta='center' fz='lg' fw={500} mt='sm'>
-        {profileUser?.name ?? 'Anónimo'}
+        {profileUser?.name ?? ''}
       </Text>
       <Text ta='center' fz='sm' c='dimmed'>
-        {profileUser?.username ? `@${profileUser.username}` : '@'}
+        {profileUser?.username ? `@${profileUser.username}` : ''}
       </Text>
       <Group mt='sm' justify='center' gap={30}>
         <div key='Following'>

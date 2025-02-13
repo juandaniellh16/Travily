@@ -1,30 +1,18 @@
 import { Login } from '@/pages/Login'
-import { Register } from '@/pages/Register'
-import { Anchor, Modal, Text } from '@mantine/core'
-import { useState } from 'react'
+import { Modal } from '@mantine/core'
 
 export const LoginModal = ({
   opened,
-  close
+  close,
+  onLoginSuccess
 }: {
   opened: boolean
   close: () => void
+  onLoginSuccess?: () => void
 }) => {
-  const [isRegistering, setIsRegistering] = useState(false)
-
   return (
-    <Modal opened={opened} onClose={close} size='md' centered radius='lg'>
-      {isRegistering ? <Register /> : <Login />}
-
-      <Text size='sm' ta='center' mt='lg' mb='md'>
-        {isRegistering ? '¿Ya tienes una cuenta?' : '¿No tienes una cuenta?'}{' '}
-        <Anchor
-          component='button'
-          onClick={() => setIsRegistering(!isRegistering)}
-        >
-          {isRegistering ? 'Inicia sesión' : 'Regístrate'}
-        </Anchor>
-      </Text>
+    <Modal opened={opened} onClose={close} size='md' yOffset='14vh' radius='lg'>
+      <Login onLoginSuccess={onLoginSuccess} />
     </Modal>
   )
 }

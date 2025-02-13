@@ -25,7 +25,7 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const data = await userService.getUserData(itinerary.user_id)
+        const data = await userService.getUserData(itinerary.userId)
         setUserData(data)
       } catch {
         console.error('Error fetching user data')
@@ -33,13 +33,13 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
     }
 
     fetchUserData()
-  }, [itinerary.user_id])
+  }, [itinerary.userId])
 
   return (
     <div className='flex h-full overflow-hidden rounded-xl'>
       <Card className='flex flex-col flex-grow rounded-xl group' padding='md'>
         <Card.Section className='h-[55%] min-h-[55%] rounded-t-xl overflow-hidden'>
-          <Link to={`/itinerary/${itinerary.id}`}>
+          <Link to={`/itineraries/${itinerary.id}`}>
             <Image
               src={itinerary.image}
               h='100%'
@@ -51,7 +51,7 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
 
         <div className='flex flex-col justify-between flex-grow'>
           <div className='flex flex-col gap-1 my-2'>
-            <Link to={`/itinerary/${itinerary.id}`}>
+            <Link to={`/itineraries/${itinerary.id}`}>
               <Text size='sm' fw={500} lineClamp={1}>
                 {itinerary.title}
               </Text>
@@ -72,7 +72,11 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
           <Group justify='space-between' gap={5} mt={'xs'}>
             <Center>
               <Link to={`/profile/${userData?.id}`}>
-                <Avatar src={userData?.avatar} size={22} radius='xl' mr='8' />
+                <Avatar
+                  src={userData?.avatar || '/images/avatar-placeholder.svg'}
+                  size={22}
+                  mr='8'
+                />
               </Link>
               <Link to={`/profile/${userData?.id}`}>
                 <Text size='14' inline>

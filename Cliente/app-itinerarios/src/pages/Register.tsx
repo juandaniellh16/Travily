@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import {
   Avatar,
@@ -7,10 +7,11 @@ import {
   FileButton,
   PasswordInput,
   TextInput,
-  Title
+  Title,
+  Text
 } from '@mantine/core'
-
-const API_URL = 'http://localhost:3000'
+import { API_BASE_URL } from '@/config/config'
+import { getRandomAvatar } from '@/utils'
 
 export const Register = () => {
   const { register } = useAuth()
@@ -20,7 +21,7 @@ export const Register = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [email, setEmail] = useState('')
-  const [avatar, setAvatar] = useState<string | null>(null)
+  const [avatar, setAvatar] = useState<string>(getRandomAvatar())
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -30,7 +31,7 @@ export const Register = () => {
         const formData = new FormData()
         formData.append('file', file)
 
-        const response = await fetch(`${API_URL}/upload-avatar`, {
+        const response = await fetch(`${API_BASE_URL}/upload/avatar`, {
           method: 'POST',
           body: formData
         })
@@ -42,8 +43,6 @@ export const Register = () => {
       } catch {
         setError('Failed to upload avatar')
       }
-    } else {
-      setAvatar(null)
     }
   }
 
@@ -58,25 +57,38 @@ export const Register = () => {
     } catch (error) {
       setLoading(false)
       if (error instanceof Error) {
-        setError(error.message)
+        if (error.message.includes('invalid input')) {
+          setError(
+            'Datos de entrada no válidos. Asegúrate de que todos los campos estén correctos.'
+          )
+        } else if (error.message.includes('resource already exists')) {
+          setError(
+            'El nombre de usuario o la dirección de correo electrónico ya existen.'
+          )
+        } else {
+          setError(
+            'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
+          )
+        }
       } else {
-        setError('An unexpected error occurred')
+        setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
       }
     }
   }
 
   return (
-    <div className='px-8'>
+    <div className='px-8 mb-8'>
       <Title order={2} ta='center' mb='xl'>
         Bienvenido a Itinerarios
       </Title>
-      {error && <p className='text-center text-red-500'>{error}</p>}
+      {error && <p className='mb-4 text-center text-red-500'>{error}</p>}
       <form onSubmit={handleSubmit} className='mb-4'>
         <TextInput
           label='Nombre'
           placeholder=''
           value={name}
           onChange={(e) => setName(e.target.value)}
+          size='md'
           required
         />
         <TextInput
@@ -84,6 +96,7 @@ export const Register = () => {
           placeholder=''
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          size='md'
           required
           mt='sm'
         />
@@ -93,6 +106,7 @@ export const Register = () => {
           placeholder=''
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          size='md'
           required
           mt='sm'
         />
@@ -101,6 +115,7 @@ export const Register = () => {
           placeholder=''
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          size='md'
           required
           mt='sm'
         />
@@ -110,7 +125,6 @@ export const Register = () => {
               <Avatar
                 src={avatar}
                 size={100}
-                radius={90}
                 className='transition cursor-pointer hover:opacity-80'
                 {...props}
               />
@@ -122,11 +136,18 @@ export const Register = () => {
           loading={loading}
           loaderProps={{ type: 'dots' }}
           fullWidth
+          color='teal'
           mt='lg'
         >
           Crear cuenta
         </Button>
       </form>
+      <Text size='sm' ta='center' mt='lg' mb='md'>
+        ¿Ya tienes una cuenta?{' '}
+        <Link to='/login' className='text-blue-500 hover:underline'>
+          Inicia sesión
+        </Link>
+      </Text>
     </div>
   )
 }

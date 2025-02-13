@@ -19,7 +19,7 @@ function App() {
           <Route path='/' element={<Home />} />
           <Route path='/profile' element={<Profile />} />
           <Route path='/profile/:userId' element={<Profile />} />
-          <Route path='/itinerary/:itineraryId' element={<Itinerary />} />
+          <Route path='/itineraries/:itineraryId' element={<Itinerary />} />
           <Route element={<ProtectedRoute />}>
             <Route path='/create-itinerary' element={<ItineraryForm />} />
           </Route>

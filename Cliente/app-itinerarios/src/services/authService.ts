@@ -15,10 +15,9 @@ export const authService = {
     })
 
     if (!response.ok) {
-      throw new Error('Register error')
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Register error')
     }
-
-    return await response.json()
   },
 
   login: async (username: string, password: string) => {
@@ -30,7 +29,8 @@ export const authService = {
     })
 
     if (!response.ok) {
-      throw new Error('Login error')
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Login error')
     }
 
     return await response.json()
@@ -43,9 +43,8 @@ export const authService = {
     })
 
     if (!response.ok) {
-      throw new Error('Logout error')
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Logout error')
     }
-
-    return await response.json()
   }
 }

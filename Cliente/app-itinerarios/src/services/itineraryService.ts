@@ -1,46 +1,47 @@
 import { API_BASE_URL } from '@/config/config'
 import { fetchWithAuth } from './fetchWithAuth'
-import { Event } from '@/types'
 
 export const itineraryService = {
-  getAll: async () => {
-    const response = await fetch(`${API_BASE_URL}/itineraries`)
-    if (!response.ok) {
-      throw new Error('Error fetching itineraries')
+  getAll: async (params: {
+    location?: string
+    userId?: string
+    likedBy?: string
+    sort?: string
+  }) => {
+    let queryString = `${API_BASE_URL}/itineraries`
+    const queryParams = new URLSearchParams()
+
+    if (params.location) {
+      queryParams.append('location', params.location)
     }
+    if (params.userId) {
+      queryParams.append('userId', params.userId)
+    }
+    if (params.likedBy) {
+      queryParams.append('likedBy', params.likedBy)
+    }
+    if (params.sort) {
+      queryParams.append('sort', params.sort)
+    }
+    if (queryParams.toString()) {
+      queryString += `?${queryParams.toString()}`
+    }
+
+    const response = await fetch(queryString)
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Error fetching itineraries')
+    }
+
     return await response.json()
   },
 
   getById: async (itineraryId: string) => {
     const response = await fetch(`${API_BASE_URL}/itineraries/${itineraryId}`)
     if (!response.ok) {
-      throw new Error('Error fetching itinerary')
-    }
-    return await response.json()
-  },
-
-  getPopularItineraries: async () => {
-    const response = await fetch(`${API_BASE_URL}/itineraries/popular`)
-    if (!response.ok) {
-      throw new Error('Error fetching popular itineraries')
-    }
-    return await response.json()
-  },
-
-  getUserItineraries: async (userId: string) => {
-    const response = await fetch(`${API_BASE_URL}/itineraries/user/${userId}`)
-    if (!response.ok) {
-      throw new Error('Error fetching user itineraries')
-    }
-    return await response.json()
-  },
-
-  getUserLikedItineraries: async (userId: string) => {
-    const response = await fetch(
-      `${API_BASE_URL}/itineraries/user/${userId}/liked`
-    )
-    if (!response.ok) {
-      throw new Error('Error fetching user liked itineraries')
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Error fetching itinerary')
     }
     return await response.json()
   },
@@ -68,46 +69,112 @@ export const itineraryService = {
       })
     })
     if (!response.ok) {
-      throw new Error('Error creating itinerary')
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Error creating itinerary')
     }
-    return await response.json()
+
+    const locationUrl = response.headers.get('Location')
+    if (!locationUrl) {
+      throw new Error('Location header is missing in the response')
+    }
+    const relativePath = new URL(locationUrl).pathname
+
+    return relativePath
   },
 
-  like: async (itineraryId: string, userId: string) => {
-    const response = await fetchWithAuth(`/itineraries/${itineraryId}/like`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId })
+  delete: async (itineraryId: string) => {
+    const response = await fetchWithAuth(`/itineraries/${itineraryId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
     })
 
     if (!response.ok) {
-      throw new Error('Like error')
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Error deleting itinerary')
     }
   },
 
-  unlike: async (itineraryId: string, userId: string) => {
-    const response = await fetchWithAuth(`/itineraries/${itineraryId}/unlike`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId })
+  /*
+  update: async (itineraryId: string) => {
+    const response = await fetchWithAuth(`/itineraries/${itineraryId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
     })
 
     if (!response.ok) {
-      throw new Error('Unlike error')
+      throw new Error('Error updating itinerary')
+    }
+  },
+  */
+
+  like: async (itineraryId: string) => {
+    const response = await fetchWithAuth(`/itineraries/${itineraryId}/likes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Error liking itinerary')
+    }
+  },
+
+  unlike: async (itineraryId: string) => {
+    const response = await fetchWithAuth(`/itineraries/${itineraryId}/likes`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Error unliking itinerary')
+    }
+  }
+
+  /*
+  addEvent: async (itineraryId: string, dayId: string, event: Event) => {
+    const response = await fetchWithAuth(
+      `/itineraries/${itineraryId}/days/${dayId}/events`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event })
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error('Error adding event')
+    }
+
+    return response.json()
+  },
+
+  deleteEvent: async (itineraryId: string, dayId: string, eventId: string) => {
+    try {
+      const response = await fetchWithAuth(
+        `/itineraries/${itineraryId}/days/${dayId}/events/${eventId}`,
+        {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Error deleting event')
+      }
+
+      return response.json()
+    } catch {
+      throw new Error('Error deleting event')
     }
   },
 
   updateEventOrder: async (
     itineraryId: string,
     dayId: string,
-    dayEvents: Event[]
+    reorderedEvents: Event[]
   ) => {
     try {
-      const reorderedEvents = dayEvents.map((event, index) => ({
-        id: event.id,
-        newPosition: index
-      }))
-
       const response = await fetchWithAuth(
         `/itineraries/${itineraryId}/events`,
         {
@@ -126,4 +193,5 @@ export const itineraryService = {
       throw new Error('Error updating event order')
     }
   }
+  */
 }

@@ -2,7 +2,14 @@ import { API_BASE_URL } from '@/config/config'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { Button, Textarea, TextInput, Title } from '@mantine/core'
+import {
+  Avatar,
+  Button,
+  FileButton,
+  Textarea,
+  TextInput,
+  Title
+} from '@mantine/core'
 import { itineraryService } from '@/services/itineraryService'
 import { LuCalendarDays } from 'react-icons/lu'
 import { DatePickerInput } from '@mantine/dates'
@@ -21,14 +28,13 @@ export const ItineraryForm = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null
+  const handleImageChange = async (file: File | null) => {
     if (file) {
       try {
         const formData = new FormData()
         formData.append('file', file)
 
-        const response = await fetch(`${API_BASE_URL}/upload-itinerary`, {
+        const response = await fetch(`${API_BASE_URL}/upload/itinerary-image`, {
           method: 'POST',
           body: formData
         })
@@ -76,7 +82,7 @@ export const ItineraryForm = () => {
     try {
       if (user) {
         const userId = user.id
-        const itinerary = await itineraryService.create(
+        const relativePath = await itineraryService.create(
           title,
           description,
           image,
@@ -85,14 +91,24 @@ export const ItineraryForm = () => {
           locations,
           userId
         )
-        navigate(`/itinerary/${itinerary.id}`)
+        navigate(relativePath)
       }
     } catch (error) {
       setLoading(false)
       if (error instanceof Error) {
-        setError(error.message)
+        if (error.message.includes('invalid input')) {
+          setError(
+            'Datos de entrada no válidos. Asegúrate de que todos los campos estén correctos.'
+          )
+        } else if (error.message.includes('access not authorized')) {
+          setError('Por favor, inicia sesión para poder crear un itinerario.')
+        } else {
+          setError(
+            'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
+          )
+        }
       } else {
-        setError('An unexpected error occurred')
+        setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
       }
     }
   }
@@ -102,17 +118,18 @@ export const ItineraryForm = () => {
   placeHolderEndDate.setDate(placeHolderStartDate.getDate() + 7)
 
   return (
-    <div className='px-8 flex flex-col items-center'>
+    <div className='flex flex-col items-center px-8'>
       <Title order={2} ta='center' mb='xl'>
         Crea un nuevo itinerario
       </Title>
-      {error && <p className='text-center text-red-500'>{error}</p>}
+      {error && <p className='mb-4 text-center text-red-500'>{error}</p>}
       <form onSubmit={handleSubmit} className='mb-4'>
         <TextInput
           label='Título'
           placeholder='Viaje a la playa'
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          size='md'
           withAsterisk={false}
           required
         />
@@ -122,9 +139,15 @@ export const ItineraryForm = () => {
             placeholder='Londres, París, Madrid...'
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            size='md'
             className='w-full'
           />
-          <Button onClick={handleAddLocation} className='flex-shrink-0 mt-auto'>
+          <Button
+            onClick={handleAddLocation}
+            className='flex-shrink-0 mt-auto'
+            color='teal'
+            size='md'
+          >
             Añadir
           </Button>
         </div>
@@ -138,6 +161,7 @@ export const ItineraryForm = () => {
           placeholder='Un viaje inolvidable a la playa'
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          size='md'
           mt='sm'
         />
         <div className='flex items-center flex-grow gap-4 mt-5'>
@@ -153,6 +177,7 @@ export const ItineraryForm = () => {
             value={startDate ? new Date(startDate) : null}
             onChange={handleStartDateChange}
             className='w-full'
+            size='md'
             required
           />
           <DatePickerInput
@@ -167,101 +192,36 @@ export const ItineraryForm = () => {
             value={endDate ? new Date(endDate) : null}
             onChange={handleEndDateChange}
             className='w-full'
+            size='md'
             required
           />
         </div>
-
-        <input
-          type='file'
-          onChange={handleImageChange}
-          accept='.png, .jpg, .jpeg'
-          className='mt-5'
-        />
+        <div className='flex justify-center mt-5'>
+          <FileButton onChange={handleImageChange} accept='.png, .jpg, .jpeg'>
+            {(props) => (
+              <Avatar
+                src={image || '/images/landscape-placeholder.svg'}
+                w={130}
+                h={90}
+                radius='md'
+                className='transition cursor-pointer hover:opacity-80'
+                {...props}
+              />
+            )}
+          </FileButton>
+        </div>
         <Button
           type='submit'
           loading={loading}
           loaderProps={{ type: 'dots' }}
           fullWidth
           mt='lg'
-          className='py-2 text-white bg-blue-500 rounded-lg'
+          color='teal'
+          className='py-2 rounded-lg'
         >
           Crear
         </Button>
       </form>
     </div>
-    /*
-    <div className='w-full'>
-      <h1 className='text-xl font-medium text-center'>Create new itinerary</h1>
-      {error && <p className='text-center text-red-500'>{error}</p>}
-
-      <form onSubmit={handleSubmit} className='m-y-4'>
-        <div className='flex gap-2'>
-          <input
-            type='text'
-            placeholder='Añadir destino'
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            className='w-full px-4 py-2 border rounded-lg'
-          />
-          <button
-            onClick={handleAddLocation}
-            type='button'
-            className='px-4 py-2 text-white bg-blue-500 rounded-lg'
-          >
-            Añadir
-          </button>
-        </div>
-        {locations.length > 0 && (
-          <label className='block mt-2 text-gray-700'>
-            Destinos: {locations.join(', ')}
-          </label>
-        )}
-        <input
-          type='text'
-          placeholder='Title'
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className='w-full px-4 py-2 border rounded-lg'
-          required
-        />
-        <input
-          type='text'
-          placeholder='Description'
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className='w-full px-4 py-2 border rounded-lg'
-        />
-        <input
-          type='date'
-          placeholder='Start date'
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className='w-full px-4 py-2 border rounded-lg'
-          required
-        />
-        <input
-          type='date'
-          placeholder='End date'
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          className='w-full px-4 py-2 border rounded-lg'
-          required
-        />
-        <input
-          type='file'
-          onChange={handleImageChange}
-          accept='.png, .jpg, .jpeg'
-        />
-        <Button
-          type='submit'
-          loading={loading}
-          loaderProps={{ type: 'dots' }}
-          fullWidth
-          className='py-2 text-white bg-blue-500 rounded-lg'
-        >
-          Create
-        </Button>
-      </form>
-    </div>*/
   )
 }

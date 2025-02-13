@@ -5,15 +5,21 @@ import { ActiveTab } from '@/layouts/MainLayout'
 import { itineraryService } from '@/services/itineraryService'
 import { ItinerarySimpleType } from '@/types'
 import { Carousel } from '@mantine/carousel'
-import { SegmentedControl } from '@mantine/core'
+import { Group, SegmentedControl, Skeleton } from '@mantine/core'
 import { useEffect, useState } from 'react'
 import { useLocation, useOutletContext, useParams } from 'react-router-dom'
 
 export const Profile = () => {
+  const [loading, setLoading] = useState(true)
   const { userId } = useParams()
   const { user } = useAuth()
   const location = useLocation()
   const profileUserId = userId || user?.id
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setLoading(false), 1000)
+    return () => clearTimeout(timeout)
+  }, [])
 
   const { activeTab, setActiveTab } = useOutletContext<{
     activeTab: ActiveTab
@@ -35,13 +41,13 @@ export const Profile = () => {
         if (profileUserId) {
           let itinerariesData
           if (activeTab === 'Itinerarios') {
-            itinerariesData = await itineraryService.getUserItineraries(
-              profileUserId
-            )
+            itinerariesData = await itineraryService.getAll({
+              userId: profileUserId
+            })
           } else if (activeTab === 'Favoritos') {
-            itinerariesData = await itineraryService.getUserLikedItineraries(
-              profileUserId
-            )
+            itinerariesData = await itineraryService.getAll({
+              likedBy: profileUserId
+            })
           }
           setItineraries(itinerariesData)
         }
@@ -67,21 +73,29 @@ export const Profile = () => {
         />
       </div>
       <h2 className='my-4 text-xl font-medium'>{activeTab}</h2>
-      <Carousel
-        height={300}
-        slideSize={{ base: '60%', sm: '45%', md: '55%', lg: '33.33333%' }}
-        slideGap='xs'
-        align='center'
-        initialSlide={1}
-        slidesToScroll='auto'
-        loop
-      >
-        {itineraries.map((itinerary) => (
-          <Carousel.Slide key={itinerary.id}>
-            <ItineraryCard itinerary={itinerary} />
-          </Carousel.Slide>
-        ))}
-      </Carousel>
+      {loading || itineraries.length === 0 ? (
+        <Group gap='xs' align='center' wrap='nowrap'>
+          <Skeleton animate={loading} height={300} radius={12} />
+          <Skeleton animate={loading} height={300} radius={12} />
+          <Skeleton animate={loading} height={300} radius={12} />
+        </Group>
+      ) : (
+        <Carousel
+          height={300}
+          slideSize={{ base: '60%', sm: '45%', md: '55%', lg: '33.33333%' }}
+          slideGap='xs'
+          align='center'
+          initialSlide={0}
+          slidesToScroll='auto'
+          loop
+        >
+          {itineraries.map((itinerary) => (
+            <Carousel.Slide key={itinerary.id}>
+              <ItineraryCard itinerary={itinerary} />
+            </Carousel.Slide>
+          ))}
+        </Carousel>
+      )}
     </div>
   )
 }

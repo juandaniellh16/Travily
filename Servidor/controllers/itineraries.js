@@ -7,9 +7,12 @@ export class ItineraryController {
   }
 
   getAll = async (req, res, next) => {
-    const { location, userId, likedBy, sort } = req.query
+    const { location, userId, username, likedBy, sort } = req.query
     try {
-      const itineraries = await this.itineraryModel.getAll({ location, userId, likedBy, sort })
+      if (userId && username) {
+        throw new InvalidInputError('You cannot filter by userId and username at the same time')
+      }
+      const itineraries = await this.itineraryModel.getAll({ location, userId, username, likedBy, sort })
       res.json(itineraries)
     } catch (error) {
       next(error)
@@ -105,8 +108,8 @@ export class ItineraryController {
 
       const userId = user.id
 
-      await this.itineraryModel.likeItinerary(userId, itineraryId)
-      res.end()
+      await this.itineraryModel.likeItinerary({ userId, itineraryId })
+      res.status(204).end()
     } catch (error) {
       next(error)
     }
@@ -121,22 +124,57 @@ export class ItineraryController {
 
       const userId = user.id
 
-      await this.itineraryModel.unlikeItinerary(userId, itineraryId)
-      res.end()
+      await this.itineraryModel.unlikeItinerary({ userId, itineraryId })
+      res.status(204).end()
     } catch (error) {
       next(error)
     }
   }
 
-  liked = async (req, res, next) => {
-    const { userId } = req.query
+  checkIfLiked = async (req, res, next) => {
+    const { user } = req.session
     const itineraryId = req.params.id
     try {
-      if (!userId) throw new InvalidInputError('User id parameter is required')
+      if (!user) throw new UnauthorizedError('Access not authorized')
       if (!itineraryId) throw new InvalidInputError('Itinerary id parameter is required')
 
-      const result = await this.itineraryModel.likedItinerary(userId, itineraryId)
+      const userId = user.id
+
+      const result = await this.itineraryModel.checkIfLiked({ itineraryId, userId })
       res.json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  addCollaborator = async (req, res, next) => {
+    const { user } = req.session
+    const itineraryId = req.params.id
+    try {
+      if (!user) throw new UnauthorizedError('Access not authorized')
+      if (!itineraryId) throw new InvalidInputError('Itinerary id parameter is required')
+
+      const itinerary = await this.itineraryModel.getById({ id: itineraryId })
+      if (itinerary.userId !== user.id) {
+        throw new UnauthorizedError('You are not authorized to add a collaborator to this itinerary')
+      }
+
+      const { username } = req.body
+      if (!username) throw new InvalidInputError('Username parameter is required')
+
+      await this.itineraryModel.addCollaborator({ itineraryId, username })
+      res.status(204).end()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  getCollaborators = async (req, res, next) => {
+    const itineraryId = req.params.id
+    try {
+      if (!itineraryId) throw new InvalidInputError('Itinerary id parameter is required')
+      const collaborators = await this.itineraryModel.getCollaborators({ itineraryId })
+      res.json(collaborators)
     } catch (error) {
       next(error)
     }

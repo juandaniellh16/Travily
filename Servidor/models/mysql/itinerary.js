@@ -1,8 +1,8 @@
 import { getConnection } from '../../config/db.js'
-import { ConflictError, DatabaseError, NotFoundError } from '../../errors/errors.js'
+import { DatabaseError, NotFoundError } from '../../errors/errors.js'
 
 export class ItineraryModel {
-  static async getAll ({ location, userId, likedBy, sort }) {
+  static async getAll ({ location, userId, username, likedBy, sort }) {
     const connection = await getConnection()
     try {
       const queryParams = []
@@ -50,6 +50,11 @@ export class ItineraryModel {
       if (userId) {
         filters.push('i.user_id = UUID_TO_BIN(?)')
         queryParams.push(userId)
+      }
+
+      if (username) {
+        filters.push('i.username = (SELECT username FROM users WHERE username = UUID_TO_BIN(?))')
+        queryParams.push(username)
       }
 
       if (likedBy) {
@@ -115,17 +120,18 @@ export class ItineraryModel {
             i.end_date AS endDate,
             COALESCE(GROUP_CONCAT(DISTINCT l.name ORDER BY l.name SEPARATOR ', '), '') AS locations,
             BIN_TO_UUID(i.user_id) AS userId,
+            COALESCE(GROUP_CONCAT(DISTINCT BIN_TO_UUID(ic.user_id) ORDER BY ic.user_id SEPARATOR ', '), '') AS collaborators,
             i.likes,
             i.created_at AS createdAt,
             i.updated_at AS updatedAt
         FROM itineraries i
         LEFT JOIN itinerary_locations il ON i.id = il.itinerary_id
         LEFT JOIN locations l ON il.location_id = l.id
+        LEFT JOIN itinerary_collaborators ic ON i.id = ic.itinerary_id
         WHERE i.id = ?
         GROUP BY i.id;`,
         [id]
       )
-
       if (itineraryRows.length === 0) throw new NotFoundError(`Itinerary with id ${id} not found`)
 
       const itinerary = {
@@ -137,6 +143,7 @@ export class ItineraryModel {
         endDate: itineraryRows[0].endDate,
         locations: itineraryRows[0].locations ? itineraryRows[0].locations.split(', ') : [],
         userId: itineraryRows[0].userId,
+        collaborators: itineraryRows[0].collaborators ? itineraryRows[0].collaborators.split(', ') : [],
         likes: itineraryRows[0].likes,
         createdAt: itineraryRows[0].createdAt,
         updatedAt: itineraryRows[0].updatedAt,
@@ -410,34 +417,34 @@ export class ItineraryModel {
     }
   }
 
-  static async likeItinerary (userId, itineraryId) {
+  static async likeItinerary ({ userId, itineraryId }) {
     const connection = await getConnection()
     try {
-      await connection.beginTransaction()
-
-      const [existingLike] = await connection.query(
-        'SELECT * FROM likes WHERE user_id = UUID_TO_BIN(?) AND itinerary_id = ?;',
-        [userId, itineraryId]
-      )
-
-      if (existingLike.length > 0) {
-        throw new ConflictError('Itinerary already liked')
-      }
-
-      await connection.query(
-        'INSERT INTO likes (user_id, itinerary_id) VALUES (UUID_TO_BIN(?), ?);',
-        [userId, itineraryId]
-      )
-
-      await connection.query(
-        'UPDATE itineraries SET likes = likes + 1 WHERE id = ?;',
+      const [existingItinerary] = await connection.query(
+        'SELECT id FROM itineraries WHERE id = ?;',
         [itineraryId]
       )
+      if (existingItinerary.length === 0) {
+        throw new NotFoundError(`Itinerary with id ${itineraryId} not found`)
+      }
+
+      await connection.beginTransaction()
+
+      const [result] = await connection.query(
+        'INSERT IGNORE INTO likes (user_id, itinerary_id) VALUES (UUID_TO_BIN(?), ?);',
+        [userId, itineraryId]
+      )
+      if (result.affectedRows > 0) {
+        await connection.query(
+          'UPDATE itineraries SET likes = likes + 1 WHERE id = ?;',
+          [itineraryId]
+        )
+      }
 
       await connection.commit()
     } catch (error) {
       await connection.rollback()
-      if (error instanceof ConflictError) {
+      if (error instanceof NotFoundError) {
         throw error
       } else {
         throw new DatabaseError('Error liking itinerary: ' + error.message)
@@ -447,34 +454,34 @@ export class ItineraryModel {
     }
   }
 
-  static async unlikeItinerary (userId, itineraryId) {
+  static async unlikeItinerary ({ userId, itineraryId }) {
     const connection = await getConnection()
     try {
-      await connection.beginTransaction()
-
-      const [existingLike] = await connection.query(
-        'SELECT * FROM likes WHERE user_id = UUID_TO_BIN(?) AND itinerary_id = ?;',
-        [userId, itineraryId]
+      const [existingItinerary] = await connection.query(
+        'SELECT id FROM itineraries WHERE id = ?;',
+        [itineraryId]
       )
-
-      if (existingLike.length === 0) {
-        throw new ConflictError('Itinerary not liked')
+      if (existingItinerary.length === 0) {
+        throw new NotFoundError(`Itinerary with id ${itineraryId} not found`)
       }
 
-      await connection.query(
+      await connection.beginTransaction()
+
+      const [result] = await connection.query(
         'DELETE FROM likes WHERE user_id = UUID_TO_BIN(?) AND itinerary_id = ?;',
         [userId, itineraryId]
       )
-
-      await connection.query(
-        'UPDATE itineraries SET likes = likes - 1 WHERE id = ?;',
-        [itineraryId]
-      )
+      if (result.affectedRows > 0) {
+        await connection.query(
+          'UPDATE itineraries SET likes = likes - 1 WHERE id = ?;',
+          [itineraryId]
+        )
+      }
 
       await connection.commit()
     } catch (error) {
       await connection.rollback()
-      if (error instanceof ConflictError) {
+      if (error instanceof NotFoundError) {
         throw error
       } else {
         throw new DatabaseError('Error unliking itinerary: ' + error.message)
@@ -484,17 +491,91 @@ export class ItineraryModel {
     }
   }
 
-  static async likedItinerary (userId, itineraryId) {
+  static async checkIfLiked ({ itineraryId, userId }) {
     const connection = await getConnection()
     try {
       const [result] = await connection.query(
-        'SELECT COUNT(*) AS liked FROM likes WHERE user_id = UUID_TO_BIN(?) AND itinerary_id = ?;',
+        'SELECT COUNT(*) AS isLiked FROM likes WHERE user_id = UUID_TO_BIN(?) AND itinerary_id = ?;',
         [userId, itineraryId]
       )
 
-      return { liked: result[0].liked > 0 }
+      return { isLiked: result[0].isLiked > 0 }
     } catch (error) {
       throw new DatabaseError('Error checking if itinerary is liked: ' + error.message)
+    } finally {
+      connection.release()
+    }
+  }
+
+  static async addCollaborator ({ itineraryId, username }) {
+    const connection = await getConnection()
+    try {
+      const [existingItinerary] = await connection.query(
+        'SELECT id FROM itineraries WHERE id = ?;',
+        [itineraryId]
+      )
+      if (existingItinerary.length === 0) {
+        throw new NotFoundError(`Itinerary with id ${itineraryId} not found`)
+      }
+
+      const [users] = await connection.query(
+        'SELECT BIN_TO_UUID(id) id FROM users WHERE username = ?;',
+        [username]
+      )
+      if (users.length === 0) {
+        throw new NotFoundError(`User with username ${username} not found`)
+      }
+
+      await connection.query(
+        `INSERT IGNORE INTO itinerary_collaborators (itinerary_id, user_id)
+        VALUES (?, UUID_TO_BIN(?))`,
+        [itineraryId, users[0].id]
+      )
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error
+      } else {
+        throw new DatabaseError('Error adding collaborator: ' + error.message)
+      }
+    } finally {
+      connection.release()
+    }
+  }
+
+  static async getCollaborators ({ itineraryId }) {
+    const connection = await getConnection()
+    try {
+      const [existingItinerary] = await connection.query(
+        'SELECT id FROM itineraries WHERE id = ?;',
+        [itineraryId]
+      )
+      if (existingItinerary.length === 0) {
+        throw new NotFoundError(`Itinerary with id ${itineraryId} not found`)
+      }
+
+      const [collaborators] = await connection.query(
+        `SELECT BIN_TO_UUID(u.id) id, u.name, u.username
+        FROM users u
+        WHERE u.id = (
+          SELECT i.user_id 
+          FROM itineraries i
+          WHERE i.id = ?
+        )
+        UNION
+        SELECT BIN_TO_UUID(u.id) id, u.name, u.username
+        FROM users u
+        JOIN itinerary_collaborators ic ON u.id = ic.user_id
+        WHERE ic.itinerary_id = ?;`,
+        [itineraryId, itineraryId]
+      )
+
+      return collaborators
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error
+      } else {
+        throw new DatabaseError('Error getting collaborators: ' + error.message)
+      }
     } finally {
       connection.release()
     }

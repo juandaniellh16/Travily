@@ -7,6 +7,7 @@ import { createAuthRouter } from './routes/auth.js'
 import { uploadRouter } from './routes/upload.js'
 import { ItineraryModel } from './models/mysql/itinerary.js'
 import { UserModel } from './models/mysql/user.js'
+import { DayModel } from './models/mysql/day.js'
 import { EventModel } from './models/mysql/event.js'
 import { auth } from './middlewares/auth.js'
 import { PORT } from './config/config.js'
@@ -16,7 +17,7 @@ import { errorHandler } from './middlewares/errorHandler.js'
 
 const app = express()
 const server = http.createServer(app)
-initializeWebSocket({ server, eventModel: EventModel })
+initializeWebSocket({ server, dayModel: DayModel, eventModel: EventModel })
 app.disable('x-powered-by')
 app.use(corsMiddleware())
 app.use(json())

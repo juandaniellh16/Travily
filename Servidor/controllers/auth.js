@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
-import { validateUser, validatePartialUser } from '../schemas/users.js'
+import { validateUser } from '../schemas/users.js'
+import { validateLogin } from '../schemas/login.js'
 import { JWT_SECRET } from '../config/config.js'
 import { InvalidInputError, UnauthorizedError } from '../errors/errors.js'
 
@@ -29,15 +30,19 @@ export class AuthController {
 
   login = async (req, res, next) => {
     try {
-      const result = validatePartialUser(req.body)
+      const result = validateLogin(req.body)
 
       if (!result.success) {
         throw new InvalidInputError('Invalid user data: ' + JSON.stringify(result.error.message))
       }
 
-      const { username, password } = result.data
+      const { usernameOrEmail, password } = result.data
 
-      const user = await this.userModel.getByUsername({ username })
+      const isEmail = usernameOrEmail.includes('@')
+
+      const user = isEmail
+        ? await this.userModel.getByEmail({ email: usernameOrEmail, includePassword: true, includeEmail: true })
+        : await this.userModel.getByUsername({ username: usernameOrEmail, includePassword: true, includeEmail: true })
 
       const passwordCorrect = user === null
         ? false

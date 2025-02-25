@@ -26,9 +26,16 @@ export class UnauthorizedError extends Error {
   }
 }
 
-export class ConflictError extends Error {
+export class UsernameConflictError extends Error {
   constructor (message) {
     super(message)
-    this.name = 'ConflictError'
+    this.name = 'UsernameConflictError'
+  }
+}
+
+export class EmailConflictError extends Error {
+  constructor (message) {
+    super(message)
+    this.name = 'EmailConflictError'
   }
 }

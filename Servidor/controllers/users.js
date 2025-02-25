@@ -1,5 +1,6 @@
 import { InvalidInputError, UnauthorizedError } from '../errors/errors.js'
 import { validatePartialUser } from '../schemas/users.js'
+import { isUUID } from '../utils.js'
 
 export class UserController {
   constructor ({ userModel }) {
@@ -15,22 +16,18 @@ export class UserController {
     }
   }
 
-  getById = async (req, res, next) => {
-    const { id } = req.params
-    try {
-      if (!id) throw new InvalidInputError('Id parameter is required')
-      const user = await this.userModel.getById({ id })
-      res.json(user)
-    } catch (error) {
-      next(error)
-    }
-  }
+  getByIdOrUsername = async (req, res, next) => {
+    const { identifier } = req.params
 
-  getByUsername = async (req, res, next) => {
-    const { username } = req.params
     try {
-      if (!username) throw new InvalidInputError('Username parameter is required')
-      const user = await this.userModel.getByUsername({ username })
+      if (!identifier) throw new InvalidInputError('Identifier parameter is required')
+
+      let user
+      if (isUUID(identifier)) {
+        user = await this.userModel.getById({ id: identifier })
+      } else {
+        user = await this.userModel.getByUsername({ username: identifier })
+      }
       res.json(user)
     } catch (error) {
       next(error)
@@ -92,6 +89,94 @@ export class UserController {
 
       await this.userModel.update({ id, input: result.data })
       res.status(204).end()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  follow = async (req, res, next) => {
+    const { user } = req.session
+    const userId = req.params.id
+    try {
+      if (!user) throw new UnauthorizedError('Access not authorized')
+      if (!userId) throw new InvalidInputError('User id parameter is required')
+
+      const followerId = user.id
+
+      if (userId === followerId) {
+        throw new InvalidInputError('You cannot follow yourself')
+      }
+
+      await this.userModel.followUser({ userId, followerId })
+      res.status(204).end()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  unfollow = async (req, res, next) => {
+    const { user } = req.session
+    const userId = req.params.id
+    try {
+      if (!user) throw new UnauthorizedError('Access not authorized')
+      if (!userId) throw new InvalidInputError('User id parameter is required')
+
+      const followerId = user.id
+
+      if (userId === followerId) {
+        throw new InvalidInputError('You cannot unfollow yourself')
+      }
+
+      await this.userModel.unfollowUser({ userId, followerId })
+      res.status(204).end()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  checkIfFollowing = async (req, res, next) => {
+    const { user } = req.session
+    const userId = req.params.id
+    try {
+      if (!user) throw new UnauthorizedError('Access not authorized')
+      if (!userId) throw new InvalidInputError('User id parameter is required')
+
+      const followerId = user.id
+
+      const result = await this.userModel.checkIfFollowing({ userId, followerId })
+      res.json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  getFollowers = async (req, res, next) => {
+    const { user } = req.session
+    const { id } = req.params
+    try {
+      if (!user) throw new UnauthorizedError('Access not authorized')
+      if (!id) throw new InvalidInputError('Id parameter is required')
+
+      const currentUserId = user.id
+
+      const users = await this.userModel.getFollowers({ id, currentUserId })
+      res.json(users)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  getFollowing = async (req, res, next) => {
+    const { user } = req.session
+    const { id } = req.params
+    try {
+      if (!user) throw new UnauthorizedError('Access not authorized')
+      if (!id) throw new InvalidInputError('Id parameter is required')
+
+      const currentUserId = user.id
+
+      const users = await this.userModel.getFollowing({ id, currentUserId })
+      res.json(users)
     } catch (error) {
       next(error)
     }

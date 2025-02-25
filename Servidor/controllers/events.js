@@ -1,5 +1,5 @@
 import { InvalidInputError, NotFoundError } from '../errors/errors.js'
-import { validatePartialEvent } from '../schemas/events.js'
+import { validateEvent, validatePartialEvent } from '../schemas/events.js'
 
 export class EventController {
   constructor ({ eventModel }) {
@@ -7,7 +7,7 @@ export class EventController {
   }
 
   addEvent = async ({ dayId, event }) => {
-    const result = validatePartialEvent(event)
+    const result = validateEvent(event)
 
     if (!result.success) {
       throw new InvalidInputError('Invalid event data: ' + JSON.stringify(result.error.message))

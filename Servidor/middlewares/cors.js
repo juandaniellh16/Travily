@@ -1,6 +1,7 @@
 import cors from 'cors'
 
 export const ACCEPTED_ORIGINS = [
+  'https://z49w0n4p-5173.uks1.devtunnels.ms',
   'http://localhost:8080',
   'http://localhost:3000',
   'http://localhost:5173'

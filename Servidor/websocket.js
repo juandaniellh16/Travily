@@ -1,11 +1,12 @@
 import { ACCEPTED_ORIGINS } from './middlewares/cors.js'
 import { Server } from 'socket.io'
 import { EventController } from './controllers/events.js'
+import { DayController } from './controllers/days.js'
 
 const UPDATE_INTERVAL = 15000
 const itineraryUpdates = {}
 
-export const initializeWebSocket = ({ server, eventModel }) => {
+export const initializeWebSocket = ({ server, dayModel, eventModel }) => {
   const io = new Server(server, {
     cors: {
       origin: ACCEPTED_ORIGINS,
@@ -13,6 +14,7 @@ export const initializeWebSocket = ({ server, eventModel }) => {
     }
   })
 
+  const dayController = new DayController({ dayModel })
   const eventController = new EventController({ eventModel })
 
   io.on('connection', (socket) => {
@@ -52,13 +54,59 @@ export const initializeWebSocket = ({ server, eventModel }) => {
       console.log(`El cliente ${socket.id} ha abandonado la sala del itinerario: ${itineraryId}`)
     })
 
+    socket.on('add-day', async ({ itineraryId, dayData }) => {
+      try {
+        const createdDay = await dayController.addDay({ itineraryId, day: dayData.newDay })
+        io.to(itineraryId).emit(`itinerary-update-${itineraryId}`, { action: 'add-day', day: createdDay })
+      } catch (error) {
+        console.error(`${error.name}: ${error.message}`)
+        socket.emit('error', { message: error.message })
+      }
+    })
+
+    socket.on('delete-day', async ({ itineraryId, dayId, startDate, days }) => {
+      try {
+        await dayController.deleteDay({ dayId })
+
+        const updatedDays = days
+          .map((day, index) => {
+            const newDate = new Date(startDate)
+            newDate.setDate(newDate.getDate() + index)
+
+            let formattedDate = newDate.toLocaleDateString('es-ES', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long'
+            })
+            formattedDate =
+          formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
+
+            return {
+              ...day,
+              dayNumber: index + 1,
+              label: `Día ${index + 1} - ${formattedDate}`
+            }
+          })
+
+        await dayController.updateDays({ days: updatedDays })
+
+        io.to(itineraryId).emit(`itinerary-update-${itineraryId}`, {
+          action: 'delete-day',
+          days: updatedDays
+        })
+      } catch (error) {
+        console.error(`${error.name}: ${error.message}`)
+        socket.emit('error', { message: error.message })
+      }
+    })
+
     socket.on('add-event', async ({ itineraryId, dayId, eventData }) => {
       try {
         const createdEvent = await eventController.addEvent({ dayId, event: eventData.newEvent })
         io.to(itineraryId).emit(`itinerary-update-${itineraryId}`, { action: 'add-event', dayId, event: createdEvent })
       } catch (error) {
         console.error(`${error.name}: ${error.message}`)
-        socket.emit('event-error', { message: error.message })
+        socket.emit('error', { message: error.message })
       }
     })
 
@@ -68,7 +116,7 @@ export const initializeWebSocket = ({ server, eventModel }) => {
         io.to(itineraryId).emit(`itinerary-update-${itineraryId}`, { action: 'delete-event', dayId, eventId })
       } catch (error) {
         console.error(`${error.name}: ${error.message}`)
-        socket.emit('event-error', { message: error.message })
+        socket.emit('error', { message: error.message })
       }
     })
 
@@ -78,7 +126,7 @@ export const initializeWebSocket = ({ server, eventModel }) => {
         io.to(itineraryId).emit(`itinerary-update-${itineraryId}`, { action: 'edit-event', dayId, eventId, updatedEventData })
       } catch (error) {
         console.error(`${error.name}: ${error.message}`)
-        socket.emit('event-error', { message: error.message })
+        socket.emit('error', { message: error.message })
       }
     })
 
@@ -97,20 +145,33 @@ export const initializeWebSocket = ({ server, eventModel }) => {
   })
 
   setInterval(async () => {
-    for (const itineraryId in itineraryUpdates) {
-      const { reordered } = itineraryUpdates[itineraryId]
+    const itineraryIdsWithUpdates = Object.keys(itineraryUpdates)
+      .filter((itineraryId) => itineraryUpdates[itineraryId]?.reordered)
 
-      try {
+    if (itineraryIdsWithUpdates.length === 0) return
+
+    try {
+      await Promise.all(itineraryIdsWithUpdates.map(async (itineraryId) => {
+        const { reordered } = itineraryUpdates[itineraryId]
+
         if (reordered) {
-          await eventController.reorderEvents({ itineraryId, dayId: reordered.dayId, events: reordered.events })
+          try {
+            await eventController.reorderEvents({
+              itineraryId,
+              dayId: reordered.dayId,
+              events: reordered.events
+            })
+            console.log(`Reordenaciones guardadas en la base de datos para el itinerario ${itineraryId}`)
+          } catch (error) {
+            console.error(`${error.name}: ${error.message}`)
+            io.to(itineraryId).emit('error', { message: error.message })
+          }
         }
 
-        console.log(`Reordenaciones guardadas en la base de datos para el itinerario ${itineraryId}`)
         delete itineraryUpdates[itineraryId]
-      } catch (error) {
-        console.error(`${error.name}: ${error.message}`)
-        io.to(itineraryId).emit('event-error', { message: error.message })
-      }
+      }))
+    } catch (error) {
+      console.error(`${error.name}: ${error.message}`)
     }
   }, UPDATE_INTERVAL)
 

@@ -39,12 +39,25 @@ export interface ItinerarySimpleType {
   likes: number
 }
 
-export interface User {
+export interface UserPublic {
   id: string
   name: string
   username: string
-  email: string
   avatar: string | null
   followers: number
   following: number
+}
+
+export interface UserPrivate extends UserPublic {
+  email: string
+}
+
+export interface UserWithFollowStatus extends UserPublic {
+  isFollowing: boolean
+}
+
+export interface Collaborator {
+  id: string
+  name: string
+  username: string
 }

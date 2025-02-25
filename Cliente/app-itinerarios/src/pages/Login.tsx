@@ -5,8 +5,8 @@ import {
   Group,
   PasswordInput,
   TextInput,
-  Title,
-  Text
+  Text,
+  Title
 } from '@mantine/core'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -15,7 +15,7 @@ export const Login = ({ onLoginSuccess }: { onLoginSuccess?: () => void }) => {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const [username, setUsername] = useState('')
+  const [usernameOrEmail, setUsernameOrEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -26,7 +26,7 @@ export const Login = ({ onLoginSuccess }: { onLoginSuccess?: () => void }) => {
     setLoading(true)
 
     try {
-      await login(username, password)
+      await login(usernameOrEmail, password)
       if (onLoginSuccess) {
         onLoginSuccess?.()
       } else {
@@ -35,22 +35,26 @@ export const Login = ({ onLoginSuccess }: { onLoginSuccess?: () => void }) => {
     } catch (error) {
       setLoading(false)
       if (error instanceof Error) {
-        if (error.message.includes('invalid input')) {
-          setError(
-            'Datos de entrada no válidos. Asegúrate de que todos los campos estén correctos.'
-          )
-        } else if (error.message.includes('access not authorized')) {
-          setError(
-            'Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.'
-          )
-        } else if (error.message.includes('resource not found')) {
-          setError(
-            'Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.'
-          )
-        } else {
-          setError(
-            'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
-          )
+        switch (error.message) {
+          case 'InvalidInputError':
+            setError(
+              'Datos de entrada inválidos. Asegúrate de que todos los campos estén correctos.'
+            )
+            break
+          case 'UnauthorizedError':
+            setError(
+              'Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.'
+            )
+            break
+          case 'NotFoundError':
+            setError(
+              'Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.'
+            )
+            break
+          default:
+            setError(
+              'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
+            )
         }
       } else {
         setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
@@ -59,19 +63,24 @@ export const Login = ({ onLoginSuccess }: { onLoginSuccess?: () => void }) => {
   }
 
   return (
-    <div className='px-8'>
-      <Title order={2} ta='center' mb='xl'>
-        Bienvenido a Itinerarios
-      </Title>
-      {error && <p className='mb-4 text-center text-red-500'>{error}</p>}
+    <div>
+      <div className='sticky top-0 z-10 w-full pb-1 text-center bg-white'>
+        <Title order={2} ta='center' mb='xl'>
+          Inicia sesión en Tripify
+        </Title>
+      </div>
+      {error && (
+        <p className='max-w-xs mb-4 text-center text-red-500'>{error}</p>
+      )}
       <form onSubmit={handleSubmit} className='mb-4'>
         <TextInput
           label='Usuario/Correo electrónico'
           placeholder=''
-          value={username}
+          value={usernameOrEmail}
           size='md'
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(e) => setUsernameOrEmail(e.target.value)}
           required
+          withAsterisk={false}
         />
         <PasswordInput
           label='Contraseña'
@@ -80,11 +89,15 @@ export const Login = ({ onLoginSuccess }: { onLoginSuccess?: () => void }) => {
           size='md'
           onChange={(e) => setPassword(e.target.value)}
           required
+          withAsterisk={false}
           mt='sm'
         />
-        <Group justify='space-between' mt='lg'>
-          <Checkbox label='Recuérdame' />
-          <Link to='#' className='text-sm text-blue-500 hover:underline'>
+        <Group justify='space-between' mt='lg' wrap='nowrap'>
+          <Checkbox label='Recuérdame' size='sm' />
+          <Link
+            to='#'
+            className='text-sm leading-tight text-center text-blue-500 hover:underline'
+          >
             ¿Has olvidado la contraseña?
           </Link>
         </Group>

@@ -20,12 +20,12 @@ export const authService = {
     }
   },
 
-  login: async (username: string, password: string) => {
+  login: async (usernameOrEmail: string, password: string) => {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ usernameOrEmail, password })
     })
 
     if (!response.ok) {

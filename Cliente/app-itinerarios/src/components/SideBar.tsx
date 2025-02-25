@@ -1,13 +1,14 @@
 import { ProfileButton } from './ProfileButton'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ActiveTab } from '@/layouts/MainLayout'
-import { FaRegHeart } from 'react-icons/fa'
+import { FaPlus, FaRegHeart } from 'react-icons/fa'
 import { FiMap } from 'react-icons/fi'
 import { IoIosList } from 'react-icons/io'
 import { useAuth } from '@/hooks/useAuth'
 import { useDisclosure } from '@mantine/hooks'
 import { LoginModal } from './LoginModal'
 import { useState } from 'react'
+import { Button } from '@mantine/core'
 
 type SideBarProps = {
   activeTab?: ActiveTab
@@ -34,7 +35,7 @@ export const SideBar = ({ activeTab, setActiveTab }: SideBarProps) => {
   const [tab, setTab] = useState<ActiveTab | null>(null)
   const [opened, { open, close }] = useDisclosure(false)
 
-  const isOnOwnProfile = location.pathname === '/profile'
+  const isOnOwnProfile = location.pathname === `/${user?.username}`
 
   const handleTabClick = (tab: ActiveTab) => {
     if (!user) {
@@ -45,7 +46,7 @@ export const SideBar = ({ activeTab, setActiveTab }: SideBarProps) => {
 
     if (!isOnOwnProfile) {
       setActiveTab?.(tab)
-      navigate('/profile', { state: { tab } })
+      navigate(`/${user.username}`, { state: { tab } })
     } else if (activeTab !== tab) {
       setActiveTab?.(tab)
     }
@@ -58,18 +59,20 @@ export const SideBar = ({ activeTab, setActiveTab }: SideBarProps) => {
         close={close}
         onLoginSuccess={() => {
           close()
-          navigate('/profile', { state: { tab } })
+          navigate(`/${user?.username}`, { state: { tab } })
         }}
       />
-      <div className='w-full border-b'>
-        <ProfileButton />
-      </div>
-      <div className='w-full mb-3 overflow-hidden'>
-        {(['Itinerarios', 'Favoritos', 'Listas'] as ActiveTab[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => handleTabClick(tab)}
-            className={`
+      <div className='overflow-hidden bg-neutral-100 rounded-xl'>
+        <div className='w-full border-b'>
+          <ProfileButton />
+        </div>
+        <div className='w-full mb-3 overflow-hidden'>
+          {(['Itinerarios', 'Favoritos', 'Listas'] as ActiveTab[]).map(
+            (tab) => (
+              <button
+                key={tab}
+                onClick={() => handleTabClick(tab)}
+                className={`
             w-full text-left flex items-center px-4 py-2 h-10 leading-none
             ${
               isOnOwnProfile && activeTab === tab
@@ -78,11 +81,32 @@ export const SideBar = ({ activeTab, setActiveTab }: SideBarProps) => {
             }
             hover:transition-all hover:duration-200 
           `}
-          >
-            {getIconForTab(tab)}
-            {tab}
-          </button>
-        ))}
+              >
+                {getIconForTab(tab)}
+                {tab}
+              </button>
+            )
+          )}
+        </div>
+      </div>
+      <div className='flex justify-center w-full mt-3'>
+        <Button
+          variant='filled'
+          color='teal'
+          radius='xl'
+          h={45}
+          leftSection={<FaPlus size={12} />}
+          className='text-nowrap'
+          onClick={() => {
+            if (user) {
+              navigate('/create-itinerary')
+            } else {
+              navigate('/login')
+            }
+          }}
+        >
+          Nuevo itinerario
+        </Button>
       </div>
     </>
   )

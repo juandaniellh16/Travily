@@ -10,7 +10,7 @@ export const NotificationBell = () => {
       aria-label='Notificaciones'
       color='gray'
     >
-      <IoMdNotificationsOutline size='22' color='black' strokeWidth={1.5} />
+      <IoMdNotificationsOutline size='23' color='black' />
     </ActionIcon>
   )
 }

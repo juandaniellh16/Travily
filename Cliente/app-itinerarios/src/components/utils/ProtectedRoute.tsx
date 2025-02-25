@@ -10,23 +10,8 @@ export const ProtectedRoute = () => {
   }
 
   if (!user) {
-    return <Navigate to='/login' replace state={{ from: location }} />
+    return <Navigate to='/login' state={{ from: location }} />
   }
-
-  /*
-  {( canActivate = true,
-    redirectPath = '/login')}
-
-  //const { isAuthenticated } = useAuth()
-  //const location = useLocation()
-
-  if (!canActivate) {
-    return <Navigate to={redirectPath} replace />
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to='/login' state={{ location }} />
-  }*/
 
   return <Outlet />
 }

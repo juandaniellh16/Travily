@@ -1,8 +1,8 @@
-import { User } from '@/types'
+import { UserPrivate } from '@/types'
 import { createContext } from 'react'
 
 interface AuthContextType {
-  user: User | null
+  user: UserPrivate | null
   isLoading: boolean
   register: (
     name: string,
@@ -11,8 +11,9 @@ interface AuthContextType {
     password: string,
     avatar: string | null
   ) => Promise<void>
-  login: (username: string, password: string) => Promise<void>
+  login: (usernameOrEmail: string, password: string) => Promise<void>
   logout: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)

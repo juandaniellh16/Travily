@@ -21,6 +21,7 @@ export const SearchInput = () => {
             size={32}
             radius='xl'
             variant='filled'
+            color='teal'
             onClick={() => setQuery('')}
           >
             <GoArrowRight size={18} strokeWidth={1.5} />

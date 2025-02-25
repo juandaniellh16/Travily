@@ -10,15 +10,30 @@ import { Profile } from './pages/Profile'
 import { ItineraryForm } from './pages/ItineraryForm'
 import { Itinerary } from './pages/Itinerary'
 import { AuthLayout } from './layouts/AuthLayout'
+import { Followers } from './pages/Followers'
+import { Following } from './pages/Following'
 
 function App() {
   return (
-    <MantineProvider defaultColorScheme='light'>
+    <MantineProvider
+      defaultColorScheme='light'
+      theme={{
+        breakpoints: {
+          xs: '30rem',
+          sm: '40rem',
+          md: '48rem',
+          lg: '64rem',
+          xl: '80rem'
+        }
+      }}
+    >
       <Routes>
         <Route element={<MainLayout />}>
           <Route path='/' element={<Home />} />
-          <Route path='/profile' element={<Profile />} />
-          <Route path='/profile/:userId' element={<Profile />} />
+          <Route path='/:username' element={<Profile />}>
+            <Route path='/:username/followers' element={<Followers />} />
+            <Route path='/:username/following' element={<Following />} />
+          </Route>
           <Route path='/itineraries/:itineraryId' element={<Itinerary />} />
           <Route element={<ProtectedRoute />}>
             <Route path='/create-itinerary' element={<ItineraryForm />} />
@@ -27,8 +42,8 @@ function App() {
         <Route element={<AuthLayout />}>
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
+          <Route path='*' element={<NotFound />} />
         </Route>
-        <Route path='*' element={<NotFound />} />
       </Routes>
     </MantineProvider>
   )

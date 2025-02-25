@@ -14,7 +14,7 @@ export const ProfileButton = () => {
     if (!user) {
       open()
     } else {
-      navigate('/profile')
+      navigate(`/${user.username}`)
     }
   }
 
@@ -25,7 +25,7 @@ export const ProfileButton = () => {
         close={close}
         onLoginSuccess={() => {
           close()
-          navigate('/profile')
+          navigate(`/${user?.username}`)
         }}
       />
       <UnstyledButton className='w-full' onClick={handleClick}>

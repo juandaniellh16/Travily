@@ -60,7 +60,7 @@ export const ItineraryForm = () => {
 
   const handleStartDateChange = (date: Date | null) => {
     if (date) {
-      setStartDate(date.toISOString().split('T')[0])
+      setStartDate(date.toISOString())
     } else {
       setStartDate('')
     }
@@ -68,7 +68,7 @@ export const ItineraryForm = () => {
 
   const handleEndDateChange = (date: Date | null) => {
     if (date) {
-      setEndDate(date.toISOString().split('T')[0])
+      setEndDate(date.toISOString())
     } else {
       setEndDate('')
     }

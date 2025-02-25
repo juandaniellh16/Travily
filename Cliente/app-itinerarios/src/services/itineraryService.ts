@@ -5,6 +5,7 @@ export const itineraryService = {
   getAll: async (params: {
     location?: string
     userId?: string
+    username?: string
     likedBy?: string
     sort?: string
   }) => {
@@ -17,6 +18,9 @@ export const itineraryService = {
     if (params.userId) {
       queryParams.append('userId', params.userId)
     }
+    if (params.username) {
+      queryParams.append('username', params.username)
+    }
     if (params.likedBy) {
       queryParams.append('likedBy', params.likedBy)
     }
@@ -27,18 +31,35 @@ export const itineraryService = {
       queryString += `?${queryParams.toString()}`
     }
 
-    const response = await fetch(queryString)
+    const response = (await Promise.race([
+      fetch(queryString, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), 7000)
+      )
+    ])) as Response
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.error || 'Error fetching itineraries')
+    if (response instanceof Response) {
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Error fetching itineraries')
+      }
+
+      return await response.json()
     }
-
-    return await response.json()
   },
 
   getById: async (itineraryId: string) => {
-    const response = await fetch(`${API_BASE_URL}/itineraries/${itineraryId}`)
+    const response = await fetch(`${API_BASE_URL}/itineraries/${itineraryId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
     if (!response.ok) {
       const errorData = await response.json()
       throw new Error(errorData.error || 'Error fetching itinerary')
@@ -129,6 +150,65 @@ export const itineraryService = {
       const errorData = await response.json()
       throw new Error(errorData.error || 'Error unliking itinerary')
     }
+  },
+
+  checkIfLiked: async (itineraryId: string) => {
+    const response = await fetchWithAuth(
+      `/itineraries/${itineraryId}/is-liked`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Error checking if itinerary is liked')
+    }
+
+    const data = await response.json()
+    return data.isLiked
+  },
+
+  addCollaborator: async (itineraryId: string, username: string) => {
+    const response = await fetchWithAuth(
+      `/itineraries/${itineraryId}/collaborators`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username
+        })
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Error adding collaborator')
+    }
+  },
+
+  getCollaborators: async (itineraryId: string) => {
+    const response = await fetch(
+      `${API_BASE_URL}/itineraries/${itineraryId}/collaborators`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Error getting collaborators')
+    }
+
+    return await response.json()
   }
 
   /*

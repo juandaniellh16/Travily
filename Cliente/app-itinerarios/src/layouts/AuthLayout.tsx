@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
+import { BottomNavBar } from '@/components/BottomNavBar'
 
 export const AuthLayout = () => {
   return (
@@ -10,6 +11,9 @@ export const AuthLayout = () => {
         <Outlet />
       </main>
       <Footer />
+      <div className='block sm:hidden'>
+        <BottomNavBar defaultActiveButton='' />
+      </div>
     </div>
   )
 }

@@ -1,4 +1,3 @@
-import { API_BASE_URL } from '@/config/config'
 import { useAuth } from '@/hooks/useAuth'
 import { itineraryService } from '@/services/itineraryService'
 import { ItinerarySimpleType } from '@/types'
@@ -7,12 +6,15 @@ import { useDisclosure } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
 import { FaHeart, FaRegHeart } from 'react-icons/fa'
 import { LoginModal } from './LoginModal'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 interface ItineraryCardProps {
   itinerary: ItinerarySimpleType
 }
 
 export const LikeButton = ({ itinerary }: ItineraryCardProps) => {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [liked, setLiked] = useState(false)
   const [likes, setLikes] = useState(itinerary.likes)
   const [opened, { open, close }] = useDisclosure(false)
@@ -24,11 +26,8 @@ export const LikeButton = ({ itinerary }: ItineraryCardProps) => {
 
     const fetchLikedStatus = async () => {
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/itineraries/${itinerary.id}/liked?userId=${user.id}`
-        )
-        const data = await response.json()
-        setLiked(data.liked)
+        const likedStatus = await itineraryService.checkIfLiked(itinerary.id)
+        setLiked(likedStatus)
       } catch {
         console.error('Error fetching liked status')
       }
@@ -43,6 +42,8 @@ export const LikeButton = ({ itinerary }: ItineraryCardProps) => {
       return
     }
 
+    const previousLikedState = liked
+    const previousLikesCount = likes
     try {
       if (!liked) {
         setLiked(!liked)
@@ -55,28 +56,38 @@ export const LikeButton = ({ itinerary }: ItineraryCardProps) => {
       }
     } catch {
       console.error('Error liking/unliking itinerary')
-      if (liked) {
-        setLikes(likes - 1)
-      } else {
-        setLikes(likes + 1)
-      }
-      setLiked(!liked)
+      setLiked(previousLikedState)
+      setLikes(previousLikesCount)
     }
   }
 
   return (
     <>
-      <LoginModal opened={opened} close={close} />
-      <div className='flex items-center'>
-        <span className='mr-1 text-xs text-black'>{likes}</span>
+      <LoginModal
+        opened={opened}
+        close={close}
+        onLoginSuccess={() => {
+          close()
+          navigate(location.state?.from?.pathname || '/')
+        }}
+      />
+      <div className='flex items-center justify-center'>
         <ActionIcon
-          variant='subtle'
-          color='gray'
+          variant='transparent'
           onClick={handleLike}
+          w={36}
           size={24}
           p={3}
+          className='hover:!bg-gray-100'
         >
-          {liked ? <FaHeart color='red' /> : <FaRegHeart color='black' />}
+          {liked ? (
+            <FaHeart color='red' size={16} />
+          ) : (
+            <FaRegHeart color='black' size={16} />
+          )}
+          <span className='ml-1 text-sm leading-none pb-0.5 text-black cursor-default'>
+            {likes}
+          </span>
         </ActionIcon>
       </div>
     </>

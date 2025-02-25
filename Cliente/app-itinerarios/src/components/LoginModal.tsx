@@ -1,5 +1,5 @@
 import { Login } from '@/pages/Login'
-import { Modal } from '@mantine/core'
+import { Modal, ScrollArea } from '@mantine/core'
 
 export const LoginModal = ({
   opened,
@@ -8,11 +8,22 @@ export const LoginModal = ({
 }: {
   opened: boolean
   close: () => void
-  onLoginSuccess?: () => void
+  onLoginSuccess: () => void
 }) => {
   return (
-    <Modal opened={opened} onClose={close} size='md' yOffset='14vh' radius='lg'>
-      <Login onLoginSuccess={onLoginSuccess} />
+    <Modal
+      opened={opened}
+      onClose={close}
+      size='md'
+      centered
+      radius='lg'
+      scrollAreaComponent={ScrollArea.Autosize.withProps({
+        scrollbars: false
+      })}
+    >
+      <div className='overflow-y-auto max-h-[60vh] px-4 sm:px-8'>
+        <Login onLoginSuccess={onLoginSuccess} />
+      </div>
     </Modal>
   )
 }

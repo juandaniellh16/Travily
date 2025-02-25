@@ -57,18 +57,24 @@ export const Register = () => {
     } catch (error) {
       setLoading(false)
       if (error instanceof Error) {
-        if (error.message.includes('invalid input')) {
-          setError(
-            'Datos de entrada no válidos. Asegúrate de que todos los campos estén correctos.'
-          )
-        } else if (error.message.includes('resource already exists')) {
-          setError(
-            'El nombre de usuario o la dirección de correo electrónico ya existen.'
-          )
-        } else {
-          setError(
-            'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
-          )
+        switch (error.message) {
+          case 'InvalidInputError':
+            setError(
+              'Datos de entrada inválidos. Asegúrate de que todos los campos estén correctos.'
+            )
+            break
+          case 'UsernameConflictError':
+            setError('El nombre de usuario ya existe. Por favor, elige otro.')
+            break
+          case 'EmailConflictError':
+            setError(
+              'La dirección de correo electrónico ya está en uso. Por favor, elige otra.'
+            )
+            break
+          default:
+            setError(
+              'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
+            )
         }
       } else {
         setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
@@ -79,9 +85,11 @@ export const Register = () => {
   return (
     <div className='px-8 mb-8'>
       <Title order={2} ta='center' mb='xl'>
-        Bienvenido a Itinerarios
+        Regístrate en Tripify
       </Title>
-      {error && <p className='mb-4 text-center text-red-500'>{error}</p>}
+      {error && (
+        <p className='max-w-xs mb-4 text-center text-red-500'>{error}</p>
+      )}
       <form onSubmit={handleSubmit} className='mb-4'>
         <TextInput
           label='Nombre'

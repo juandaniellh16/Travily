@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom'
 export const Footer = () => {
   return (
     <footer className='w-full bg-gray-800'>
-      <div className='max-w-6xl px-3 mx-auto sm:px-6'>
+      <div className='px-4 mx-auto max-w-[1200px] sm:px-6'>
         <div className='flex flex-col items-center justify-between gap-8 py-9 lg:flex-row'>
           <Link to='/'>
-            <img src='/logo-prueba.png' className='h-9' alt='Logo' />
+            <img src='/logo-prueba-2.png' className='h-9' alt='Logo' />
           </Link>
           <ul className='justify-center font-semibold text-center transition-all duration-500 text-md sm:flex items-cente gap-14 lg:gap-10 xl:gap-14'>
             <li className='my-2 sm:my-0'>

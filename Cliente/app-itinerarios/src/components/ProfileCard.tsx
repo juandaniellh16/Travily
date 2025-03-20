@@ -30,8 +30,10 @@ export const ProfileCard = ({ setOpened }: ProfileCardProps) => {
           const data = await userService.getByUsername(username)
           setProfileUser(data)
 
-          const followingStatus = await userService.checkIfFollowing(data.id)
-          setIsFollowing(followingStatus)
+          if (authUser) {
+            const followingStatus = await userService.checkIfFollowing(data.id)
+            setIsFollowing(followingStatus)
+          }
         } catch {
           console.error('Error fetching user data')
         }

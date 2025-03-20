@@ -73,17 +73,17 @@ export const LikeButton = ({ itinerary }: ItineraryCardProps) => {
       />
       <div className='flex items-center justify-center'>
         <ActionIcon
-          variant='transparent'
+          variant='subtle'
+          color='gray'
           onClick={handleLike}
           w={36}
           size={24}
           p={3}
-          className='hover:!bg-gray-100'
         >
           {liked ? (
-            <FaHeart color='red' size={16} />
+            <FaHeart color='red' size={16} className='flex-none' />
           ) : (
-            <FaRegHeart color='black' size={16} />
+            <FaRegHeart color='black' size={16} className='flex-none' />
           )}
           <span className='ml-1 text-sm leading-none pb-0.5 text-black cursor-default'>
             {likes}

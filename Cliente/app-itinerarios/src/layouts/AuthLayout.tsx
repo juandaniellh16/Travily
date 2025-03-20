@@ -7,7 +7,7 @@ export const AuthLayout = () => {
   return (
     <div className='flex flex-col min-h-screen'>
       <Header />
-      <main className='flex justify-center flex-grow px-10 mt-6'>
+      <main className='flex justify-center flex-grow my-6 mx-9'>
         <Outlet />
       </main>
       <Footer />

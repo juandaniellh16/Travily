@@ -4,39 +4,36 @@ import { Avatar } from '@mantine/core'
 import { Link } from 'react-router-dom'
 import { FollowButton } from './FollowButton'
 
-interface FollowersListProps {
-  followers: UserWithFollowStatus[]
+interface UsersListProps {
+  users: UserWithFollowStatus[]
   handleFollow: (id: string, isFollowing: boolean) => void
 }
 
-export const FollowersList = ({
-  followers,
-  handleFollow
-}: FollowersListProps) => {
-  const { user } = useAuth()
+export const UsersList = ({ users, handleFollow }: UsersListProps) => {
+  const { user: authUser } = useAuth()
 
   return (
     <ul className='w-full max-w-md mx-auto mb-14'>
-      {followers.map((follower) => (
+      {users.map((user) => (
         <li
-          key={follower.id}
+          key={user.id}
           className='flex items-center justify-between px-1 py-4 border-b last:border-b-0'
         >
-          <Link to={`/${follower?.username}`}>
+          <Link to={`/${user?.username}`}>
             <div className='flex items-center'>
               <Avatar
-                src={follower.avatar || '/images/avatar-placeholder.svg'}
+                src={user.avatar || '/images/avatar-placeholder.svg'}
                 mr='xs'
                 className='!size-[40px] sm:!size-[45px]'
               />
               <div className='leading-none'>
-                <p className='mb-0.5 font-medium text-sm'>{follower.name}</p>
-                <p className='text-sm text-gray-500'>@{follower.username}</p>
+                <p className='mb-0.5 font-medium text-sm'>{user.name}</p>
+                <p className='text-sm text-gray-500'>@{user.username}</p>
               </div>
             </div>
           </Link>
-          {(!user || user?.id != follower.id) && (
-            <FollowButton user={follower} handleFollow={handleFollow} />
+          {authUser?.id != user.id && (
+            <FollowButton user={user} handleFollow={handleFollow} />
           )}
         </li>
       ))}

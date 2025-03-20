@@ -63,62 +63,66 @@ export const Login = ({ onLoginSuccess }: { onLoginSuccess?: () => void }) => {
   }
 
   return (
-    <div>
-      <div className='sticky top-0 z-10 w-full pb-1 text-center bg-white'>
-        <Title order={2} ta='center' mb='xl'>
-          Inicia sesión en Tripify
-        </Title>
-      </div>
-      {error && (
-        <p className='max-w-xs mb-4 text-center text-red-500'>{error}</p>
-      )}
-      <form onSubmit={handleSubmit} className='mb-4'>
-        <TextInput
-          label='Usuario/Correo electrónico'
-          placeholder=''
-          value={usernameOrEmail}
-          size='md'
-          onChange={(e) => setUsernameOrEmail(e.target.value)}
-          required
-          withAsterisk={false}
-        />
-        <PasswordInput
-          label='Contraseña'
-          placeholder=''
-          value={password}
-          size='md'
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          withAsterisk={false}
-          mt='sm'
-        />
-        <Group justify='space-between' mt='lg' wrap='nowrap'>
-          <Checkbox label='Recuérdame' size='sm' />
-          <Link
-            to='#'
-            className='text-sm leading-tight text-center text-blue-500 hover:underline'
+    <div className='flex items-center justify-center'>
+      <div className='w-full max-w-md'>
+        <div className='sticky top-0 z-10 w-full pb-1 text-center bg-white'>
+          <Title order={2} ta='center' mb='xl'>
+            Inicia sesión en Tripify
+          </Title>
+        </div>
+        {error && (
+          <p className='max-w-xs mx-auto mb-4 text-center text-red-500'>
+            {error}
+          </p>
+        )}
+        <form onSubmit={handleSubmit} className='mb-4'>
+          <TextInput
+            label='Usuario/Correo electrónico'
+            placeholder=''
+            value={usernameOrEmail}
+            size='md'
+            onChange={(e) => setUsernameOrEmail(e.target.value)}
+            required
+            withAsterisk={false}
+          />
+          <PasswordInput
+            label='Contraseña'
+            placeholder=''
+            value={password}
+            size='md'
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            withAsterisk={false}
+            mt='sm'
+          />
+          <Group justify='space-between' mt='lg' wrap='nowrap'>
+            <Checkbox label='Recuérdame' size='sm' />
+            <Link
+              to='#'
+              className='text-sm leading-tight text-center text-blue-500 hover:underline'
+            >
+              ¿Has olvidado la contraseña?
+            </Link>
+          </Group>
+          <Button
+            type='submit'
+            loading={loading}
+            loaderProps={{ type: 'dots' }}
+            fullWidth
+            color='teal'
+            mt='xl'
           >
-            ¿Has olvidado la contraseña?
-          </Link>
-        </Group>
-        <Button
-          type='submit'
-          loading={loading}
-          loaderProps={{ type: 'dots' }}
-          fullWidth
-          color='teal'
-          mt='xl'
-        >
-          Entrar
-        </Button>
-      </form>
+            Entrar
+          </Button>
+        </form>
 
-      <Text size='sm' ta='center' mt='lg' mb='md'>
-        ¿No tienes una cuenta?{' '}
-        <Link to='/register' className='text-blue-500 hover:underline'>
-          Regístrate
-        </Link>
-      </Text>
+        <Text size='sm' ta='center' mt='lg' mb='md'>
+          ¿No tienes una cuenta?{' '}
+          <Link to='/register' className='text-blue-500 hover:underline'>
+            Regístrate
+          </Link>
+        </Text>
+      </div>
     </div>
   )
 }

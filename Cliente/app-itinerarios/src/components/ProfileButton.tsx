@@ -31,6 +31,7 @@ export const ProfileButton = () => {
       <UnstyledButton className='w-full' onClick={handleClick}>
         <Group
           gap={'sm'}
+          wrap='nowrap'
           className='justify-between p-1 m-2 rounded-lg hover:bg-primary-foreground'
         >
           <Avatar src={user?.avatar || '/images/avatar-placeholder.svg'} />

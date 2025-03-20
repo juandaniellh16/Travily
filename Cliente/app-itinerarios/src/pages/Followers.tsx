@@ -1,4 +1,4 @@
-import { FollowersList } from '@/components/FollowersList'
+import { UsersList } from '@/components/UsersList'
 import { useAuth } from '@/hooks/useAuth'
 import { userService } from '@/services/userService'
 import { UserWithFollowStatus } from '@/types'
@@ -47,7 +47,7 @@ export const Followers = () => {
             Aún no tiene seguidores
           </p>
         ) : (
-          <FollowersList followers={followers} handleFollow={handleFollow} />
+          <UsersList users={followers} handleFollow={handleFollow} />
         )}
       </div>
     </div>

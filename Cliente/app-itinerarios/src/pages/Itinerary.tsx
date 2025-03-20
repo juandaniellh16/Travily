@@ -3,6 +3,7 @@ import {
   Accordion,
   ActionIcon,
   Avatar,
+  Badge,
   Button,
   Center,
   Container,
@@ -12,6 +13,7 @@ import {
   Menu,
   Modal,
   ScrollArea,
+  Switch,
   Text,
   Textarea,
   TextInput,
@@ -19,7 +21,7 @@ import {
 } from '@mantine/core'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ItineraryType, Event, Collaborator, UserPublic } from '@/types'
+import { ItineraryType, Event, UserPublic } from '@/types'
 import {
   DragDropContext,
   Droppable,
@@ -27,40 +29,188 @@ import {
   DropResult
 } from '@hello-pangea/dnd'
 import { FaGripVertical, FaUsers } from 'react-icons/fa6'
-import { MdEdit } from 'react-icons/md'
-import { IoShareSocialSharp, IoTrashOutline } from 'react-icons/io5'
+import {
+  MdEdit,
+  MdOutlineVisibility,
+  MdOutlineVisibilityOff
+} from 'react-icons/md'
+import { IoTrashOutline } from 'react-icons/io5'
 import { HiOutlineDotsVertical } from 'react-icons/hi'
 import { API_BASE_URL } from '@/config/config'
 import { io, Socket } from 'socket.io-client'
 import { useDisclosure } from '@mantine/hooks'
-import { getRandomEventImage } from '@/utils'
+import { calculateTotalDays, getRandomEventImage } from '@/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { LuCalendarDays } from 'react-icons/lu'
 import { LikeButton } from '@/components/LikeButton'
 import { userService } from '@/services/userService'
+import { DatePickerInput } from '@mantine/dates'
+import { ExpandableText } from '@/components/ExpandableText'
+import { NotFound } from './NotFound'
+import { Unauthorized } from './Unauthorized'
+import { ShareButton } from '@/components/ShareButton'
 
 export const Itinerary = () => {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, isLoading: userIsLoading } = useAuth()
   const [isCollaborator, setIsCollaborator] = useState(false)
   const { itineraryId } = useParams()
   const [itineraryData, setItineraryData] = useState<ItineraryType | null>(null)
-  const [editingItinerary, setEditingItinerary] = useState(false)
   const [userData, setUserData] = useState<UserPublic | null>(null)
   const socketRef = useRef<Socket | null>(null)
+  const [notFoundError, setNotFoundError] = useState(false)
+  const [unauthorizedError, setUnauthorizedError] = useState(false)
   const [error, setError] = useState('')
 
-  const [opened, { open, close }] = useDisclosure(false)
+  const [isEditingItinerary, setIsEditingItinerary] = useState(false)
+  const [itineraryTitle, setItineraryTitle] = useState('')
+  const [isEditingItineraryTitle, setIsEditingItineraryTitle] = useState(false)
+  const [itineraryDescription, setItineraryDescription] = useState('')
+  const [isEditingItineraryDescription, setIsEditingItineraryDescription] =
+    useState(false)
+  const [itineraryStartDate, setItineraryStartDate] = useState('')
+  const [itineraryEndDate, setItineraryEndDate] = useState('')
+  const [totalDays, setTotalDays] = useState(0)
+  const [isPublic, setIsPublic] = useState(false)
+
+  const [addEventOpened, addEventDisclosure] = useDisclosure(false)
+  const [editEventOpened, editEventDisclosure] = useDisclosure(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
   const [editingDayId, setEditingDayId] = useState<string | null>(null)
   const [eventLabel, setEventLabel] = useState('')
   const [eventDescription, setEventDescription] = useState('')
-  const [eventContent, setEventContent] = useState('')
   const [eventImage, setEventImage] = useState<string | null>(null)
   const [formError, setFormError] = useState('')
 
   const [collaboratorUsername, setCollaboratorUsername] = useState('')
   const [collaboratorError, setCollaboratorError] = useState('')
+
+  const handleItineraryTitleBlur = () => {
+    if (itineraryId && itineraryTitle !== itineraryData?.title) {
+      handleEditItinerary(itineraryId, {
+        title: itineraryTitle.replace(/\s+/g, ' ').trim()
+      })
+    }
+    setIsEditingItineraryTitle(false)
+  }
+
+  const handleItineraryTitleChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setItineraryTitle(e.target.value)
+  }
+
+  const handleItineraryDescriptionBlur = () => {
+    if (itineraryId && itineraryDescription !== itineraryData?.description) {
+      handleEditItinerary(itineraryId, {
+        description: itineraryDescription.replace(/\s+/g, ' ').trim()
+      })
+    }
+    setIsEditingItineraryDescription(false)
+  }
+
+  const handleItineraryDescriptionChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setItineraryDescription(e.target.value)
+  }
+
+  const handleStartDateChange = (date: Date | null) => {
+    if (date) {
+      const localDate = new Date(
+        date.getTime() - date.getTimezoneOffset() * 60000
+      )
+      localDate.setUTCHours(0, 0, 0, 0)
+      const newStartDate = localDate.toISOString()
+
+      if (
+        itineraryId &&
+        itineraryData &&
+        newStartDate !== itineraryData.startDate
+      ) {
+        if (newStartDate <= itineraryData.endDate) {
+          setItineraryStartDate(newStartDate)
+          handleEditItinerary(itineraryId, {
+            startDate: newStartDate
+          })
+          setTotalDays(calculateTotalDays(newStartDate, itineraryData.endDate))
+          if (error) setError('')
+        } else {
+          setError(
+            'La fecha de inicio no puede ser posterior a la fecha de fin.'
+          )
+        }
+      }
+    } else {
+      setItineraryStartDate('')
+    }
+  }
+
+  const handleEndDateChange = (date: Date | null) => {
+    if (date) {
+      const localDate = new Date(
+        date.getTime() - date.getTimezoneOffset() * 60000
+      )
+      localDate.setUTCHours(0, 0, 0, 0)
+      const newEndDate = localDate.toISOString()
+
+      if (
+        itineraryId &&
+        itineraryData &&
+        newEndDate !== itineraryData.endDate
+      ) {
+        if (newEndDate >= itineraryData.startDate) {
+          setItineraryEndDate(newEndDate)
+          handleEditItinerary(itineraryId, {
+            endDate: newEndDate
+          })
+          setTotalDays(calculateTotalDays(itineraryData.startDate, newEndDate))
+          if (error) setError('')
+        } else {
+          setError(
+            'La fecha de fin no puede ser anterior a la fecha de inicio.'
+          )
+        }
+      }
+    } else {
+      setItineraryEndDate('')
+    }
+  }
+
+  const handleKeyPress = (
+    e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    if (e.key === 'Enter') {
+      if (isEditingItineraryTitle) {
+        handleItineraryTitleBlur()
+      } else if (isEditingItineraryDescription) {
+        handleItineraryDescriptionBlur()
+      }
+    }
+  }
+
+  const handleItineraryImageChange = async (file: File | null) => {
+    if (file) {
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const response = await fetch(`${API_BASE_URL}/upload/itinerary-image`, {
+          method: 'POST',
+          body: formData
+        })
+
+        const data = await response.json()
+        if (data.itineraryImageUrl) {
+          if (itineraryId && data.itineraryImageUrl !== itineraryData?.image) {
+            handleEditItinerary(itineraryId, { image: data.itineraryImageUrl })
+          }
+        }
+      } catch {
+        setFormError('Failed to upload itinerary image')
+      }
+    }
+  }
 
   const handleAddCollaborator = async () => {
     if (!collaboratorUsername) {
@@ -91,19 +241,28 @@ export const Itinerary = () => {
   }
   */
 
-  const openEditModal = (event: Event, dayId: string) => {
+  const openAddEventModal = (dayId: string) => {
+    setEditingDayId(dayId)
+    addEventDisclosure.open()
+  }
+
+  const closeAddEventModal = () => {
+    resetForm()
+    addEventDisclosure.close()
+  }
+
+  const openEditEventModal = (event: Event, dayId: string) => {
     setEditingEvent(event)
     setEditingDayId(dayId)
     setEventLabel(event.label || '')
     setEventDescription(event.description || '')
-    setEventContent(event.content || '')
     setEventImage(event.image || null)
-    open()
+    editEventDisclosure.open()
   }
 
-  const closeEditModal = () => {
+  const closeEditEventModal = () => {
     resetForm()
-    close()
+    editEventDisclosure.close()
   }
 
   const scrollComponent = useMemo(
@@ -111,7 +270,11 @@ export const Itinerary = () => {
     []
   )
 
-  const handleImageChange = async (file: File | null) => {
+  const handleEventImageChange = async (
+    file: File | null,
+    event?: Event | null,
+    dayId?: string | null
+  ) => {
     if (file) {
       try {
         const formData = new FormData()
@@ -124,7 +287,14 @@ export const Itinerary = () => {
 
         const data = await response.json()
         if (data.eventImageUrl) {
-          setEventImage(data.eventImageUrl)
+          if (!editEventOpened && event && dayId) {
+            const updatedData = {
+              image: data.eventImageUrl
+            }
+            handleEditEvent(event.id, updatedData, dayId)
+          } else {
+            setEventImage(data.eventImageUrl)
+          }
         }
       } catch {
         setFormError('Failed to upload event image')
@@ -134,7 +304,26 @@ export const Itinerary = () => {
     }
   }
 
-  const handleSubmitEdit = (e: React.FormEvent) => {
+  const handleSubmitAddEvent = (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormError('')
+
+    if (editingDayId) {
+      const eventData = {
+        orderIndex:
+          itineraryData?.days.find((d) => d.id === editingDayId)?.events
+            .length || 0,
+        label: eventLabel,
+        description: eventDescription,
+        image: eventImage
+      }
+      handleAddEvent(editingDayId, eventData)
+      resetForm()
+      addEventDisclosure.close()
+    }
+  }
+
+  const handleSubmitEditEvent = (e: React.FormEvent) => {
     e.preventDefault()
     setFormError('')
 
@@ -143,13 +332,12 @@ export const Itinerary = () => {
         ...editingEvent,
         label: eventLabel,
         description: eventDescription,
-        content: eventContent,
         image: eventImage
       }
       handleEditEvent(editingEvent.id, updatedData, editingDayId)
       setEditingEvent(null)
       resetForm()
-      close()
+      editEventDisclosure.close()
     }
   }
 
@@ -158,47 +346,66 @@ export const Itinerary = () => {
     setEditingDayId(null)
     setEventLabel('')
     setEventDescription('')
-    setEventContent('')
     setEventImage(null)
     setFormError('')
   }
 
   useEffect(() => {
-    const fetchItineraryData = async () => {
+    const fetchData = async () => {
+      if (userIsLoading) return
+
       try {
         if (itineraryId) {
-          const collaborators: Collaborator[] =
-            await itineraryService.getCollaborators(itineraryId)
-          const isCollaborator = collaborators.some(
-            (collaborator) => collaborator.id === user?.id
-          )
+          let localIsCollaborator = false
+          if (user) {
+            try {
+              localIsCollaborator = await itineraryService.checkIfCollaborator(
+                itineraryId
+              )
+            } catch {
+              localIsCollaborator = false
+            }
+            setIsCollaborator(localIsCollaborator)
+          }
 
-          setIsCollaborator(isCollaborator)
+          if (!localIsCollaborator) {
+            const localItineraryData = await itineraryService.getById(
+              itineraryId
+            )
+            setItineraryData(localItineraryData)
 
-          if (!isCollaborator) {
-            const itineraryData = await itineraryService.getById(itineraryId)
-            setItineraryData(itineraryData)
+            if (localItineraryData.userId) {
+              const localUserData = await userService.getById(
+                localItineraryData.userId
+              )
+              setUserData(localUserData)
+            }
           }
         }
-      } catch {
-        setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
-      }
-    }
-
-    const fetchUserData = async () => {
-      try {
-        if (itineraryData?.userId) {
-          const data = await userService.getById(itineraryData.userId)
-          setUserData(data)
+      } catch (error) {
+        if (error instanceof Error) {
+          switch (error.message) {
+            case 'NotFoundError':
+              setNotFoundError(true)
+              break
+            case 'UnauthorizedError':
+              setUnauthorizedError(true)
+              break
+            default:
+              setError(
+                'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
+              )
+          }
+        } else {
+          setError(
+            'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
+          )
         }
-      } catch {
-        setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
       }
     }
 
-    fetchItineraryData()
-    fetchUserData()
-  }, [itineraryId, itineraryData?.userId, user])
+    fetchData()
+  }, [itineraryId, user, userIsLoading])
 
   useEffect(() => {
     // Si es colaborador, establecer conexión al WebSocket
@@ -210,8 +417,23 @@ export const Itinerary = () => {
 
       const handleItineraryReady = async () => {
         try {
-          const itineraryData = await itineraryService.getById(itineraryId)
-          setItineraryData(itineraryData)
+          const localItineraryData = await itineraryService.getById(itineraryId)
+          setItineraryData(localItineraryData)
+          if (localItineraryData.userId) {
+            const userData = await userService.getById(
+              localItineraryData.userId
+            )
+            setUserData(userData)
+          }
+          setItineraryStartDate(localItineraryData.startDate)
+          setItineraryEndDate(localItineraryData.endDate)
+          setIsPublic(localItineraryData.isPublic)
+          setTotalDays(
+            calculateTotalDays(
+              localItineraryData.startDate,
+              localItineraryData.endDate
+            )
+          )
         } catch {
           setError(
             'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
@@ -223,9 +445,43 @@ export const Itinerary = () => {
 
       // Suscribirse a eventos de actualización
       socketRef.current.on(`itinerary-update-${itineraryId}`, (updatedData) => {
-        if (updatedData.action === 'add-day') {
+        if (updatedData.action === 'edit-itinerary') {
           setItineraryData((prevData) => {
             if (!prevData) return prevData
+
+            const { startDate } = updatedData.updatedItineraryData
+
+            if (startDate) {
+              const updatedDays = prevData.days.map((day, index) => {
+                const newDate = new Date(startDate)
+                newDate.setDate(newDate.getDate() + index)
+
+                let formattedDate = newDate.toLocaleDateString('es-ES', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long'
+                })
+                formattedDate =
+                  formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
+
+                return {
+                  ...day,
+                  label: `Día ${index + 1} - ${formattedDate}`
+                }
+              })
+
+              updatedData.updatedItineraryData.days = updatedDays
+            }
+
+            return {
+              ...prevData,
+              ...updatedData.updatedItineraryData
+            }
+          })
+        } else if (updatedData.action === 'add-day') {
+          setItineraryData((prevData) => {
+            if (!prevData) return prevData
+
             return {
               ...prevData,
               days: [
@@ -345,6 +601,36 @@ export const Itinerary = () => {
     }
   }
 
+  const handleVisibilityChange = async () => {
+    try {
+      if (itineraryId) {
+        const newVisibility = !isPublic
+        setIsPublic(newVisibility)
+        await itineraryService.update(itineraryId, { isPublic: newVisibility })
+      }
+    } catch {
+      setError('Error changing itinerary visibility')
+    }
+  }
+
+  const handleEditItinerary = async (
+    itineraryId: string,
+    updatedItineraryData: Partial<ItineraryType>
+  ) => {
+    if (!itineraryData || !socketRef.current) return
+
+    try {
+      await itineraryService.update(itineraryId, updatedItineraryData)
+
+      socketRef.current.emit('edit-itinerary', {
+        itineraryId,
+        updatedItineraryData
+      })
+    } catch {
+      console.error('Error updating itinerary')
+    }
+  }
+
   const handleAddDay = async () => {
     if (!itineraryData || !socketRef.current) return
 
@@ -388,23 +674,14 @@ export const Itinerary = () => {
     }
   }
 
-  const handleAddEvent = async (dayId: string) => {
+  const handleAddEvent = async (dayId: string, eventData: Partial<Event>) => {
     if (!itineraryData || !socketRef.current) return
-
-    const newEvent = {
-      orderIndex:
-        itineraryData?.days.find((d) => d.id === dayId)?.events.length || 0,
-      label: 'Nuevo Evento',
-      description: 'Descripción del evento',
-      image: null,
-      content: 'Contenido del evento'
-    }
 
     try {
       socketRef.current.emit('add-event', {
         itineraryId,
         dayId,
-        eventData: { newEvent }
+        eventData
       })
     } catch {
       console.error('Error adding event')
@@ -513,6 +790,12 @@ export const Itinerary = () => {
     }
   }
 
+  if (notFoundError) {
+    return <NotFound from='itinerary' />
+  }
+  if (unauthorizedError) {
+    return <Unauthorized />
+  }
   if (!itineraryData) {
     return (
       <div className='flex items-center justify-center w-full h-full my-[25%]'>
@@ -524,39 +807,101 @@ export const Itinerary = () => {
   return (
     <>
       <div className='relative flex justify-center w-full mb-16'>
-        <img
-          src={itineraryData?.image || '/images/landscape-placeholder.svg'}
-          alt={itineraryData?.title}
-          className='w-full h-[250px] object-cover rounded-t-xl'
-        />
+        {isEditingItinerary ? (
+          <FileButton
+            onChange={(file) => {
+              handleItineraryImageChange(file)
+            }}
+            accept='.png, .jpg, .jpeg'
+          >
+            {(props) => (
+              <img
+                src={itineraryData.image || '/images/landscape-placeholder.svg'}
+                alt={itineraryData.title}
+                className='w-full h-[250px] object-cover rounded-t-xl transition cursor-pointer hover:opacity-80'
+                {...props}
+              />
+            )}
+          </FileButton>
+        ) : (
+          <img
+            src={itineraryData.image || '/images/landscape-placeholder.svg'}
+            alt={itineraryData.title}
+            className='w-full h-[250px] object-cover rounded-t-xl'
+          />
+        )}
 
         <div className='absolute bottom-[-20%] p-4 flex flex-col bg-white rounded-lg shadow-md w-[80%]'>
           <div className='flex items-center justify-between w-full mb-4'>
-            <h2 className='text-2xl font-bold md:text-3xl'>
-              {itineraryData?.title}
-            </h2>
+            <div className='items-center gap-3.5 sm:flex'>
+              {isEditingItineraryTitle ? (
+                <TextInput
+                  value={itineraryTitle}
+                  onChange={handleItineraryTitleChange}
+                  onBlur={handleItineraryTitleBlur}
+                  onKeyDown={handleKeyPress}
+                  maxLength={50}
+                  className='!flex-grow sm:!mb-0.5'
+                  classNames={{
+                    input:
+                      '!text-xl sm:!text-2xl !font-bold !bg-neutral-100 !p-0 !border-0 !rounded-md !min-h-11'
+                  }}
+                  autoFocus
+                />
+              ) : (
+                <h2
+                  className={`text-xl sm:text-2xl min-h-11 !place-content-center !leading-none font-bold sm:!mb-0.5 ${
+                    isEditingItinerary ? 'rounded-md hover:bg-neutral-100' : ''
+                  }`}
+                  onClick={() => {
+                    if (isEditingItinerary) {
+                      setItineraryTitle(itineraryData.title)
+                      setIsEditingItineraryTitle(true)
+                    }
+                  }}
+                >
+                  {itineraryTitle || itineraryData.title || 'Sin título'}
+                </h2>
+              )}
+
+              <div className='flex flex-shrink-0 gap-1 mt-1 sm:mt-0'>
+                <Badge variant='light' color='orange' size='md'>
+                  {itineraryData.locations[0]}
+                </Badge>
+                <Badge variant='light' color='pink' size='md'>
+                  {calculateTotalDays(
+                    itineraryData.startDate,
+                    itineraryData.endDate
+                  )}{' '}
+                  días
+                </Badge>
+              </div>
+            </div>
+
             {isCollaborator && (
-              <Menu position='bottom-end' withArrow shadow='md'>
+              <Menu position='bottom-end' withArrow shadow='md' width={210}>
                 <Menu.Target>
                   <ActionIcon
                     variant='filled'
                     radius='xl'
+                    size={26}
                     aria-label='Opciones'
                     color='teal'
+                    className='self-start mt-2 ml-4 sm:self-center sm:mt-0'
                   >
-                    <HiOutlineDotsVertical size={18} />
+                    <HiOutlineDotsVertical size={20} />
                   </ActionIcon>
                 </Menu.Target>
 
                 <Menu.Dropdown>
                   <Menu.Item
                     leftSection={<MdEdit size={14} />}
-                    onClick={() => setEditingItinerary(true)}
+                    onClick={() => setIsEditingItinerary(true)}
                   >
                     Editar itinerario
                   </Menu.Item>
 
-                  {itineraryData?.userId === user?.id && (
+                  {itineraryData.userId === user?.id && (
                     <>
                       <Menu.Item
                         color='red'
@@ -578,6 +923,9 @@ export const Itinerary = () => {
                           size='xs'
                           leftSection={<span>@</span>}
                           error={collaboratorError}
+                          classNames={{
+                            error: 'text-center'
+                          }}
                         />
                         <Button
                           color='teal'
@@ -590,31 +938,113 @@ export const Itinerary = () => {
                           Añadir colaborador
                         </Button>
                       </div>
+
+                      <Switch
+                        size='sm'
+                        color='teal'
+                        onLabel={<MdOutlineVisibility size={18} />}
+                        offLabel={<MdOutlineVisibilityOff size={18} />}
+                        label={isPublic ? 'Público' : 'Privado'}
+                        checked={isPublic}
+                        onChange={handleVisibilityChange}
+                        className='flex justify-center mb-2.5 text-gray-500'
+                      />
                     </>
                   )}
                 </Menu.Dropdown>
               </Menu>
             )}
           </div>
-          <div className='flex items-center gap-2 text-[15px] text-gray-500'>
+          <div className='flex items-center gap-2 mb-3 text-[15px] text-gray-500'>
             <LuCalendarDays size={18} strokeWidth={1.5} />
-            <p>
-              {new Date(itineraryData?.startDate).toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: '2-digit'
-              })}
-              {' - '}
-              {new Date(itineraryData?.endDate).toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: '2-digit'
-              })}{' '}
-              {new Date(itineraryData?.endDate).getFullYear()}
-            </p>
+            <div className='flex items-center gap-1'>
+              {isEditingItinerary ? (
+                <>
+                  <DatePickerInput
+                    valueFormat='DD-MM-YYYY'
+                    value={
+                      itineraryStartDate ? new Date(itineraryStartDate) : null
+                    }
+                    onChange={handleStartDateChange}
+                    classNames={{
+                      input:
+                        '!p-0 !border-0 hover:!bg-neutral-100 !text-gray-500 !text-[15px] !min-h-6'
+                    }}
+                    autoFocus
+                  />
+                  <span>-</span>
+                  <DatePickerInput
+                    valueFormat='DD-MM-YYYY'
+                    value={itineraryEndDate ? new Date(itineraryEndDate) : null}
+                    onChange={handleEndDateChange}
+                    classNames={{
+                      input:
+                        '!p-0 !border-0 hover:!bg-neutral-100 !text-gray-500 !text-[15px] !min-h-6'
+                    }}
+                  />
+                </>
+              ) : (
+                <p className='!text-[15px]'>
+                  {new Date(itineraryData.startDate).toLocaleDateString(
+                    'es-ES',
+                    {
+                      day: '2-digit',
+                      month: '2-digit'
+                    }
+                  )}
+                  {' - '}
+                  {new Date(itineraryData.endDate).toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit'
+                  })}{' '}
+                  {new Date(
+                    itineraryEndDate || itineraryData.endDate
+                  ).getFullYear()}
+                </p>
+              )}
+            </div>
           </div>
-          <p className='mt-3 mb-6 text-justify text-gray-800 text-md'>
-            {itineraryData?.description}
-          </p>
-          <div className='flex items-center justify-between w-full'>
+          {isEditingItineraryDescription ? (
+            <Textarea
+              ref={(el) => {
+                if (el) {
+                  const length = itineraryDescription.length
+                  el.setSelectionRange(length, length)
+                }
+              }}
+              value={itineraryDescription}
+              onChange={handleItineraryDescriptionChange}
+              onBlur={handleItineraryDescriptionBlur}
+              onKeyDown={handleKeyPress}
+              maxLength={250}
+              minRows={1}
+              maxRows={6}
+              autosize
+              className='!flex-grow'
+              classNames={{
+                input:
+                  '!text-[15px] sm:!text-[16px] !text-gray-800 !bg-neutral-100 !p-0 !border-0 !rounded-md !min-h-7 !leading-normal !align-top'
+              }}
+              autoFocus
+            />
+          ) : (
+            <p
+              className={`!text-[15px] sm:!text-[16px] min-h-7 !leading-normal break-words text-gray-800 ${
+                isEditingItinerary ? 'rounded-md hover:bg-neutral-100' : ''
+              }`}
+              onClick={() => {
+                if (isEditingItinerary) {
+                  setItineraryDescription(itineraryData.description)
+                  setIsEditingItineraryDescription(true)
+                }
+              }}
+            >
+              {itineraryDescription ||
+                itineraryData.description ||
+                'Sin descripción'}
+            </p>
+          )}
+          <div className='flex items-center justify-between w-full mt-6'>
             <div className='flex items-center'>
               <Center>
                 <Link to={`/${userData?.username}`}>
@@ -636,9 +1066,7 @@ export const Itinerary = () => {
             </div>
             <Group gap={0}>
               <LikeButton itinerary={itineraryData} />
-              <ActionIcon variant='subtle' color='gray' size={24} p={3}>
-                <IoShareSocialSharp size={16} color='black' />
-              </ActionIcon>
+              <ShareButton />
             </Group>
           </div>
         </div>
@@ -670,7 +1098,9 @@ export const Itinerary = () => {
                     >
                       {(provided) => (
                         <div
-                          {...(editingItinerary ? provided.droppableProps : {})}
+                          {...(isEditingItinerary
+                            ? provided.droppableProps
+                            : {})}
                           ref={provided.innerRef}
                         >
                           {day.events.map((event, index) => (
@@ -682,17 +1112,17 @@ export const Itinerary = () => {
                               {(provided) => (
                                 <div
                                   ref={provided.innerRef}
-                                  {...(editingItinerary
+                                  {...(isEditingItinerary
                                     ? provided.draggableProps
                                     : {})}
                                   className={`flex items-center mb-2 rounded-md group ${
-                                    editingItinerary ?? 'cursor-grab'
+                                    isEditingItinerary ? 'cursor-grab' : ''
                                   }`}
                                 >
                                   <span
                                     {...provided.dragHandleProps}
                                     className={`hidden mr-2 cursor-grab ${
-                                      editingItinerary ?? 'sm:block'
+                                      isEditingItinerary ? 'sm:block' : ''
                                     }`}
                                   >
                                     <FaGripVertical size={20} color='gray' />
@@ -700,44 +1130,67 @@ export const Itinerary = () => {
 
                                   <div className='flex items-center justify-between w-full'>
                                     <Group
-                                      {...(editingItinerary
+                                      {...(isEditingItinerary
                                         ? provided.dragHandleProps
                                         : {})}
                                       wrap='nowrap'
                                       gap='sm'
                                       className='flex items-center w-full'
                                     >
-                                      <Avatar
-                                        src={
-                                          event.image ||
-                                          getRandomEventImage(event.id)
-                                        }
-                                        radius='md'
-                                        w={{ base: 100, sm: 130 }}
-                                        h={{ base: 85, sm: 90 }}
-                                        className='flex-none object-contain'
-                                      />
+                                      {isEditingItinerary ? (
+                                        <FileButton
+                                          onChange={(file) => {
+                                            handleEventImageChange(
+                                              file,
+                                              event,
+                                              day.id
+                                            )
+                                          }}
+                                          accept='.png, .jpg, .jpeg'
+                                        >
+                                          {(props) => (
+                                            <Avatar
+                                              src={
+                                                event.image ||
+                                                '/images/landscape-placeholder.svg'
+                                              }
+                                              radius='md'
+                                              className={`flex-none self-start !min-h-[80px] !w-[100px] transition cursor-pointer hover:opacity-80`}
+                                              {...props}
+                                            />
+                                          )}
+                                        </FileButton>
+                                      ) : (
+                                        <Avatar
+                                          src={
+                                            event.image ||
+                                            '/images/landscape-placeholder.svg'
+                                          }
+                                          radius='md'
+                                          className='flex-none self-start !min-h-[80px] !w-[100px]'
+                                        />
+                                      )}
                                       <Container
                                         p={8}
-                                        h={{ base: 85, sm: 90 }}
-                                        className='flex-grow rounded-lg bg-neutral-100'
+                                        className={`flex-grow min-h-[80px] rounded-lg bg-neutral-100`}
                                       >
                                         <div className='flex flex-col gap-y-1'>
-                                          <Text fw={500} lh={1.2}>
-                                            {event.label}
-                                          </Text>
-                                          <Text
-                                            size='sm'
+                                          <ExpandableText
+                                            text={event.label}
+                                            lines={1}
+                                            lh={1.2}
+                                          />
+                                          <ExpandableText
+                                            text={event.description}
                                             c='dimmed'
+                                            lines={2}
                                             fw={400}
-                                            lineClamp={2}
-                                          >
-                                            {event.content}
-                                          </Text>
+                                            size='sm'
+                                          />
                                         </div>
                                       </Container>
                                     </Group>
-                                    {editingItinerary && (
+                                    {isEditingItinerary && (
                                       <div className='flex flex-col content-end justify-end gap-1 ml-2 cursor-default'>
                                         <ActionIcon
                                           variant='light'
@@ -746,7 +1199,7 @@ export const Itinerary = () => {
                                           radius='xl'
                                           aria-label='Editar'
                                           onClick={() =>
-                                            openEditModal(event, day.id)
+                                            openEditEventModal(event, day.id)
                                           }
                                         >
                                           <MdEdit />
@@ -775,14 +1228,14 @@ export const Itinerary = () => {
                       )}
                     </Droppable>
                   </DragDropContext>
-                  {editingItinerary && (
+                  {isEditingItinerary && (
                     <div className='grid w-full grid-cols-1 gap-2 mt-6 sm:grid-cols-3'>
                       <div className='hidden sm:block'></div>
                       <div className='flex justify-center'>
                         <Button
                           variant='outline'
                           color='teal'
-                          onClick={() => handleAddEvent(day.id)}
+                          onClick={() => openAddEventModal(day.id)}
                         >
                           Añadir evento
                         </Button>
@@ -802,7 +1255,7 @@ export const Itinerary = () => {
               </Accordion.Item>
             ))}
         </Accordion>
-        {editingItinerary && (
+        {isEditingItinerary && itineraryData.days.length < totalDays && (
           <div className='flex justify-center mt-4'>
             <Button
               variant='outline'
@@ -816,15 +1269,114 @@ export const Itinerary = () => {
       </div>
 
       <Modal
-        opened={opened}
-        onClose={closeEditModal}
+        opened={addEventOpened}
+        onClose={closeAddEventModal}
         size='md'
         radius='lg'
         centered
         scrollAreaComponent={scrollComponent}
       >
         <div className='flex flex-col h-[70vh]'>
-          <Title order={2} ta='center' mb='xl' className='sticky top-0 z-10'>
+          <Title order={2} ta='center' mb='lg' className='sticky top-0 z-10'>
+            Crear nuevo evento
+          </Title>
+          <div className='overflow-y-auto max-h-[70vh]'>
+            {formError && (
+              <p className='mb-4 text-center text-red-500'>{formError}</p>
+            )}
+            <div className='px-8'>
+              <form onSubmit={handleSubmitAddEvent} className='mb-4'>
+                <TextInput
+                  label='Título'
+                  value={eventLabel}
+                  onChange={(e) => setEventLabel(e.target.value)}
+                  size='md'
+                  required
+                />
+                <Textarea
+                  label='Descripción'
+                  value={eventDescription}
+                  onChange={(e) => setEventDescription(e.target.value)}
+                  size='md'
+                  mt='sm'
+                  required
+                />
+                <Text size='md' fw={500} mt='sm' className='!mb-1'>
+                  Imagen
+                </Text>
+                <div className='grid grid-cols-3 gap-2'>
+                  <button
+                    key={'/images/monument.avif'}
+                    type='button'
+                    onClick={() => setEventImage('/images/monument.avif')}
+                    className={`w-full h-20 rounded-md overflow-hidden border-2 ${
+                      eventImage === '/images/monument.avif'
+                        ? 'border-blue-500'
+                        : 'border-gray-300'
+                    }`}
+                  >
+                    <img
+                      src={'/images/monument.avif'}
+                      alt='Imagen predefinida'
+                      className='object-cover w-full h-full'
+                    />
+                  </button>
+                  <button
+                    key={'/images/food.jpg'}
+                    type='button'
+                    onClick={() => setEventImage('/images/food.jpg')}
+                    className={`w-full h-20 rounded-md overflow-hidden border-2 ${
+                      eventImage === '/images/food.jpg'
+                        ? 'border-blue-500'
+                        : 'border-gray-300'
+                    }`}
+                  >
+                    <img
+                      src={'/images/food.jpg'}
+                      alt='Imagen predefinida'
+                      className='object-cover w-full h-full'
+                    />
+                  </button>
+                </div>
+                <Text size='sm' ta='center' mt='sm' className='!text-gray-500'>
+                  Subir imagen
+                </Text>
+                <div className='flex justify-center mt-2'>
+                  <FileButton
+                    onChange={handleEventImageChange}
+                    accept='.png, .jpg, .jpeg'
+                  >
+                    {(props) => (
+                      <Avatar
+                        src={eventImage || '/images/landscape-placeholder.svg'}
+                        w={130}
+                        h={90}
+                        radius='md'
+                        className='transition cursor-pointer hover:opacity-80'
+                        {...props}
+                      />
+                    )}
+                  </FileButton>
+                </div>
+                <Button type='submit' color='teal' fullWidth mt='lg'>
+                  Guardar
+                </Button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        opened={editEventOpened}
+        onClose={closeEditEventModal}
+        size='md'
+        radius='lg'
+        centered
+        scrollAreaComponent={scrollComponent}
+      >
+        <div className='flex flex-col h-[70vh]'>
+          <Title order={2} ta='center' mb='lg' className='sticky top-0 z-10'>
             Editar evento
           </Title>
           <div className='overflow-y-auto max-h-[70vh]'>
@@ -832,7 +1384,7 @@ export const Itinerary = () => {
               <p className='mb-4 text-center text-red-500'>{formError}</p>
             )}
             <div className='px-8'>
-              <form onSubmit={handleSubmitEdit} className='mb-4'>
+              <form onSubmit={handleSubmitEditEvent} className='mb-4'>
                 <TextInput
                   label='Título'
                   value={eventLabel}
@@ -852,19 +1404,49 @@ export const Itinerary = () => {
                   size='md'
                   mt='sm'
                 />
-                <Textarea
-                  label='Contenido'
-                  value={eventContent}
-                  onChange={(e) => setEventContent(e.target.value)}
-                  classNames={{
-                    input: '!text-gray-500 focus:!text-black'
-                  }}
-                  size='md'
-                  mt='sm'
-                />
-                <div className='flex justify-center mt-4'>
+                <Text size='md' fw={500} mt='sm' className='!mb-1'>
+                  Imagen
+                </Text>
+                <div className='grid grid-cols-2 gap-2'>
+                  <button
+                    key={'/images/monument.avif'}
+                    type='button'
+                    onClick={() => setEventImage('/images/monument.avif')}
+                    className={`w-full h-24 rounded-md overflow-hidden border-2 ${
+                      eventImage === '/images/monument.avif'
+                        ? 'border-blue-500'
+                        : 'border-gray-300'
+                    }`}
+                  >
+                    <img
+                      src={'/images/monument.avif'}
+                      alt='Imagen predefinida'
+                      className='object-cover w-full h-full'
+                    />
+                  </button>
+                  <button
+                    key={'/images/food.jpg'}
+                    type='button'
+                    onClick={() => setEventImage('/images/food.jpg')}
+                    className={`w-full h-24 rounded-md overflow-hidden border-2 ${
+                      eventImage === '/images/food.jpg'
+                        ? 'border-blue-500'
+                        : 'border-gray-300'
+                    }`}
+                  >
+                    <img
+                      src={'/images/food.jpg'}
+                      alt='Imagen predefinida'
+                      className='object-cover w-full h-full'
+                    />
+                  </button>
+                </div>
+                <Text size='sm' ta='center' mt='sm' className='!text-gray-500'>
+                  Subir imagen
+                </Text>
+                <div className='flex justify-center mt-2'>
                   <FileButton
-                    onChange={handleImageChange}
+                    onChange={handleEventImageChange}
                     accept='.png, .jpg, .jpeg'
                   >
                     {(props) => (

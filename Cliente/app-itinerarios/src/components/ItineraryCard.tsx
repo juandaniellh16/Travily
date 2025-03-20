@@ -1,9 +1,10 @@
-import { Card, Image, Text, Badge, Group, Center, Avatar } from '@mantine/core'
+import { Image, Text, Badge, Group, Center, Avatar } from '@mantine/core'
 import { LikeButton } from './LikeButton'
 import { ItinerarySimpleType, UserPublic } from '@/types'
 import { userService } from '@/services/userService'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { calculateTotalDays } from '@/utils'
 
 interface ItineraryCardProps {
   itinerary: ItinerarySimpleType
@@ -26,24 +27,19 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
   }, [itinerary.userId])
 
   return (
-    <Card
-      className='flex flex-col flex-grow rounded-xl group'
-      px={13}
-      pt='md'
-      pb='xs'
-    >
-      <Card.Section className='h-[55%] min-h-[55%] rounded-t-xl overflow-hidden'>
+    <div className='flex flex-col flex-grow rounded-xl'>
+      <div className='h-[52%] min-h-[52%] rounded-xl overflow-hidden'>
         <Link to={`/itineraries/${itinerary.id}`}>
           <Image
             src={itinerary.image}
             h='100%'
             alt={itinerary.title}
-            className='transition duration-500 transform group-hover:scale-105'
+            className='transition duration-300 transform hover:scale-105'
           />
         </Link>
-      </Card.Section>
+      </div>
 
-      <div className='flex flex-col justify-between flex-grow'>
+      <div className='flex flex-col justify-between flex-grow px-2'>
         <div className='flex flex-col gap-1 my-2'>
           <Link to={`/itineraries/${itinerary.id}`}>
             <Text size='sm' fw={500} lineClamp={1}>
@@ -51,21 +47,15 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
             </Text>
           </Link>
           <div className='flex gap-1 mb-1'>
-            <Badge size='xs' color='pink'>
-              Mountain
+            <Badge variant='light' color='orange' size='xs'>
+              {itinerary.locations[0]}
             </Badge>
-            <Badge variant='light' size='xs' key={'Sea'} leftSection={'🌊'}>
-              Beach
+            <Badge variant='light' color='pink' size='xs'>
+              {calculateTotalDays(itinerary.startDate, itinerary.endDate)} días
             </Badge>
           </div>
 
-          <Text
-            fz='sm'
-            c='dimmed'
-            lh={1.3}
-            lineClamp={2}
-            className='break-words'
-          >
+          <Text fz='sm' c='dimmed' lh={1.3} lineClamp={2}>
             {itinerary.description}
           </Text>
         </div>
@@ -92,6 +82,6 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
           <LikeButton itinerary={itinerary} />
         </Group>
       </div>
-    </Card>
+    </div>
   )
 }

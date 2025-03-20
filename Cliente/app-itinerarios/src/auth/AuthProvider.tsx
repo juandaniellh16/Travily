@@ -2,14 +2,14 @@ import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { AuthContext } from './AuthContext'
 import { authService } from '@/services/authService'
 import { userService } from '@/services/userService'
-import { UserPrivate } from '@/types'
+import { UserPublic } from '@/types'
 
 interface AuthProviderProps {
   children: ReactNode
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<UserPrivate | null>(null)
+  const [user, setUser] = useState<UserPublic | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const refreshUser = useCallback(async (userId?: string) => {

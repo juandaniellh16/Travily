@@ -4,7 +4,6 @@ export interface Event {
   label: string
   description: string
   image: string | null
-  content: string
 }
 
 export interface Day {
@@ -22,6 +21,7 @@ export interface ItineraryType {
   startDate: string
   endDate: string
   locations: string[]
+  isPublic: boolean
   userId: string
   likes: number
   days: Day[]
@@ -35,6 +35,7 @@ export interface ItinerarySimpleType {
   startDate: string
   endDate: string
   locations: string[]
+  isPublic: boolean
   userId: string
   likes: number
 }
@@ -50,10 +51,16 @@ export interface UserPublic {
 
 export interface UserPrivate extends UserPublic {
   email: string
+  password: string
 }
 
 export interface UserWithFollowStatus extends UserPublic {
   isFollowing: boolean
+}
+
+export interface UserUpdate extends Partial<UserPrivate> {
+  currentPassword?: string
+  newPassword?: string
 }
 
 export interface Collaborator {

@@ -1,8 +1,8 @@
-import { UserPrivate } from '@/types'
+import { UserPublic } from '@/types'
 import { createContext } from 'react'
 
 interface AuthContextType {
-  user: UserPrivate | null
+  user: UserPublic | null
   isLoading: boolean
   register: (
     name: string,

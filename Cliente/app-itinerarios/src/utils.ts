@@ -1,3 +1,12 @@
+export const calculateTotalDays = (startDate: string, endDate: string) => {
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+
+  const diffInMs = end.getTime() - start.getTime()
+  const totalDays = diffInMs / (1000 * 60 * 60 * 24)
+  return Math.round(totalDays) + 1
+}
+
 const defaultEventImage = [
   '/images/default-event-image-1.svg',
   '/images/default-event-image-2.svg',

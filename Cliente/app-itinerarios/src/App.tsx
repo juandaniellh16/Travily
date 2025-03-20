@@ -12,6 +12,10 @@ import { Itinerary } from './pages/Itinerary'
 import { AuthLayout } from './layouts/AuthLayout'
 import { Followers } from './pages/Followers'
 import { Following } from './pages/Following'
+import { Connect } from './pages/Connect'
+import { UserItineraries } from './pages/UserItineraries'
+import { SearchResults } from './pages/SearchResults'
+import { ProfileSettings } from './pages/ProfileSettings'
 
 function App() {
   return (
@@ -19,10 +23,12 @@ function App() {
       defaultColorScheme='light'
       theme={{
         breakpoints: {
-          xs: '30rem',
+          xxs: '30rem',
+          xs: '35rem',
           sm: '40rem',
           md: '48rem',
           lg: '64rem',
+          lg72rem: '72rem',
           xl: '80rem'
         }
       }}
@@ -34,10 +40,19 @@ function App() {
             <Route path='/:username/followers' element={<Followers />} />
             <Route path='/:username/following' element={<Following />} />
           </Route>
+          <Route path='/:username/itineraries' element={<UserItineraries />} />
+          <Route path='/:username/favorites' element={<UserItineraries />} />
           <Route path='/itineraries/:itineraryId' element={<Itinerary />} />
           <Route element={<ProtectedRoute />}>
             <Route path='/create-itinerary' element={<ItineraryForm />} />
           </Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path='/connect' element={<Connect />} />
+          </Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path='/settings' element={<ProfileSettings />} />
+          </Route>
+          <Route path='/search' element={<SearchResults />} />
         </Route>
         <Route element={<AuthLayout />}>
           <Route path='/login' element={<Login />} />

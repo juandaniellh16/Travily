@@ -83,79 +83,86 @@ export const Register = () => {
   }
 
   return (
-    <div className='px-8 mb-8'>
-      <Title order={2} ta='center' mb='xl'>
-        Regístrate en Tripify
-      </Title>
-      {error && (
-        <p className='max-w-xs mb-4 text-center text-red-500'>{error}</p>
-      )}
-      <form onSubmit={handleSubmit} className='mb-4'>
-        <TextInput
-          label='Nombre'
-          placeholder=''
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          size='md'
-          required
-        />
-        <TextInput
-          label='Nombre de usuario'
-          placeholder=''
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          size='md'
-          required
-          mt='sm'
-        />
-        <TextInput
-          type='email'
-          label='Correo electrónico'
-          placeholder=''
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          size='md'
-          required
-          mt='sm'
-        />
-        <PasswordInput
-          label='Contraseña'
-          placeholder=''
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          size='md'
-          required
-          mt='sm'
-        />
-        <div className='flex justify-center mt-4'>
-          <FileButton onChange={handleAvatarChange} accept='.png, .jpg, .jpeg'>
-            {(props) => (
-              <Avatar
-                src={avatar}
-                size={100}
-                className='transition cursor-pointer hover:opacity-80'
-                {...props}
-              />
-            )}
-          </FileButton>
-        </div>
-        <Button
-          type='submit'
-          loading={loading}
-          loaderProps={{ type: 'dots' }}
-          fullWidth
-          color='teal'
-          mt='lg'
-        >
-          Crear cuenta
-        </Button>
-      </form>
-      <Text size='sm' ta='center' mt='lg' mb='md'>
-        ¿Ya tienes una cuenta?{' '}
-        <Link to='/login' className='text-blue-500 hover:underline'>
-          Inicia sesión
-        </Link>
-      </Text>
+    <div className='flex items-center justify-center mx-auto'>
+      <div className='w-full max-w-md'>
+        <Title order={2} ta='center' mb='xl'>
+          Regístrate en Tripify
+        </Title>
+        {error && (
+          <p className='max-w-xs mx-auto mb-4 text-center text-red-500'>
+            {error}
+          </p>
+        )}
+        <form onSubmit={handleSubmit} className='mb-4'>
+          <TextInput
+            label='Nombre'
+            placeholder=''
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            size='md'
+            required
+          />
+          <TextInput
+            label='Nombre de usuario'
+            placeholder=''
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            size='md'
+            required
+            mt='sm'
+          />
+          <TextInput
+            type='email'
+            label='Correo electrónico'
+            placeholder=''
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            size='md'
+            required
+            mt='sm'
+          />
+          <PasswordInput
+            label='Contraseña'
+            placeholder=''
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            size='md'
+            required
+            mt='sm'
+          />
+          <div className='flex justify-center mt-4'>
+            <FileButton
+              onChange={handleAvatarChange}
+              accept='.png, .jpg, .jpeg'
+            >
+              {(props) => (
+                <Avatar
+                  src={avatar}
+                  size={100}
+                  className='transition cursor-pointer hover:opacity-80'
+                  {...props}
+                />
+              )}
+            </FileButton>
+          </div>
+          <Button
+            type='submit'
+            loading={loading}
+            loaderProps={{ type: 'dots' }}
+            fullWidth
+            color='teal'
+            mt='lg'
+          >
+            Crear cuenta
+          </Button>
+        </form>
+        <Text size='sm' ta='center' mt='lg' mb='md'>
+          ¿Ya tienes una cuenta?{' '}
+          <Link to='/login' className='text-blue-500 hover:underline'>
+            Inicia sesión
+          </Link>
+        </Text>
+      </div>
     </div>
   )
 }

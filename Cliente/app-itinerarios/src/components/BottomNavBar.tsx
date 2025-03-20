@@ -51,7 +51,7 @@ export const BottomNavBar = ({
           <span className='text-xs'>Inicio</span>
         </Link>
         <Link
-          to='#'
+          to='/search'
           className={`inline-flex flex-col items-center justify-center px-5  
             ${
               activeButton === 'search'

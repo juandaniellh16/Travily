@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/config/config'
 import { fetchWithAuth } from './fetchWithAuth'
+import { ItineraryType } from '@/types'
 
 export const itineraryService = {
   getAll: async (params: {
@@ -7,9 +8,12 @@ export const itineraryService = {
     userId?: string
     username?: string
     likedBy?: string
+    followedBy?: string
+    visibility?: 'public' | 'all'
     sort?: string
+    limit?: number
   }) => {
-    let queryString = `${API_BASE_URL}/itineraries`
+    let queryString = '/itineraries'
     const queryParams = new URLSearchParams()
 
     if (params.location) {
@@ -24,15 +28,24 @@ export const itineraryService = {
     if (params.likedBy) {
       queryParams.append('likedBy', params.likedBy)
     }
+    if (params.followedBy) {
+      queryParams.append('followedBy', params.followedBy)
+    }
+    if (params.visibility) {
+      queryParams.append('visibility', params.visibility)
+    }
     if (params.sort) {
       queryParams.append('sort', params.sort)
+    }
+    if (params.limit) {
+      queryParams.append('limit', params.limit.toString())
     }
     if (queryParams.toString()) {
       queryString += `?${queryParams.toString()}`
     }
 
     const response = (await Promise.race([
-      fetch(queryString, {
+      fetchWithAuth(queryString, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -58,7 +71,8 @@ export const itineraryService = {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      credentials: 'include'
     })
     if (!response.ok) {
       const errorData = await response.json()
@@ -74,6 +88,7 @@ export const itineraryService = {
     startDate: string,
     endDate: string,
     locations: string[],
+    isPublic: boolean,
     userId: string
   ) => {
     const response = await fetchWithAuth('/itineraries', {
@@ -86,6 +101,7 @@ export const itineraryService = {
         startDate,
         endDate,
         locations,
+        isPublic,
         userId
       })
     })
@@ -115,18 +131,21 @@ export const itineraryService = {
     }
   },
 
-  /*
-  update: async (itineraryId: string) => {
+  update: async (
+    itineraryId: string,
+    updatedItineraryData: Partial<ItineraryType>
+  ) => {
     const response = await fetchWithAuth(`/itineraries/${itineraryId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' }
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedItineraryData)
     })
 
     if (!response.ok) {
-      throw new Error('Error updating itinerary')
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Error updating itinerary data')
     }
   },
-  */
 
   like: async (itineraryId: string) => {
     const response = await fetchWithAuth(`/itineraries/${itineraryId}/likes`, {
@@ -193,8 +212,8 @@ export const itineraryService = {
   },
 
   getCollaborators: async (itineraryId: string) => {
-    const response = await fetch(
-      `${API_BASE_URL}/itineraries/${itineraryId}/collaborators`,
+    const response = await fetchWithAuth(
+      `/itineraries/${itineraryId}/collaborators`,
       {
         method: 'GET',
         headers: {
@@ -209,6 +228,28 @@ export const itineraryService = {
     }
 
     return await response.json()
+  },
+
+  checkIfCollaborator: async (itineraryId: string) => {
+    const response = await fetchWithAuth(
+      `/itineraries/${itineraryId}/is-collaborator`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(
+        errorData.error || 'Error checking if user is collaborator'
+      )
+    }
+
+    const data = await response.json()
+    return data.isCollaborator
   }
 
   /*

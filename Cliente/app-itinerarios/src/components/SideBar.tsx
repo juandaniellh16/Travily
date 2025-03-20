@@ -89,19 +89,19 @@ export const SideBar = ({ activeTab, setActiveTab }: SideBarProps) => {
           )}
         </div>
       </div>
-      <div className='flex justify-center w-full mt-3'>
+      <div className='flex justify-center w-full my-3'>
         <Button
           variant='filled'
           color='teal'
           radius='xl'
           h={45}
           leftSection={<FaPlus size={12} />}
-          className='text-nowrap'
+          className='w-full text-nowrap'
           onClick={() => {
             if (user) {
               navigate('/create-itinerary')
             } else {
-              navigate('/login')
+              open()
             }
           }}
         >

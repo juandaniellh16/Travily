@@ -1,4 +1,4 @@
-import { FollowingList } from '@/components/FollowingList'
+import { UsersList } from '@/components/UsersList'
 import { useAuth } from '@/hooks/useAuth'
 import { userService } from '@/services/userService'
 import { UserWithFollowStatus } from '@/types'
@@ -45,7 +45,7 @@ export const Following = () => {
         {following.length === 0 ? (
           <p className='mt-6 text-center text-gray-500'>Aún no sigue a nadie</p>
         ) : (
-          <FollowingList following={following} handleFollow={handleFollow} />
+          <UsersList users={following} handleFollow={handleFollow} />
         )}
       </div>
     </div>

@@ -1,15 +1,14 @@
 import { FollowersFollowingTabs } from '@/components/FollowersFollowingTabs'
-import { ItineraryCard } from '@/components/ItineraryCard'
 import { ProfileCard } from '@/components/ProfileCard'
 import { useAuth } from '@/hooks/useAuth'
 import { ActiveTab } from '@/layouts/MainLayout'
 import { itineraryService } from '@/services/itineraryService'
 import { userService } from '@/services/userService'
 import { ItinerarySimpleType, UserWithFollowStatus } from '@/types'
-import { Carousel } from '@mantine/carousel'
 import { Loader, Modal, ScrollArea, SegmentedControl } from '@mantine/core'
 import { useEffect, useRef, useState } from 'react'
 import {
+  Link,
   Outlet,
   useLocation,
   useNavigate,
@@ -17,11 +16,13 @@ import {
   useParams
 } from 'react-router-dom'
 import { NotFound } from './NotFound'
+import { ItinerariesList } from '@/components/ItinerariesList'
+import { IoIosArrowForward } from 'react-icons/io'
 
 export const Profile = () => {
+  const { user: authUser } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const { user } = useAuth()
   const { username } = useParams()
   const [userId, setUserId] = useState<string | null>(null)
   const [followers, setFollowers] = useState<UserWithFollowStatus[] | null>(
@@ -36,6 +37,7 @@ export const Profile = () => {
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const scrollPosition = useRef(0)
   const [notFoundError, setNotFoundError] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -51,7 +53,7 @@ export const Profile = () => {
     }
 
     fetchUserId()
-  }, [username, navigate])
+  }, [username])
 
   useEffect(() => {
     setOpened(false)
@@ -81,6 +83,17 @@ export const Profile = () => {
     null
   )
 
+  const handleDeleteItinerary = async (id: string) => {
+    try {
+      await itineraryService.delete(id)
+      setItineraries((prev) =>
+        prev ? prev.filter((itinerary) => itinerary.id !== id) : []
+      )
+    } catch {
+      setError('Error al borrar el itinerario. Por favor, inténtalo de nuevo.')
+    }
+  }
+
   useEffect(() => {
     const fetchUserItineraries = async () => {
       try {
@@ -88,12 +101,16 @@ export const Profile = () => {
           let itinerariesData
           if (activeTab === 'Itinerarios') {
             itinerariesData = await itineraryService.getAll({
-              userId: userId
+              userId: userId,
+              visibility: authUser ? 'all' : 'public',
+              limit: 3
             })
             setItineraries(itinerariesData)
           } else if (activeTab === 'Favoritos') {
             itinerariesData = await itineraryService.getAll({
-              likedBy: userId
+              likedBy: userId,
+              visibility: authUser ? 'all' : 'public',
+              limit: 3
             })
             setItineraries(itinerariesData)
           } else if (activeTab === 'Listas') {
@@ -110,7 +127,7 @@ export const Profile = () => {
     }
 
     fetchUserItineraries()
-  }, [userId, activeTab])
+  }, [userId, activeTab, authUser])
 
   useEffect(() => {
     const fetchFollowingData = async () => {
@@ -151,7 +168,7 @@ export const Profile = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollPosition.current
     }
-  }, [followers, following, user])
+  }, [followers, following, authUser])
 
   if (notFoundError) {
     return <NotFound from='profile' />
@@ -217,40 +234,41 @@ export const Profile = () => {
             withItemsBorders={false}
           />
         </div>
-        <h2 className='my-4 text-xl font-medium'>{activeTab}</h2>
+        <div className='flex items-center justify-between my-4'>
+          <h2 className='text-xl font-medium'>{activeTab}</h2>
+          {(activeTab === 'Itinerarios' || activeTab === 'Favoritos') && (
+            <Link
+              to={
+                activeTab === 'Itinerarios'
+                  ? `/${username}/itineraries`
+                  : `/${username}/favorites`
+              }
+              className='text-sm font-medium text-emerald-600'
+            >
+              <div className='flex items-center gap-0.5 leading-none'>
+                <span className='pb-0.5'>Ver todos</span>
+                <IoIosArrowForward size={14} strokeWidth={2} />
+              </div>
+            </Link>
+          )}
+        </div>
         {loadingTab ? (
-          <div className='flex items-center justify-center h-[300px] pb-[15%]'>
+          <div className='flex items-center justify-center h-[295px] pb-[15%]'>
             <Loader color='teal' />
           </div>
+        ) : activeTab === 'Listas' ? (
+          <div className='flex items-center text-gray-500 justify-center h-[295px] pb-[15%]'>
+            <span>Las listas estarán disponibles próximamente.</span>
+          </div>
         ) : itineraries?.length === 0 ? (
-          <div className='flex items-center justify-center h-[300px] pb-[15%]'>
+          <div className='flex items-center text-gray-500 justify-center h-[295px] pb-[15%]'>
             <span>No hay itinerarios</span>
           </div>
         ) : (
-          <Carousel
-            height={300}
-            slideSize={{
-              base: '75%',
-              xs: '55%',
-              sm: '38%',
-              md: '34%',
-              lg: '51%',
-              xl: '33.33333%'
-            }}
-            slideGap='xs'
-            align='center'
-            initialSlide={0}
-            slidesToScroll='auto'
-            loop
-          >
-            {itineraries?.map((itinerary) => (
-              <Carousel.Slide key={itinerary.id}>
-                <div className='flex h-full overflow-hidden rounded-xl'>
-                  <ItineraryCard itinerary={itinerary} />
-                </div>
-              </Carousel.Slide>
-            ))}
-          </Carousel>
+          <ItinerariesList
+            handleDelete={handleDeleteItinerary}
+            itineraries={itineraries}
+          />
         )}
       </div>
     </>

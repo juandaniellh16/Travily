@@ -5,9 +5,7 @@ export const ProtectedRoute = () => {
   const { user, isLoading } = useAuth()
   const location = useLocation()
 
-  if (isLoading) {
-    return
-  }
+  if (isLoading) return
 
   if (!user) {
     return <Navigate to='/login' state={{ from: location }} />

@@ -6,6 +6,7 @@ import {
   Avatar,
   Button,
   FileButton,
+  Switch,
   Textarea,
   TextInput,
   Title
@@ -14,6 +15,7 @@ import { itineraryService } from '@/services/itineraryService'
 import { LuCalendarDays } from 'react-icons/lu'
 import { DatePickerInput } from '@mantine/dates'
 import '@mantine/dates/styles.css'
+import { MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 
 export const ItineraryForm = () => {
   const { user } = useAuth()
@@ -25,6 +27,7 @@ export const ItineraryForm = () => {
   const [endDate, setEndDate] = useState('')
   const [locations, setLocations] = useState<string[]>([])
   const [inputValue, setInputValue] = useState('')
+  const [isPublic, setIsPublic] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -89,6 +92,7 @@ export const ItineraryForm = () => {
           startDate,
           endDate,
           locations,
+          isPublic,
           userId
         )
         navigate(relativePath)
@@ -118,110 +122,123 @@ export const ItineraryForm = () => {
   placeHolderEndDate.setDate(placeHolderStartDate.getDate() + 7)
 
   return (
-    <div className='flex flex-col items-center px-8'>
-      <Title order={2} ta='center' mb='xl'>
-        Crea un nuevo itinerario
-      </Title>
-      {error && <p className='mb-4 text-center text-red-500'>{error}</p>}
-      <form onSubmit={handleSubmit} className='mb-4'>
-        <TextInput
-          label='Título'
-          placeholder='Viaje a la playa'
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          size='md'
-          withAsterisk={false}
-          required
-        />
-        <div className='flex items-center gap-2 mt-5'>
+    <div className='flex items-center justify-center'>
+      <div className='w-full max-w-md px-8'>
+        <Title order={2} ta='center' mb='xl'>
+          Crea un nuevo itinerario
+        </Title>
+        {error && <p className='mb-4 text-center text-red-500'>{error}</p>}
+        <form onSubmit={handleSubmit} className='mb-4'>
           <TextInput
-            label='Añadir destino'
-            placeholder='Londres, París, Madrid...'
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            label='Título'
+            placeholder='Viaje a Escocia'
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             size='md'
-            className='w-full'
+            withAsterisk={false}
+            required
+          />
+          <div className='flex items-center gap-2 mt-5'>
+            <TextInput
+              label='Añadir destino'
+              placeholder='Londres, París, Madrid...'
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              size='md'
+              className='w-full'
+            />
+            <Button
+              onClick={handleAddLocation}
+              className='flex-shrink-0 mt-auto'
+              color='teal'
+              size='md'
+            >
+              Añadir
+            </Button>
+          </div>
+          {locations.length > 0 && (
+            <label className='block mt-2 text-sm'>
+              Destinos: {locations.join(', ')}
+            </label>
+          )}
+          <Textarea
+            label='Descripción (opcional)'
+            placeholder='Un viaje inolvidable a Escocia...'
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            size='md'
+            mt='sm'
+          />
+          <div className='flex items-center flex-grow gap-4 mt-5'>
+            <DatePickerInput
+              valueFormat='DD-MM-YYYY'
+              leftSection={<LuCalendarDays size={18} strokeWidth={1.5} />}
+              leftSectionPointerEvents='none'
+              withAsterisk={false}
+              label='Fecha de inicio'
+              placeholder={placeHolderStartDate
+                .toLocaleDateString('es-ES')
+                .replace(/\//g, '-')}
+              value={startDate ? new Date(startDate) : null}
+              onChange={handleStartDateChange}
+              className='w-full'
+              size='md'
+              required
+            />
+            <DatePickerInput
+              valueFormat='DD-MM-YYYY'
+              leftSection={<LuCalendarDays size={18} strokeWidth={1.5} />}
+              leftSectionPointerEvents='none'
+              withAsterisk={false}
+              label='Fecha de fin'
+              placeholder={placeHolderEndDate
+                .toLocaleDateString('es-ES')
+                .replace(/\//g, '-')}
+              value={endDate ? new Date(endDate) : null}
+              onChange={handleEndDateChange}
+              className='w-full'
+              size='md'
+              required
+            />
+          </div>
+          <div className='flex justify-center mt-5'>
+            <FileButton onChange={handleImageChange} accept='.png, .jpg, .jpeg'>
+              {(props) => (
+                <Avatar
+                  src={image || '/images/landscape-placeholder.svg'}
+                  w={130}
+                  h={90}
+                  radius='md'
+                  className='transition cursor-pointer hover:opacity-80'
+                  {...props}
+                />
+              )}
+            </FileButton>
+          </div>
+          <Switch
+            size='lg'
+            color='teal'
+            onLabel={<MdOutlineVisibility size={21} />}
+            offLabel={<MdOutlineVisibilityOff size={21} />}
+            label={isPublic ? 'Público' : 'Privado'}
+            checked={isPublic}
+            onChange={(event) => setIsPublic(event.currentTarget.checked)}
+            mt='lg'
+            className='flex justify-center text-gray-500'
           />
           <Button
-            onClick={handleAddLocation}
-            className='flex-shrink-0 mt-auto'
+            type='submit'
+            loading={loading}
+            loaderProps={{ type: 'dots' }}
+            fullWidth
+            mt='lg'
             color='teal'
-            size='md'
+            className='py-2 rounded-lg'
           >
-            Añadir
+            Crear
           </Button>
-        </div>
-        {locations.length > 0 && (
-          <label className='block mt-2 text-sm'>
-            Destinos: {locations.join(', ')}
-          </label>
-        )}
-        <Textarea
-          label='Descripción (opcional)'
-          placeholder='Un viaje inolvidable a la playa'
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          size='md'
-          mt='sm'
-        />
-        <div className='flex items-center flex-grow gap-4 mt-5'>
-          <DatePickerInput
-            valueFormat='DD-MM-YYYY'
-            leftSection={<LuCalendarDays size={18} strokeWidth={1.5} />}
-            leftSectionPointerEvents='none'
-            withAsterisk={false}
-            label='Fecha de inicio'
-            placeholder={placeHolderStartDate
-              .toLocaleDateString('es-ES')
-              .replace(/\//g, '-')}
-            value={startDate ? new Date(startDate) : null}
-            onChange={handleStartDateChange}
-            className='w-full'
-            size='md'
-            required
-          />
-          <DatePickerInput
-            valueFormat='DD-MM-YYYY'
-            leftSection={<LuCalendarDays size={18} strokeWidth={1.5} />}
-            leftSectionPointerEvents='none'
-            withAsterisk={false}
-            label='Fecha de fin'
-            placeholder={placeHolderEndDate
-              .toLocaleDateString('es-ES')
-              .replace(/\//g, '-')}
-            value={endDate ? new Date(endDate) : null}
-            onChange={handleEndDateChange}
-            className='w-full'
-            size='md'
-            required
-          />
-        </div>
-        <div className='flex justify-center mt-5'>
-          <FileButton onChange={handleImageChange} accept='.png, .jpg, .jpeg'>
-            {(props) => (
-              <Avatar
-                src={image || '/images/landscape-placeholder.svg'}
-                w={130}
-                h={90}
-                radius='md'
-                className='transition cursor-pointer hover:opacity-80'
-                {...props}
-              />
-            )}
-          </FileButton>
-        </div>
-        <Button
-          type='submit'
-          loading={loading}
-          loaderProps={{ type: 'dots' }}
-          fullWidth
-          mt='lg'
-          color='teal'
-          className='py-2 rounded-lg'
-        >
-          Crear
-        </Button>
-      </form>
+        </form>
+      </div>
     </div>
   )
 }

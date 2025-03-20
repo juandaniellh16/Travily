@@ -3,12 +3,12 @@ import { DatabaseError, NotFoundError } from '../../errors/errors.js'
 
 export class EventModel {
   static async addEvent ({ dayId, event }) {
-    const { orderIndex, label, description, image, content } = event
+    const { orderIndex, label, description, image } = event
     const connection = await getConnection()
     try {
       const [result] = await connection.query(
-        'INSERT INTO itinerary_events (day_id, order_index, label, description, image, content) VALUES (?, ?, ?, ?, ?, ?);',
-        [dayId, orderIndex, label, description, image, content]
+        'INSERT INTO itinerary_events (day_id, order_index, label, description, image) VALUES (?, ?, ?, ?, ?);',
+        [dayId, orderIndex, label, description, image]
       )
 
       if (!result.insertId) {
@@ -17,7 +17,7 @@ export class EventModel {
 
       const newEventId = result.insertId
 
-      return { id: newEventId, dayId, orderIndex, label, description, image, content }
+      return { id: newEventId, dayId, orderIndex, label, description, image }
     } catch (error) {
       throw new DatabaseError('Error adding event: ' + error.message)
     } finally {
@@ -67,10 +67,6 @@ export class EventModel {
       if (updatedEventData.description) {
         updateFields.push('description = ?')
         queryParams.push(updatedEventData.description)
-      }
-      if (updatedEventData.content) {
-        updateFields.push('content = ?')
-        queryParams.push(updatedEventData.content)
       }
       if (updatedEventData.image) {
         updateFields.push('image = ?')

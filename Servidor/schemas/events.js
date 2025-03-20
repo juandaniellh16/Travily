@@ -11,13 +11,10 @@ const eventSchema = z.object({
   }),
   description: z.string({
     invalid_type_error: 'Event description must be a string'
-  }),
+  }).optional(),
   image: z.string({
     invalid_type_error: 'Event image must be a string'
-  }).url('Event image must be a valid URL').or(z.string().refine((value) => value.startsWith('/images/'))).nullable().optional(),
-  content: z.string({
-    invalid_type_error: 'Event content must be a string'
-  })
+  }).url('Event image must be a valid URL').or(z.string().refine((value) => value.startsWith('/images/'))).nullable().optional()
 })
 
 export function validateEvent (input) {

@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
-import { validateUser } from '../schemas/users.js'
+import { validateCreateUser } from '../schemas/createUser.js'
 import { validateLogin } from '../schemas/login.js'
 import { JWT_SECRET } from '../config/config.js'
 import { InvalidInputError, UnauthorizedError } from '../errors/errors.js'
@@ -12,7 +12,7 @@ export class AuthController {
 
   register = async (req, res, next) => {
     try {
-      const result = validateUser(req.body)
+      const result = validateCreateUser(req.body)
 
       if (!result.success) {
         throw new InvalidInputError('Invalid user data: ' + JSON.stringify(result.error.message))
@@ -41,8 +41,8 @@ export class AuthController {
       const isEmail = usernameOrEmail.includes('@')
 
       const user = isEmail
-        ? await this.userModel.getByEmail({ email: usernameOrEmail, includePassword: true, includeEmail: true })
-        : await this.userModel.getByUsername({ username: usernameOrEmail, includePassword: true, includeEmail: true })
+        ? await this.userModel.getByEmail({ email: usernameOrEmail, includePassword: true })
+        : await this.userModel.getByUsername({ username: usernameOrEmail, includePassword: true })
 
       const passwordCorrect = user === null
         ? false
@@ -88,7 +88,6 @@ export class AuthController {
         id: user.id,
         name: user.name,
         username: user.username,
-        email: user.email,
         avatar: user.avatar,
         followers: user.followers,
         following: user.following

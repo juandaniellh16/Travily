@@ -1,8 +1,8 @@
 import { getConnection } from '../../config/db.js'
-import { DatabaseError, NotFoundError } from '../../errors/errors.js'
+import { DatabaseError, NotFoundError, UnauthorizedError } from '../../errors/errors.js'
 
 export class ItineraryModel {
-  static async getAll ({ location, userId, username, likedBy, sort }) {
+  static async getAll ({ location, userId, username, role, likedBy, followedBy, visibility, sort, limit, userIdSession }) {
     const connection = await getConnection()
     try {
       const queryParams = []
@@ -15,6 +15,7 @@ export class ItineraryModel {
           i.start_date AS startDate,
           i.end_date AS endDate,
           COALESCE(locations.locations, '') AS locations,
+          i.is_public AS isPublic,
           BIN_TO_UUID(i.user_id) AS userId,
           i.likes
       `
@@ -48,19 +49,93 @@ export class ItineraryModel {
       const filters = []
 
       if (userId) {
-        filters.push('i.user_id = UUID_TO_BIN(?)')
-        queryParams.push(userId)
+        if (role === 'owner') {
+          filters.push('i.user_id = UUID_TO_BIN(?)')
+          queryParams.push(userId)
+        } else if (role === 'collaborator') {
+          filters.push(`
+            EXISTS (
+              SELECT 1 FROM itinerary_collaborators ic
+              WHERE ic.itinerary_id = i.id 
+              AND ic.user_id = UUID_TO_BIN(?)
+            )
+          `)
+          queryParams.push(userId)
+        } else {
+          filters.push(`
+            (
+              i.user_id = UUID_TO_BIN(?)
+              OR EXISTS (
+                SELECT 1 FROM itinerary_collaborators ic
+                WHERE ic.itinerary_id = i.id 
+                AND ic.user_id = UUID_TO_BIN(?)
+              )
+            )
+          `)
+          queryParams.push(userId, userId)
+        }
       }
 
       if (username) {
-        filters.push('i.username = (SELECT username FROM users WHERE username = UUID_TO_BIN(?))')
-        queryParams.push(username)
+        if (role === 'owner') {
+          filters.push('i.user_id = (SELECT id FROM users WHERE username = ?)')
+          queryParams.push(username)
+        } else if (role === 'collaborator') {
+          filters.push(`
+            EXISTS (
+              SELECT 1 FROM itinerary_collaborators ic
+              WHERE ic.itinerary_id = i.id 
+              AND ic.user_id = (SELECT id FROM users WHERE username = ?)
+            )
+          `)
+          queryParams.push(username)
+        } else {
+          filters.push(`
+            (
+              i.user_id = (SELECT id FROM users WHERE username = ?)
+              OR EXISTS (
+                SELECT 1 FROM itinerary_collaborators ic
+                WHERE ic.itinerary_id = i.id 
+                AND ic.user_id = (SELECT id FROM users WHERE username = ?)
+              )
+            )
+          `)
+          queryParams.push(username, username)
+        }
       }
 
       if (likedBy) {
         query += ' JOIN likes li ON i.id = li.itinerary_id'
         filters.push('li.user_id = UUID_TO_BIN(?)')
         queryParams.push(likedBy)
+      }
+
+      if (followedBy) {
+        filters.push(`
+          i.user_id IN (
+            SELECT following_id
+            FROM followers
+            WHERE follower_id = UUID_TO_BIN(?)
+          )
+        `)
+        queryParams.push(followedBy)
+      }
+
+      if (visibility === 'public') {
+        filters.push('i.is_public = 1')
+      } else if (visibility === 'all') {
+        filters.push(`
+          (
+            i.is_public = 1
+            OR i.user_id = UUID_TO_BIN(?)
+            OR EXISTS (
+              SELECT 1 FROM itinerary_collaborators ic
+              WHERE ic.itinerary_id = i.id 
+              AND ic.user_id = UUID_TO_BIN(?)
+            )
+          )
+        `)
+        queryParams.push(userIdSession, userIdSession)
       }
 
       if (filters.length > 0) {
@@ -71,26 +146,26 @@ export class ItineraryModel {
 
       if (location) {
         query += ' HAVING locations LIKE ?'
-        queryParams.push(`%${location.toLowerCase()}%`)
+        queryParams.push(`${location.toLowerCase()}%`)
       }
 
       // Aplicar ordenamiento según el parámetro `sort`
       switch (sort) {
         case 'popular':
-          query += ` ORDER BY likesLastWeek DESC, i.likes DESC
-                     LIMIT 10`
+          query += ' ORDER BY likesLastWeek DESC, i.likes DESC'
           break
         case 'newest':
-          query += ` ORDER BY i.start_date DESC
-                     LIMIT 10`
+          query += ' ORDER BY i.start_date DESC'
           break
         case 'oldest':
-          query += ` ORDER BY i.start_date ASC
-                     LIMIT 10`
+          query += ' ORDER BY i.start_date ASC'
           break
         default:
           break
       }
+
+      query += ' LIMIT ?'
+      queryParams.push(limit)
 
       const [itineraries] = await connection.query(query, queryParams)
 
@@ -119,6 +194,7 @@ export class ItineraryModel {
             i.start_date AS startDate,
             i.end_date AS endDate,
             COALESCE(GROUP_CONCAT(DISTINCT l.name ORDER BY l.name SEPARATOR ', '), '') AS locations,
+            i.is_public AS isPublic,
             BIN_TO_UUID(i.user_id) AS userId,
             COALESCE(GROUP_CONCAT(DISTINCT BIN_TO_UUID(ic.user_id) ORDER BY ic.user_id SEPARATOR ', '), '') AS collaborators,
             i.likes,
@@ -142,6 +218,7 @@ export class ItineraryModel {
         startDate: itineraryRows[0].startDate,
         endDate: itineraryRows[0].endDate,
         locations: itineraryRows[0].locations ? itineraryRows[0].locations.split(', ') : [],
+        isPublic: itineraryRows[0].isPublic,
         userId: itineraryRows[0].userId,
         collaborators: itineraryRows[0].collaborators ? itineraryRows[0].collaborators.split(', ') : [],
         likes: itineraryRows[0].likes,
@@ -171,8 +248,7 @@ export class ItineraryModel {
             order_index AS orderIndex,
             label,
             description,
-            image,
-            content
+            image
         FROM itinerary_events
         WHERE day_id IN (SELECT id FROM itinerary_days WHERE itinerary_id = ?)
         ORDER BY day_id, order_index ASC;`,
@@ -197,8 +273,7 @@ export class ItineraryModel {
             orderIndex: event.orderIndex,
             label: event.label,
             description: event.description,
-            image: event.image,
-            content: event.content
+            image: event.image
           })
         }
       })
@@ -225,6 +300,7 @@ export class ItineraryModel {
       startDate,
       endDate,
       locations: locationsInput,
+      isPublic,
       userId
     } = input
 
@@ -233,9 +309,9 @@ export class ItineraryModel {
       await connection.beginTransaction()
 
       const [itineraryResult] = await connection.query(
-        `INSERT INTO itineraries (title, description, image, start_date, end_date, user_id)
-        VALUES (?, ?, ?, ?, ?, UUID_TO_BIN(?));`,
-        [title, description, image, startDate, endDate, userId]
+        `INSERT INTO itineraries (title, description, image, start_date, end_date, is_public, user_id)
+        VALUES (?, ?, ?, ?, ?, ?, UUID_TO_BIN(?));`,
+        [title, description, image, startDate, endDate, isPublic, userId]
       )
 
       if (!itineraryResult.insertId) {
@@ -314,7 +390,8 @@ export class ItineraryModel {
       image,
       startDate,
       endDate,
-      locations: locationsInput
+      locations: locationsInput,
+      isPublic
     } = input
 
     const connection = await getConnection()
@@ -342,7 +419,7 @@ export class ItineraryModel {
       }
       if (image) {
         updateFields.push('image = ?')
-        queryParams.push(description)
+        queryParams.push(image)
       }
       if (startDate) {
         updateFields.push('start_date = ?')
@@ -351,6 +428,10 @@ export class ItineraryModel {
       if (endDate) {
         updateFields.push('end_date = ?')
         queryParams.push(endDate)
+      }
+      if (typeof isPublic !== 'undefined') {
+        updateFields.push('is_public = ?')
+        queryParams.push(isPublic)
       }
 
       queryParams.push(id)
@@ -363,6 +444,33 @@ export class ItineraryModel {
         const [updateResult] = await connection.query(updateQuery, queryParams)
         if (updateResult.affectedRows === 0) {
           throw new DatabaseError('Failed to update itinerary: ' + updateResult.message)
+        }
+      }
+
+      if (startDate) {
+        const [days] = await connection.query(
+          'SELECT id, day_number FROM itinerary_days WHERE itinerary_id = ?;',
+          [id]
+        )
+
+        for (const day of days) {
+          const newDate = new Date(startDate)
+          newDate.setDate(newDate.getDate() + (day.day_number - 1))
+
+          let formattedDate = newDate.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long'
+          })
+          formattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
+
+          const [updateDaysResult] = await connection.query(
+            'UPDATE itinerary_days SET label = ? WHERE id = ?;',
+            [`Día ${day.day_number} - ${formattedDate}`, day.id]
+          )
+          if (updateDaysResult.affectedRows === 0) {
+            throw new DatabaseError('Failed to update itinerary days: ' + updateDaysResult.message)
+          }
         }
       }
 
@@ -382,24 +490,24 @@ export class ItineraryModel {
 
           let locationId
           if (location.length === 0) {
-            const [result] = await connection.query(
+            const [createLocationResult] = await connection.query(
               'INSERT INTO locations (name) VALUES (?);',
               [locationName]
             )
 
-            if (!result.insertId) {
-              throw new DatabaseError('Failed to create location: ' + result.message)
+            if (!createLocationResult.insertId) {
+              throw new DatabaseError('Failed to create location: ' + createLocationResult.message)
             }
 
-            locationId = result.insertId
+            locationId = createLocationResult.insertId
           } else {
             locationId = location[0].id
           }
 
           await connection.query(
-          `INSERT INTO itinerary_locations (itinerary_id, location_id)
-          VALUES (?, ?);`,
-          [id, locationId]
+            `INSERT INTO itinerary_locations (itinerary_id, location_id)
+            VALUES (?, ?);`,
+            [id, locationId]
           )
         }
       }
@@ -495,11 +603,11 @@ export class ItineraryModel {
     const connection = await getConnection()
     try {
       const [result] = await connection.query(
-        'SELECT COUNT(*) AS isLiked FROM likes WHERE user_id = UUID_TO_BIN(?) AND itinerary_id = ?;',
+        'SELECT 1 FROM likes WHERE user_id = UUID_TO_BIN(?) AND itinerary_id = ?;',
         [userId, itineraryId]
       )
 
-      return { isLiked: result[0].isLiked > 0 }
+      return result.length > 0
     } catch (error) {
       throw new DatabaseError('Error checking if itinerary is liked: ' + error.message)
     } finally {
@@ -507,15 +615,19 @@ export class ItineraryModel {
     }
   }
 
-  static async addCollaborator ({ itineraryId, username }) {
+  static async addCollaborator ({ itineraryId, username, userIdSession }) {
     const connection = await getConnection()
     try {
-      const [existingItinerary] = await connection.query(
-        'SELECT id FROM itineraries WHERE id = ?;',
+      const [itinerary] = await connection.query(
+        'SELECT BIN_TO_UUID(user_id) user_id FROM itineraries WHERE id = ?;',
         [itineraryId]
       )
-      if (existingItinerary.length === 0) {
+      if (itinerary.length === 0) {
         throw new NotFoundError(`Itinerary with id ${itineraryId} not found`)
+      }
+
+      if (itinerary[0].user_id !== userIdSession) {
+        throw new UnauthorizedError('You are not authorized to add a collaborator to this itinerary')
       }
 
       const [users] = await connection.query(
@@ -532,7 +644,7 @@ export class ItineraryModel {
         [itineraryId, users[0].id]
       )
     } catch (error) {
-      if (error instanceof NotFoundError) {
+      if (error instanceof NotFoundError || error instanceof UnauthorizedError) {
         throw error
       } else {
         throw new DatabaseError('Error adding collaborator: ' + error.message)
@@ -542,16 +654,18 @@ export class ItineraryModel {
     }
   }
 
-  static async getCollaborators ({ itineraryId }) {
+  static async getCollaborators ({ itineraryId, userIdSession }) {
     const connection = await getConnection()
     try {
       const [existingItinerary] = await connection.query(
-        'SELECT id FROM itineraries WHERE id = ?;',
+        'SELECT is_public, BIN_TO_UUID(user_id) user_id FROM itineraries WHERE id = ?;',
         [itineraryId]
       )
       if (existingItinerary.length === 0) {
         throw new NotFoundError(`Itinerary with id ${itineraryId} not found`)
       }
+
+      const itinerary = existingItinerary[0]
 
       const [collaborators] = await connection.query(
         `SELECT BIN_TO_UUID(u.id) id, u.name, u.username
@@ -569,13 +683,44 @@ export class ItineraryModel {
         [itineraryId, itineraryId]
       )
 
+      if (!itinerary.is_public) {
+        const isCollaborator = collaborators.some(
+          collaborator => collaborator.id === userIdSession
+        )
+        if (!isCollaborator) {
+          throw new UnauthorizedError('You are not authorized to view collaborators for this itinerary')
+        }
+      }
+
       return collaborators
     } catch (error) {
-      if (error instanceof NotFoundError) {
+      if (error instanceof NotFoundError || error instanceof UnauthorizedError) {
         throw error
       } else {
         throw new DatabaseError('Error getting collaborators: ' + error.message)
       }
+    } finally {
+      connection.release()
+    }
+  }
+
+  static async checkIfCollaborator ({ itineraryId, userId }) {
+    const connection = await getConnection()
+    try {
+      const [result] = await connection.query(
+        `SELECT 1
+         FROM itineraries i
+         LEFT JOIN itinerary_collaborators ic ON ic.itinerary_id = i.id
+         LEFT JOIN users u ON u.id = i.user_id OR u.id = ic.user_id
+         WHERE i.id = ? 
+           AND (i.user_id = UUID_TO_BIN(?) OR ic.user_id = UUID_TO_BIN(?))
+         LIMIT 1;`,
+        [itineraryId, userId, userId]
+      )
+
+      return result.length > 0
+    } catch (error) {
+      throw new DatabaseError('Error checking if user is collaborator: ' + error.message)
     } finally {
       connection.release()
     }

@@ -17,6 +17,7 @@ export const createItinerariesRouter = ({ itineraryModel }) => {
   itinerariesRouter.get('/:id/is-liked', itineraryController.checkIfLiked)
   itinerariesRouter.get('/:id/collaborators', itineraryController.getCollaborators)
   itinerariesRouter.post('/:id/collaborators', itineraryController.addCollaborator)
+  itinerariesRouter.get('/:id/is-collaborator', itineraryController.checkIfCollaborator)
 
   return itinerariesRouter
 }

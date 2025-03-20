@@ -1,19 +1,130 @@
 import bcrypt from 'bcrypt'
 import { SALT_ROUNDS } from '../../config/config.js'
 import { getConnection } from '../../config/db.js'
-import { UsernameConflictError, EmailConflictError, DatabaseError, NotFoundError } from '../../errors/errors.js'
+import { UnauthorizedError, UsernameConflictError, EmailConflictError, DatabaseError, NotFoundError } from '../../errors/errors.js'
 
 export class UserModel {
-  static async getAll () {
+  static async getAll ({ name, username, limit }) {
     const connection = await getConnection()
     try {
-      const [users] = await connection.query(
-        'SELECT BIN_TO_UUID(id) id, name, username, avatar, followers, following FROM users;'
-      )
+      const queryParams = []
+      let query = `
+      SELECT BIN_TO_UUID(id) AS id, name, username, avatar, followers, following
+      FROM users
+    `
 
+      const filters = []
+
+      if (name && username) {
+        filters.push('(LOWER(name) LIKE ? OR LOWER(username) LIKE ?)')
+        queryParams.push(`${name.toLowerCase()}%`)
+        queryParams.push(`${username.toLowerCase()}%`)
+      } else if (name) {
+        filters.push('LOWER(name) LIKE ?')
+        queryParams.push(`${name.toLowerCase()}%`)
+      } else if (username) {
+        filters.push('LOWER(username) LIKE ?')
+        queryParams.push(`${username.toLowerCase()}%`)
+      }
+
+      if (filters.length > 0) {
+        query += ` WHERE ${filters.join(' AND ')}`
+      }
+
+      query += ' LIMIT ?'
+      queryParams.push(limit)
+
+      const [users] = await connection.query(query, queryParams)
       return users
     } catch (error) {
       throw new DatabaseError('Error while fetching users: ' + error.message)
+    } finally {
+      connection.release()
+    }
+  }
+
+  // Función para obtener usuarios sugeridos
+  static async getSuggestedUsers ({ userId, limit }) {
+    const connection = await getConnection()
+    try {
+      const [users] = await connection.query(
+        `WITH SuggestedUsers AS (
+          -- Obtener usuarios sugeridos
+          SELECT BIN_TO_UUID(u.id) AS id, u.name, u.username, u.avatar
+          FROM users u
+          WHERE u.id != UUID_TO_BIN(?)
+          AND u.id NOT IN (
+            SELECT following_id 
+            FROM followers 
+            WHERE follower_id = UUID_TO_BIN(?)
+          )
+          AND (
+            -- Usuarios que te siguen directamente
+            u.id IN (SELECT follower_id FROM followers WHERE following_id = UUID_TO_BIN(?))
+            OR
+            -- Usuarios seguidos por los usuarios que tú sigues
+            u.id IN (
+              SELECT f1.following_id
+              FROM followers f1
+              WHERE f1.follower_id IN (
+                SELECT following_id FROM followers WHERE follower_id = UUID_TO_BIN(?)
+              )
+            )
+            OR
+            -- Usuarios que siguen a las personas que te siguen
+            u.id IN (
+              SELECT f2.follower_id
+              FROM followers f1
+              JOIN followers f2 ON f1.follower_id = f2.follower_id
+              WHERE f1.follower_id IN (
+                  SELECT follower_id FROM followers WHERE following_id = UUID_TO_BIN(?)
+              )
+            )
+            OR
+            -- Usuarios que siguen a las personas que tú sigues
+            u.id IN (
+              SELECT f2.follower_id
+              FROM followers f1
+              JOIN followers f2 ON f1.following_id = f2.follower_id
+              WHERE f1.follower_id IN (
+                  SELECT following_id FROM followers WHERE follower_id = UUID_TO_BIN(?)
+              )
+            )
+            OR
+            -- Usuarios seguidos por tus seguidores
+            u.id IN (
+              SELECT f2.following_id
+              FROM followers f1
+              JOIN followers f2 ON f1.follower_id = f2.follower_id
+              WHERE f1.follower_id IN (
+                  SELECT follower_id FROM followers WHERE following_id = UUID_TO_BIN(?)
+              )
+            )
+          )
+          ORDER BY u.followers DESC
+          LIMIT ?
+        )
+          
+        -- Combinar sugeridos con usuarios más populares (evitando duplicados)
+        SELECT * FROM SuggestedUsers
+        UNION ALL
+        (
+          SELECT BIN_TO_UUID(u.id) AS id, u.name, u.username, u.avatar
+          FROM users u
+          WHERE u.id != UUID_TO_BIN(?)
+          AND u.id NOT IN (
+            SELECT following_id FROM followers WHERE follower_id = UUID_TO_BIN(?)
+          )
+          AND BIN_TO_UUID(u.id) NOT IN (SELECT id FROM SuggestedUsers)
+          ORDER BY u.followers DESC
+          LIMIT ?
+        )
+        LIMIT ?;`,
+        [userId, userId, userId, userId, userId, userId, userId, limit, userId, userId, limit, limit])
+
+      return users
+    } catch (error) {
+      throw new DatabaseError('Error while fetching suggested users: ' + error.message)
     } finally {
       connection.release()
     }
@@ -193,7 +304,9 @@ export class UserModel {
     const {
       name,
       username,
-      password,
+      email,
+      currentPassword,
+      newPassword,
       avatar
     } = input
 
@@ -201,12 +314,14 @@ export class UserModel {
 
     try {
       const [existingUser] = await connection.query(
-        'SELECT id FROM users WHERE id = UUID_TO_BIN(?);',
+        'SELECT id, password_hash FROM users WHERE id = UUID_TO_BIN(?);',
         [id]
       )
       if (existingUser.length === 0) {
         throw new NotFoundError(`User with id ${id} not found`)
       }
+
+      const user = existingUser[0]
 
       const updateFields = []
       const queryParams = []
@@ -216,13 +331,39 @@ export class UserModel {
         queryParams.push(name)
       }
       if (username) {
+        const [existingUsername] = await connection.query(
+          'SELECT id FROM users WHERE username = ? AND id != UUID_TO_BIN(?);',
+          [username, id]
+        )
+        if (existingUsername.length > 0) {
+          throw new UsernameConflictError('Username already used')
+        }
+
         updateFields.push('username = ?')
         queryParams.push(username)
       }
-      if (password) {
-        const passwordHash = await bcrypt.hash(password, parseInt(SALT_ROUNDS))
-        updateFields.push('password = ?')
-        queryParams.push(passwordHash)
+      if (email) {
+        const [existingEmail] = await connection.query(
+          'SELECT id FROM users WHERE email = ? AND id != UUID_TO_BIN(?);',
+          [email, id]
+        )
+        if (existingEmail.length > 0) {
+          throw new EmailConflictError('Email already used')
+        }
+
+        updateFields.push('email = ?')
+        queryParams.push(email)
+      }
+      if (currentPassword && newPassword) {
+        const isMatch = await bcrypt.compare(currentPassword, user.password_hash)
+
+        if (!isMatch) {
+          throw new UnauthorizedError('Current password is incorrect')
+        }
+
+        const newPasswordHash = await bcrypt.hash(newPassword, parseInt(SALT_ROUNDS))
+        updateFields.push('password_hash = ?')
+        queryParams.push(newPasswordHash)
       }
       if (avatar) {
         updateFields.push('avatar = ?')
@@ -242,7 +383,8 @@ export class UserModel {
         }
       }
     } catch (error) {
-      if (error instanceof NotFoundError) {
+      if (error instanceof NotFoundError || error instanceof UsernameConflictError ||
+          error instanceof EmailConflictError || error instanceof UnauthorizedError) {
         throw error
       } else {
         throw new DatabaseError('Error updating user: ' + error.message)

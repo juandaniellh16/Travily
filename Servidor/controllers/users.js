@@ -1,5 +1,5 @@
 import { InvalidInputError, UnauthorizedError } from '../errors/errors.js'
-import { validatePartialUser } from '../schemas/users.js'
+import { validateUpdateUser } from '../schemas/updateUser.js'
 import { isUUID } from '../utils.js'
 
 export class UserController {
@@ -8,8 +8,23 @@ export class UserController {
   }
 
   getAll = async (req, res, next) => {
+    const { name, username, limit = 10 } = req.query
     try {
-      const users = await this.userModel.getAll()
+      const limitValue = parseInt(limit, 10)
+      const users = await this.userModel.getAll({ name, username, limit: limitValue })
+      res.json(users)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  getSuggestedUsers = async (req, res, next) => {
+    const { user } = req.session
+    const { limit = 5 } = req.query
+    try {
+      if (!user) throw new UnauthorizedError('Access not authorized')
+      const limitValue = parseInt(limit, 10)
+      const users = await this.userModel.getSuggestedUsers({ userId: user.id, limit: limitValue })
       res.json(users)
     } catch (error) {
       next(error)
@@ -17,17 +32,25 @@ export class UserController {
   }
 
   getByIdOrUsername = async (req, res, next) => {
+    const { user: authUser } = req.session
     const { identifier } = req.params
+    const { includeEmail } = req.query
+    const includeEmailBool = includeEmail === 'true'
 
     try {
       if (!identifier) throw new InvalidInputError('Identifier parameter is required')
 
       let user
       if (isUUID(identifier)) {
-        user = await this.userModel.getById({ id: identifier })
+        user = await this.userModel.getById({ id: identifier, includeEmail: includeEmailBool })
       } else {
-        user = await this.userModel.getByUsername({ username: identifier })
+        user = await this.userModel.getByUsername({ username: identifier, includeEmail: includeEmailBool })
       }
+
+      if (includeEmailBool && authUser.id !== user.id) {
+        throw new UnauthorizedError('Access not authorized')
+      }
+
       res.json(user)
     } catch (error) {
       next(error)
@@ -37,7 +60,7 @@ export class UserController {
   /*
   create = async (req, res, next) => {
     try {
-      const result = validateUser(req.body)
+      const result = validateCreateUser(req.body)
 
       if (!result.success) {
         throw new InvalidInputError('Invalid user data: ' + JSON.stringify(result.error.message))
@@ -77,7 +100,7 @@ export class UserController {
       if (!user) throw new UnauthorizedError('Access not authorized')
       if (!id) throw new InvalidInputError('Id parameter is required')
 
-      const result = validatePartialUser(req.body)
+      const result = validateUpdateUser(req.body)
 
       if (!result.success) {
         throw new InvalidInputError('Invalid user data: ' + JSON.stringify(result.error.message))

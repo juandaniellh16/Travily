@@ -1,6 +1,6 @@
 import z from 'zod'
 
-const userSchema = z.object({
+const createUserSchema = z.object({
   name: z.string({
     invalid_type_error: 'User name must be a string',
     required_error: 'User name is required'
@@ -22,10 +22,10 @@ const userSchema = z.object({
   }).url('User avatar must be a valid URL').or(z.string().refine((value) => value.startsWith('/images/'))).nullable().optional()
 })
 
-export function validateUser (input) {
-  return userSchema.safeParse(input)
+export function validateCreateUser (input) {
+  return createUserSchema.safeParse(input)
 }
 
-export function validatePartialUser (input) {
-  return userSchema.partial().safeParse(input)
+export function validatePartialCreateUser (input) {
+  return createUserSchema.partial().safeParse(input)
 }

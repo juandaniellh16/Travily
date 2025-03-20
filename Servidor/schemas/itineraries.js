@@ -7,7 +7,7 @@ const itinerarySchema = z.object({
   }),
   description: z.string({
     invalid_type_error: 'Itinerary description must be a string'
-  }),
+  }).optional(),
   image: z.string({
     invalid_type_error: 'Itinerary image must be a string'
   }).url('Itinerary image must be a valid URL').nullable().optional(),
@@ -32,6 +32,9 @@ const itinerarySchema = z.object({
       required_error: 'Itinerary locations is required'
     }
   ),
+  isPublic: z.boolean({
+    invalid_type_error: 'Itinerary isPublic must be a boolean'
+  }).optional(),
   userId: z.string({
     invalid_type_error: 'Itinerary userId must be a string',
     required_error: 'Itinerary userId is required'

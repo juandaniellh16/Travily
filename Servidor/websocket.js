@@ -54,6 +54,15 @@ export const initializeWebSocket = ({ server, dayModel, eventModel }) => {
       console.log(`El cliente ${socket.id} ha abandonado la sala del itinerario: ${itineraryId}`)
     })
 
+    socket.on('edit-itinerary', async ({ itineraryId, updatedItineraryData }) => {
+      try {
+        io.to(itineraryId).emit(`itinerary-update-${itineraryId}`, { action: 'edit-itinerary', updatedItineraryData })
+      } catch (error) {
+        console.error(`${error.name}: ${error.message}`)
+        socket.emit('error', { message: error.message })
+      }
+    })
+
     socket.on('add-day', async ({ itineraryId, dayData }) => {
       try {
         const createdDay = await dayController.addDay({ itineraryId, day: dayData.newDay })
@@ -78,8 +87,7 @@ export const initializeWebSocket = ({ server, dayModel, eventModel }) => {
               day: 'numeric',
               month: 'long'
             })
-            formattedDate =
-          formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
+            formattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
 
             return {
               ...day,
@@ -102,7 +110,7 @@ export const initializeWebSocket = ({ server, dayModel, eventModel }) => {
 
     socket.on('add-event', async ({ itineraryId, dayId, eventData }) => {
       try {
-        const createdEvent = await eventController.addEvent({ dayId, event: eventData.newEvent })
+        const createdEvent = await eventController.addEvent({ dayId, event: eventData })
         io.to(itineraryId).emit(`itinerary-update-${itineraryId}`, { action: 'add-event', dayId, event: createdEvent })
       } catch (error) {
         console.error(`${error.name}: ${error.message}`)

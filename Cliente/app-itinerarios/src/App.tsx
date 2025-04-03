@@ -16,6 +16,14 @@ import { Connect } from './pages/Connect'
 import { UserItineraries } from './pages/UserItineraries'
 import { SearchResults } from './pages/SearchResults'
 import { ProfileSettings } from './pages/ProfileSettings'
+import { UserItineraryLists } from './pages/UserItineraryLists'
+import { ItineraryList } from './pages/ItineraryList'
+import { ItineraryListForm } from './pages/ItineraryListForm'
+import { TermsOfUse } from './pages/TermsOfUse'
+import { PrivacyPolicy } from './pages/PrivacyPolicy'
+import { AboutUs } from './pages/AboutUs'
+import { ContactUs } from './pages/ContactUs'
+import ScrollToTop from './components/utils/ScrollToTop'
 
 function App() {
   return (
@@ -33,6 +41,7 @@ function App() {
         }
       }}
     >
+      <ScrollToTop />
       <Routes>
         <Route element={<MainLayout />}>
           <Route path='/' element={<Home />} />
@@ -42,9 +51,14 @@ function App() {
           </Route>
           <Route path='/:username/itineraries' element={<UserItineraries />} />
           <Route path='/:username/favorites' element={<UserItineraries />} />
+          <Route path='/:username/lists' element={<UserItineraryLists />} />
           <Route path='/itineraries/:itineraryId' element={<Itinerary />} />
+          <Route path='/lists/:listId' element={<ItineraryList />} />
           <Route element={<ProtectedRoute />}>
             <Route path='/create-itinerary' element={<ItineraryForm />} />
+          </Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path='/create-list' element={<ItineraryListForm />} />
           </Route>
           <Route element={<ProtectedRoute />}>
             <Route path='/connect' element={<Connect />} />
@@ -57,6 +71,10 @@ function App() {
         <Route element={<AuthLayout />}>
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
+          <Route path='/about-us' element={<AboutUs />} />
+          <Route path='/contact-us' element={<ContactUs />} />
+          <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+          <Route path='/terms-of-use' element={<TermsOfUse />} />
           <Route path='*' element={<NotFound />} />
         </Route>
       </Routes>

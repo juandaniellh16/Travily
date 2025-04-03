@@ -8,6 +8,7 @@ import {
 } from '@mantine/core'
 import { useEffect, useRef, useState } from 'react'
 import { CiSearch } from 'react-icons/ci'
+import { FaMapPin, FaUser } from 'react-icons/fa'
 import { GoArrowRight } from 'react-icons/go'
 import { useNavigate } from 'react-router-dom'
 
@@ -107,7 +108,10 @@ export const SearchInput = ({ defaultValue }: { defaultValue?: string }) => {
                       .filter((item) => item.type === 'location')
                       .map((item) => (
                         <Combobox.Option key={item.name} value={item.name}>
-                          📍 {item.name}
+                          <span className='flex items-center gap-2'>
+                            <FaMapPin size={16} color='red' />
+                            {item.name}
+                          </span>
                         </Combobox.Option>
                       ))}
                   </Combobox.Group>
@@ -120,7 +124,10 @@ export const SearchInput = ({ defaultValue }: { defaultValue?: string }) => {
                       .filter((item) => item.type === 'user')
                       .map((item) => (
                         <Combobox.Option key={item.name} value={item.name}>
-                          👤 {item.name}
+                          <span className='flex items-center gap-2'>
+                            <FaUser size={16} />
+                            {item.name}
+                          </span>
                         </Combobox.Option>
                       ))}
                   </Combobox.Group>

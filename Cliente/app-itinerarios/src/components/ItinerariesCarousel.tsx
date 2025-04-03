@@ -37,8 +37,10 @@ export const ItinerariesCarousel = ({
       withControls={window.innerWidth > 640}
       dragFree
       loop
+      className='group'
       classNames={{
-        control: '-mt-3.5 w-7 h-7'
+        control:
+          '!opacity-0 group-hover:!opacity-100 !transition-opacity !duration-300 -mt-4 -mx-1 w-7 h-7'
       }}
     >
       {itineraries.map((itinerary) => (

@@ -7,6 +7,7 @@ export const itineraryService = {
     location?: string
     userId?: string
     username?: string
+    role?: string
     likedBy?: string
     followedBy?: string
     visibility?: 'public' | 'all'
@@ -24,6 +25,9 @@ export const itineraryService = {
     }
     if (params.username) {
       queryParams.append('username', params.username)
+    }
+    if (params.role) {
+      queryParams.append('role', params.role)
     }
     if (params.likedBy) {
       queryParams.append('likedBy', params.likedBy)
@@ -251,68 +255,4 @@ export const itineraryService = {
     const data = await response.json()
     return data.isCollaborator
   }
-
-  /*
-  addEvent: async (itineraryId: string, dayId: string, event: Event) => {
-    const response = await fetchWithAuth(
-      `/itineraries/${itineraryId}/days/${dayId}/events`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ event })
-      }
-    )
-
-    if (!response.ok) {
-      throw new Error('Error adding event')
-    }
-
-    return response.json()
-  },
-
-  deleteEvent: async (itineraryId: string, dayId: string, eventId: string) => {
-    try {
-      const response = await fetchWithAuth(
-        `/itineraries/${itineraryId}/days/${dayId}/events/${eventId}`,
-        {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' }
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error('Error deleting event')
-      }
-
-      return response.json()
-    } catch {
-      throw new Error('Error deleting event')
-    }
-  },
-
-  updateEventOrder: async (
-    itineraryId: string,
-    dayId: string,
-    reorderedEvents: Event[]
-  ) => {
-    try {
-      const response = await fetchWithAuth(
-        `/itineraries/${itineraryId}/events`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ dayId, reorderedEvents })
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error('Error updating event order')
-      }
-    } catch {
-      throw new Error('Error updating event order')
-    }
-  }
-  */
 }

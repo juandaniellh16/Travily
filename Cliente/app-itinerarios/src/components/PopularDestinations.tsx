@@ -123,9 +123,13 @@ export const PopularDestinations = () => {
         slideGap='xs'
         align='start'
         slidesToScroll='auto'
+        withControls={window.innerWidth > 640}
         dragFree
-        withControls={false}
-        className='mt-3 mb-8'
+        className='mt-3 mb-8 group'
+        classNames={{
+          control:
+            '!opacity-0 group-hover:!opacity-100 !transition-opacity !duration-300 -mx-1 w-7 h-7'
+        }}
       >
         {destinations.map((destination) => (
           <Carousel.Slide key={destination.name}>

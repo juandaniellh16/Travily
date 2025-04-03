@@ -5,7 +5,6 @@ import {
   Avatar,
   Badge,
   Button,
-  Center,
   Container,
   FileButton,
   Group,
@@ -20,15 +19,15 @@ import {
   Title
 } from '@mantine/core'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ItineraryType, Event, UserPublic } from '@/types'
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom'
+import { ItineraryType, Event, UserPublic, ItineraryListType } from '@/types'
 import {
   DragDropContext,
   Droppable,
   Draggable,
   DropResult
 } from '@hello-pangea/dnd'
-import { FaGripVertical, FaUsers } from 'react-icons/fa6'
+import { FaCamera, FaGripVertical, FaUsers } from 'react-icons/fa6'
 import {
   MdEdit,
   MdOutlineVisibility,
@@ -44,14 +43,18 @@ import { useAuth } from '@/hooks/useAuth'
 import { LuCalendarDays } from 'react-icons/lu'
 import { LikeButton } from '@/components/LikeButton'
 import { userService } from '@/services/userService'
-import { DatePickerInput } from '@mantine/dates'
+import { DatePickerInput, TimeInput } from '@mantine/dates'
 import { ExpandableText } from '@/components/ExpandableText'
 import { NotFound } from './NotFound'
 import { Unauthorized } from './Unauthorized'
 import { ShareButton } from '@/components/ShareButton'
+import { GoClock } from 'react-icons/go'
+import { FiPlus } from 'react-icons/fi'
+import { itineraryListService } from '@/services/itineraryListService'
 
 export const Itinerary = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, isLoading: userIsLoading } = useAuth()
   const [isCollaborator, setIsCollaborator] = useState(false)
   const { itineraryId } = useParams()
@@ -62,7 +65,9 @@ export const Itinerary = () => {
   const [unauthorizedError, setUnauthorizedError] = useState(false)
   const [error, setError] = useState('')
 
-  const [isEditingItinerary, setIsEditingItinerary] = useState(false)
+  const [isEditingItinerary, setIsEditingItinerary] = useState(
+    location.state?.created ?? false
+  )
   const [itineraryTitle, setItineraryTitle] = useState('')
   const [isEditingItineraryTitle, setIsEditingItineraryTitle] = useState(false)
   const [itineraryDescription, setItineraryDescription] = useState('')
@@ -73,12 +78,16 @@ export const Itinerary = () => {
   const [totalDays, setTotalDays] = useState(0)
   const [isPublic, setIsPublic] = useState(false)
 
+  const [addToListOpened, addToListDisclosure] = useDisclosure(false)
+  const [userLists, setUserLists] = useState<ItineraryListType[] | null>(null)
   const [addEventOpened, addEventDisclosure] = useDisclosure(false)
   const [editEventOpened, editEventDisclosure] = useDisclosure(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
   const [editingDayId, setEditingDayId] = useState<string | null>(null)
   const [eventLabel, setEventLabel] = useState('')
   const [eventDescription, setEventDescription] = useState('')
+  const [eventStartTime, setEventStartTime] = useState('')
+  const [eventEndTime, setEventEndTime] = useState('')
   const [eventImage, setEventImage] = useState<string | null>(null)
   const [formError, setFormError] = useState('')
 
@@ -241,6 +250,32 @@ export const Itinerary = () => {
   }
   */
 
+  const openAddToListModal = async () => {
+    addToListDisclosure.open()
+    const userListsLocal = await itineraryListService.getAll({
+      userId: user?.id,
+      visibility: 'all'
+    })
+    setUserLists(userListsLocal)
+  }
+
+  const closeAddToListModal = async () => {
+    addToListDisclosure.close()
+    setTimeout(() => {
+      setUserLists(null)
+    }, 500)
+  }
+
+  const handleAddToList = async (listId: string) => {
+    if (!itineraryId || !listId) return
+    try {
+      await itineraryListService.addItineraryToList(listId, itineraryId)
+      closeAddToListModal()
+    } catch {
+      console.error('Error adding itinerary to list')
+    }
+  }
+
   const openAddEventModal = (dayId: string) => {
     setEditingDayId(dayId)
     addEventDisclosure.open()
@@ -256,6 +291,8 @@ export const Itinerary = () => {
     setEditingDayId(dayId)
     setEventLabel(event.label || '')
     setEventDescription(event.description || '')
+    setEventStartTime(event.startTime ? event.startTime.slice(0, 5) : '')
+    setEventEndTime(event.endTime ? event.endTime.slice(0, 5) : '')
     setEventImage(event.image || null)
     editEventDisclosure.open()
   }
@@ -315,6 +352,8 @@ export const Itinerary = () => {
             .length || 0,
         label: eventLabel,
         description: eventDescription,
+        startTime: eventStartTime,
+        endTime: eventEndTime,
         image: eventImage
       }
       handleAddEvent(editingDayId, eventData)
@@ -332,6 +371,8 @@ export const Itinerary = () => {
         ...editingEvent,
         label: eventLabel,
         description: eventDescription,
+        startTime: eventStartTime,
+        endTime: eventEndTime,
         image: eventImage
       }
       handleEditEvent(editingEvent.id, updatedData, editingDayId)
@@ -346,6 +387,8 @@ export const Itinerary = () => {
     setEditingDayId(null)
     setEventLabel('')
     setEventDescription('')
+    setEventStartTime('')
+    setEventEndTime('')
     setEventImage(null)
     setFormError('')
   }
@@ -878,7 +921,7 @@ export const Itinerary = () => {
               </div>
             </div>
 
-            {isCollaborator && (
+            {user && (
               <Menu position='bottom-end' withArrow shadow='md' width={210}>
                 <Menu.Target>
                   <ActionIcon
@@ -895,60 +938,71 @@ export const Itinerary = () => {
 
                 <Menu.Dropdown>
                   <Menu.Item
-                    leftSection={<MdEdit size={14} />}
-                    onClick={() => setIsEditingItinerary(true)}
+                    leftSection={<FiPlus size={15} strokeWidth={3} />}
+                    onClick={() => openAddToListModal()}
                   >
-                    Editar itinerario
+                    Añadir a lista
                   </Menu.Item>
-
-                  {itineraryData.userId === user?.id && (
+                  {isCollaborator && (
                     <>
+                      <Menu.Divider />
                       <Menu.Item
-                        color='red'
-                        leftSection={<IoTrashOutline size={14} />}
-                        onClick={() => handleDeleteItinerary()}
+                        leftSection={<MdEdit size={14} />}
+                        onClick={() => setIsEditingItinerary(true)}
                       >
-                        Borrar itinerario
+                        Editar itinerario
                       </Menu.Item>
 
-                      <Menu.Divider />
+                      {itineraryData.userId === user?.id && (
+                        <>
+                          <Menu.Item
+                            color='red'
+                            leftSection={<IoTrashOutline size={14} />}
+                            onClick={() => handleDeleteItinerary()}
+                          >
+                            Borrar itinerario
+                          </Menu.Item>
 
-                      <div className='p-4'>
-                        <TextInput
-                          placeholder='Nombre de usuario'
-                          value={collaboratorUsername}
-                          onChange={(e) =>
-                            setCollaboratorUsername(e.target.value)
-                          }
-                          size='xs'
-                          leftSection={<span>@</span>}
-                          error={collaboratorError}
-                          classNames={{
-                            error: 'text-center'
-                          }}
-                        />
-                        <Button
-                          color='teal'
-                          size='xs'
-                          onClick={handleAddCollaborator}
-                          leftSection={<FaUsers size={17} />}
-                          fullWidth
-                          mt='sm'
-                        >
-                          Añadir colaborador
-                        </Button>
-                      </div>
+                          <Menu.Divider />
 
-                      <Switch
-                        size='sm'
-                        color='teal'
-                        onLabel={<MdOutlineVisibility size={18} />}
-                        offLabel={<MdOutlineVisibilityOff size={18} />}
-                        label={isPublic ? 'Público' : 'Privado'}
-                        checked={isPublic}
-                        onChange={handleVisibilityChange}
-                        className='flex justify-center mb-2.5 text-gray-500'
-                      />
+                          <div className='px-4 pt-4'>
+                            <TextInput
+                              placeholder='Nombre de usuario'
+                              value={collaboratorUsername}
+                              onChange={(e) =>
+                                setCollaboratorUsername(e.target.value)
+                              }
+                              size='xs'
+                              leftSection={<span>@</span>}
+                              error={collaboratorError}
+                              classNames={{
+                                error: 'text-center'
+                              }}
+                            />
+                            <Button
+                              color='teal'
+                              size='xs'
+                              onClick={handleAddCollaborator}
+                              leftSection={<FaUsers size={17} />}
+                              fullWidth
+                              mt='sm'
+                            >
+                              Añadir colaborador
+                            </Button>
+                          </div>
+
+                          <Switch
+                            size='sm'
+                            color='teal'
+                            onLabel={<MdOutlineVisibility size={18} />}
+                            offLabel={<MdOutlineVisibilityOff size={18} />}
+                            label={isPublic ? 'Público' : 'Privado'}
+                            checked={isPublic}
+                            onChange={handleVisibilityChange}
+                            className='flex justify-center mt-4 mb-2.5 text-gray-500'
+                          />
+                        </>
+                      )}
                     </>
                   )}
                 </Menu.Dropdown>
@@ -989,17 +1043,16 @@ export const Itinerary = () => {
                     'es-ES',
                     {
                       day: '2-digit',
-                      month: '2-digit'
+                      month: '2-digit',
+                      year: '2-digit'
                     }
                   )}
                   {' - '}
                   {new Date(itineraryData.endDate).toLocaleDateString('es-ES', {
                     day: '2-digit',
-                    month: '2-digit'
-                  })}{' '}
-                  {new Date(
-                    itineraryEndDate || itineraryData.endDate
-                  ).getFullYear()}
+                    month: '2-digit',
+                    year: '2-digit'
+                  })}
                 </p>
               )}
             </div>
@@ -1046,23 +1099,19 @@ export const Itinerary = () => {
           )}
           <div className='flex items-center justify-between w-full mt-6'>
             <div className='flex items-center'>
-              <Center>
+              <Link to={`/${userData?.username}`}>
+                <Avatar
+                  src={userData?.avatar || '/images/avatar-placeholder.svg'}
+                  mr='xs'
+                  size={32}
+                />
+              </Link>
+              <div className='leading-none'>
                 <Link to={`/${userData?.username}`}>
-                  <Avatar
-                    src={userData?.avatar || '/images/avatar-placeholder.svg'}
-                    mr='xs'
-                    size={32}
-                  />
+                  <p className='text-xs font-medium'>{userData?.name}</p>
+                  <p className='text-xs text-gray-500'>@{userData?.username}</p>
                 </Link>
-                <div className='leading-none'>
-                  <Link to={`/${userData?.username}`}>
-                    <p className='text-xs font-medium'>{userData?.name}</p>
-                    <p className='text-xs text-gray-500'>
-                      @{userData?.username}
-                    </p>
-                  </Link>
-                </div>
-              </Center>
+              </div>
             </div>
             <Group gap={0}>
               <LikeButton itinerary={itineraryData} />
@@ -1121,7 +1170,7 @@ export const Itinerary = () => {
                                 >
                                   <span
                                     {...provided.dragHandleProps}
-                                    className={`hidden mr-2 cursor-grab ${
+                                    className={`hidden mr-2 cursor-grab self-start content-center h-[80px] sm:h-[100px] ${
                                       isEditingItinerary ? 'sm:block' : ''
                                     }`}
                                   >
@@ -1134,9 +1183,41 @@ export const Itinerary = () => {
                                         ? provided.dragHandleProps
                                         : {})}
                                       wrap='nowrap'
-                                      gap='sm'
+                                      gap={6}
                                       className='flex items-center w-full'
                                     >
+                                      <Container
+                                        pl={32}
+                                        py={8}
+                                        pr={8}
+                                        className={`flex-grow gap-y-1 justify-between flex flex-col min-h-[80px] sm:min-h-[100px] rounded-lg bg-neutral-100 relative`}
+                                      >
+                                        <div className='absolute top-0 left-0 translate-y-1 -translate-x-1 flex items-center justify-center py-1.5 px-1.5 rounded-sm bg-emerald-500'>
+                                          <FaCamera size={15} color='white' />
+                                        </div>
+
+                                        <div className='gap-y-1'>
+                                          <ExpandableText
+                                            text={event.label}
+                                            lines={1}
+                                            lh={1.2}
+                                          />
+                                          <ExpandableText
+                                            text={event.description}
+                                            c='dimmed'
+                                            lines={2}
+                                            fw={400}
+                                            size='sm'
+                                          />
+                                        </div>
+                                        {event.startTime && (
+                                          <div className='text-sm font-medium text-gray-500'>
+                                            {event.startTime.slice(0, 5)}
+                                            {event.endTime &&
+                                              ` - ${event.endTime.slice(0, 5)}`}
+                                          </div>
+                                        )}
+                                      </Container>
                                       {isEditingItinerary ? (
                                         <FileButton
                                           onChange={(file) => {
@@ -1155,7 +1236,7 @@ export const Itinerary = () => {
                                                 '/images/landscape-placeholder.svg'
                                               }
                                               radius='md'
-                                              className={`flex-none self-start !min-h-[80px] !w-[100px] transition cursor-pointer hover:opacity-80`}
+                                              className={`flex-none !h-[80px] !w-[100px] sm:!h-[100px] sm:!w-[140px] self-start transition cursor-pointer hover:opacity-80`}
                                               {...props}
                                             />
                                           )}
@@ -1167,31 +1248,12 @@ export const Itinerary = () => {
                                             '/images/landscape-placeholder.svg'
                                           }
                                           radius='md'
-                                          className='flex-none self-start !min-h-[80px] !w-[100px]'
+                                          className='flex-none !h-[80px] !w-[100px] sm:!h-[100px] sm:!w-[140px] self-start'
                                         />
                                       )}
-                                      <Container
-                                        p={8}
-                                        className={`flex-grow min-h-[80px] rounded-lg bg-neutral-100`}
-                                      >
-                                        <div className='flex flex-col gap-y-1'>
-                                          <ExpandableText
-                                            text={event.label}
-                                            lines={1}
-                                            lh={1.2}
-                                          />
-                                          <ExpandableText
-                                            text={event.description}
-                                            c='dimmed'
-                                            lines={2}
-                                            fw={400}
-                                            size='sm'
-                                          />
-                                        </div>
-                                      </Container>
                                     </Group>
                                     {isEditingItinerary && (
-                                      <div className='flex flex-col content-end justify-end gap-1 ml-2 cursor-default'>
+                                      <div className='flex flex-col self-start justify-center h-[80px] sm:h-[100px] gap-1 ml-2 cursor-default'>
                                         <ActionIcon
                                           variant='light'
                                           color='teal'
@@ -1269,6 +1331,49 @@ export const Itinerary = () => {
       </div>
 
       <Modal
+        opened={addToListOpened}
+        onClose={closeAddToListModal}
+        size='md'
+        radius='lg'
+        centered
+        scrollAreaComponent={scrollComponent}
+      >
+        <div className='flex flex-col h-[70vh]'>
+          <Title order={2} ta='center' mb='lg' className='sticky top-0 z-10'>
+            Selecciona una lista
+          </Title>
+          <div className='overflow-y-auto max-h-[70vh]'>
+            <div className='px-8'>
+              {!userLists ? (
+                <div className='flex items-center justify-center w-full my-[25%]'>
+                  <Loader color='teal' />
+                </div>
+              ) : userLists.length === 0 ? (
+                <p className='mt-6 text-center text-gray-500'>
+                  No tienes listas disponibles
+                </p>
+              ) : (
+                <>
+                  {userLists.map((list) => (
+                    <Button
+                      key={list.id}
+                      fullWidth
+                      variant='light'
+                      color='teal'
+                      onClick={() => handleAddToList(list.id)}
+                      className='mb-2'
+                    >
+                      {list.title}
+                    </Button>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
         opened={addEventOpened}
         onClose={closeAddEventModal}
         size='md'
@@ -1291,6 +1396,7 @@ export const Itinerary = () => {
                   value={eventLabel}
                   onChange={(e) => setEventLabel(e.target.value)}
                   size='md'
+                  maxLength={50}
                   required
                 />
                 <Textarea
@@ -1299,40 +1405,78 @@ export const Itinerary = () => {
                   onChange={(e) => setEventDescription(e.target.value)}
                   size='md'
                   mt='sm'
-                  required
+                  maxLength={250}
                 />
+                <div className='flex items-center flex-grow gap-4 mt-5'>
+                  <TimeInput
+                    label='Hora de inicio'
+                    leftSection={<GoClock size={18} />}
+                    value={eventStartTime}
+                    onChange={(event) =>
+                      setEventStartTime(event.currentTarget.value)
+                    }
+                    size='md'
+                    className='w-full'
+                  />
+                  <TimeInput
+                    label='Hora de fin'
+                    leftSection={<GoClock size={18} />}
+                    value={eventEndTime}
+                    onChange={(event) =>
+                      setEventEndTime(event.currentTarget.value)
+                    }
+                    size='md'
+                    className='w-full'
+                  />
+                </div>
                 <Text size='md' fw={500} mt='sm' className='!mb-1'>
                   Imagen
                 </Text>
                 <div className='grid grid-cols-3 gap-2'>
                   <button
-                    key={'/images/monument.avif'}
+                    key={'/images/monument.svg'}
                     type='button'
-                    onClick={() => setEventImage('/images/monument.avif')}
+                    onClick={() => setEventImage('/images/monument.svg')}
                     className={`w-full h-20 rounded-md overflow-hidden border-2 ${
-                      eventImage === '/images/monument.avif'
+                      eventImage === '/images/monument.svg'
                         ? 'border-blue-500'
                         : 'border-gray-300'
                     }`}
                   >
                     <img
-                      src={'/images/monument.avif'}
+                      src={'/images/monument.svg'}
                       alt='Imagen predefinida'
                       className='object-cover w-full h-full'
                     />
                   </button>
                   <button
-                    key={'/images/food.jpg'}
+                    key={'/images/food.svg'}
                     type='button'
-                    onClick={() => setEventImage('/images/food.jpg')}
+                    onClick={() => setEventImage('/images/food.svg')}
                     className={`w-full h-20 rounded-md overflow-hidden border-2 ${
-                      eventImage === '/images/food.jpg'
+                      eventImage === '/images/food.svg'
                         ? 'border-blue-500'
                         : 'border-gray-300'
                     }`}
                   >
                     <img
-                      src={'/images/food.jpg'}
+                      src={'/images/food.svg'}
+                      alt='Imagen predefinida'
+                      className='object-cover w-full h-full'
+                    />
+                  </button>
+                  <button
+                    key={'/images/art.svg'}
+                    type='button'
+                    onClick={() => setEventImage('/images/art.svg')}
+                    className={`w-full h-20 rounded-md overflow-hidden border-2 ${
+                      eventImage === '/images/art.svg'
+                        ? 'border-blue-500'
+                        : 'border-gray-300'
+                    }`}
+                  >
+                    <img
+                      src={'/images/art.svg'}
                       alt='Imagen predefinida'
                       className='object-cover w-full h-full'
                     />
@@ -1393,6 +1537,7 @@ export const Itinerary = () => {
                     input: '!text-gray-500 focus:!text-black'
                   }}
                   size='md'
+                  maxLength={50}
                 />
                 <Textarea
                   label='Descripción'
@@ -1403,39 +1548,78 @@ export const Itinerary = () => {
                   }}
                   size='md'
                   mt='sm'
+                  maxLength={250}
                 />
+                <div className='flex items-center flex-grow gap-4 mt-5'>
+                  <TimeInput
+                    label='Hora de inicio'
+                    leftSection={<GoClock size={18} />}
+                    value={eventStartTime}
+                    onChange={(event) =>
+                      setEventStartTime(event.currentTarget.value)
+                    }
+                    size='md'
+                    className='w-full'
+                  />
+                  <TimeInput
+                    label='Hora de fin'
+                    leftSection={<GoClock size={18} />}
+                    value={eventEndTime}
+                    onChange={(event) =>
+                      setEventEndTime(event.currentTarget.value)
+                    }
+                    size='md'
+                    className='w-full'
+                  />
+                </div>
                 <Text size='md' fw={500} mt='sm' className='!mb-1'>
                   Imagen
                 </Text>
-                <div className='grid grid-cols-2 gap-2'>
+                <div className='grid grid-cols-3 gap-2'>
                   <button
-                    key={'/images/monument.avif'}
+                    key={'/images/monument.svg'}
                     type='button'
-                    onClick={() => setEventImage('/images/monument.avif')}
+                    onClick={() => setEventImage('/images/monument.svg')}
                     className={`w-full h-24 rounded-md overflow-hidden border-2 ${
-                      eventImage === '/images/monument.avif'
+                      eventImage === '/images/monument.svg'
                         ? 'border-blue-500'
                         : 'border-gray-300'
                     }`}
                   >
                     <img
-                      src={'/images/monument.avif'}
+                      src={'/images/monument.svg'}
                       alt='Imagen predefinida'
                       className='object-cover w-full h-full'
                     />
                   </button>
                   <button
-                    key={'/images/food.jpg'}
+                    key={'/images/food.svg'}
                     type='button'
-                    onClick={() => setEventImage('/images/food.jpg')}
+                    onClick={() => setEventImage('/images/food.svg')}
                     className={`w-full h-24 rounded-md overflow-hidden border-2 ${
-                      eventImage === '/images/food.jpg'
+                      eventImage === '/images/food.svg'
                         ? 'border-blue-500'
                         : 'border-gray-300'
                     }`}
                   >
                     <img
-                      src={'/images/food.jpg'}
+                      src={'/images/food.svg'}
+                      alt='Imagen predefinida'
+                      className='object-cover w-full h-full'
+                    />
+                  </button>
+                  <button
+                    key={'/images/art.svg'}
+                    type='button'
+                    onClick={() => setEventImage('/images/art.svg')}
+                    className={`w-full h-24 rounded-md overflow-hidden border-2 ${
+                      eventImage === '/images/art.svg'
+                        ? 'border-blue-500'
+                        : 'border-gray-300'
+                    }`}
+                  >
+                    <img
+                      src={'/images/art.svg'}
                       alt='Imagen predefinida'
                       className='object-cover w-full h-full'
                     />

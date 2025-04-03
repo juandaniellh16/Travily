@@ -1,7 +1,11 @@
+import { useAuth } from '@/hooks/useAuth'
 import { UserWithFollowStatus } from '@/types'
 import { Button } from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
 import { useEffect, useRef, useState } from 'react'
 import { BiSolidUserX } from 'react-icons/bi'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { LoginModal } from './LoginModal'
 
 interface FollowButtonProps {
   user: UserWithFollowStatus
@@ -9,10 +13,14 @@ interface FollowButtonProps {
 }
 
 export const FollowButton = ({ user, handleFollow }: FollowButtonProps) => {
+  const { user: authUser } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
   const isMobile = window.innerWidth <= 768
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
   const buttonRef = useRef<HTMLButtonElement | null>(null)
+  const [opened, { open, close }] = useDisclosure(false)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
@@ -38,6 +46,11 @@ export const FollowButton = ({ user, handleFollow }: FollowButtonProps) => {
   }, [dropdownOpen])
 
   const handleClick = (e: React.SyntheticEvent<HTMLButtonElement>) => {
+    if (!authUser) {
+      open()
+      return
+    }
+
     if (isMobile && user.isFollowing) {
       e.preventDefault()
       setDropdownOpen(!dropdownOpen)
@@ -47,59 +60,69 @@ export const FollowButton = ({ user, handleFollow }: FollowButtonProps) => {
   }
 
   return (
-    <div className='relative'>
-      <Button
-        ref={buttonRef}
-        radius='xl'
-        size='sm'
-        variant={user.isFollowing ? 'outline' : 'filled'}
-        color='teal'
-        className={`self-center text-nowrap border !py-1 !px-2 !text-[13px]
+    <>
+      <LoginModal
+        opened={opened}
+        close={close}
+        onLoginSuccess={() => {
+          close()
+          navigate(location.state?.from?.pathname || '/')
+        }}
+      />
+      <div className='relative'>
+        <Button
+          ref={buttonRef}
+          radius='xl'
+          size='sm'
+          variant={user.isFollowing ? 'outline' : 'filled'}
+          color='teal'
+          className={`self-center text-nowrap border !py-1 !px-2 !text-[13px]
             ${
               user.isFollowing
                 ? 'group relative md:hover:!text-red-500 md:hover:!border-red-500 md:hover:!bg-transparent'
                 : 'bg-emerald-500 text-white hover:bg-emerald-600'
             }`}
-        onClick={handleClick}
-      >
-        {!isMobile ? (
-          <>
-            <span className='group-hover:hidden min-w-[100px]'>
+          onClick={handleClick}
+        >
+          {!isMobile ? (
+            <>
+              <span className='group-hover:hidden min-w-[100px]'>
+                {user.isFollowing ? 'Siguiendo' : 'Seguir'}
+              </span>
+              <span className='hidden group-hover:inline min-w-[100px]'>
+                {user.isFollowing ? 'Dejar de seguir' : 'Seguir'}
+              </span>
+            </>
+          ) : (
+            <span className='min-w-[100px]'>
               {user.isFollowing ? 'Siguiendo' : 'Seguir'}
             </span>
-            <span className='hidden group-hover:inline min-w-[100px]'>
-              {user.isFollowing ? 'Dejar de seguir' : 'Seguir'}
-            </span>
-          </>
-        ) : (
-          <span className='min-w-[100px]'>
-            {user.isFollowing ? 'Siguiendo' : 'Seguir'}
-          </span>
-        )}
-      </Button>
+          )}
+        </Button>
 
-      {isMobile && dropdownOpen && (
-        <div
-          ref={dropdownRef}
-          className='absolute z-10 mt-1 overflow-hidden transition-none bg-white border rounded-md shadow-md w-44 right-3 top-full'
-        >
-          <button
-            className='w-full px-3 py-2 text-sm text-left text-red-500 hover:bg-gray-100'
-            onClick={() => {
-              setDropdownOpen(!dropdownOpen)
-              handleFollow(user.id, true)
-            }}
+        {isMobile && dropdownOpen && (
+          <div
+            ref={dropdownRef}
+            className='absolute z-10 mt-1 overflow-hidden transition-none bg-white border rounded-md shadow-md w-44 right-3 top-full'
           >
-            <span className='flex items-center justify-between w-full'>
-              <div className='flex flex-col'>
-                <span>Dejar de seguir a</span>
-                <span>@{user.username}</span>
-              </div>
-              <BiSolidUserX size={22} />
-            </span>
-          </button>
-        </div>
-      )}
-    </div>
+            <button
+              className='w-full px-3 py-2 text-sm text-left text-red-500 hover:bg-gray-100'
+              onClick={() => {
+                setDropdownOpen(!dropdownOpen)
+                handleFollow(user.id, true)
+              }}
+            >
+              <span className='flex items-center justify-between w-full'>
+                <div className='flex flex-col'>
+                  <span>Dejar de seguir a</span>
+                  <span>@{user.username}</span>
+                </div>
+                <BiSolidUserX size={22} />
+              </span>
+            </button>
+          </div>
+        )}
+      </div>
+    </>
   )
 }

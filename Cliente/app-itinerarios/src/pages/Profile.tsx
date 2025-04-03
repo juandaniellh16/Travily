@@ -4,8 +4,18 @@ import { useAuth } from '@/hooks/useAuth'
 import { ActiveTab } from '@/layouts/MainLayout'
 import { itineraryService } from '@/services/itineraryService'
 import { userService } from '@/services/userService'
-import { ItinerarySimpleType, UserWithFollowStatus } from '@/types'
-import { Loader, Modal, ScrollArea, SegmentedControl } from '@mantine/core'
+import {
+  ItineraryListType,
+  ItinerarySimpleType,
+  UserWithFollowStatus
+} from '@/types'
+import {
+  Button,
+  Loader,
+  Modal,
+  ScrollArea,
+  SegmentedControl
+} from '@mantine/core'
 import { useEffect, useRef, useState } from 'react'
 import {
   Link,
@@ -18,6 +28,8 @@ import {
 import { NotFound } from './NotFound'
 import { ItinerariesList } from '@/components/ItinerariesList'
 import { IoIosArrowForward } from 'react-icons/io'
+import { itineraryListService } from '@/services/itineraryListService'
+import { ItineraryListsList } from '@/components/ItineraryListsList'
 
 export const Profile = () => {
   const { user: authUser } = useAuth()
@@ -34,6 +46,15 @@ export const Profile = () => {
   const [opened, setOpened] = useState(false)
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [loadingTab, setLoadingTab] = useState(false)
+  const [itineraries, setItineraries] = useState<ItinerarySimpleType[] | null>(
+    null
+  )
+  const [favoriteItineraries, setFavoriteItineraries] = useState<
+    ItinerarySimpleType[] | null
+  >(null)
+  const [itineraryLists, setItineraryLists] = useState<
+    ItineraryListType[] | null
+  >(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const scrollPosition = useRef(0)
   const [notFoundError, setNotFoundError] = useState(false)
@@ -59,6 +80,8 @@ export const Profile = () => {
     setOpened(false)
     setLoadingProfile(true)
     setItineraries(null)
+    setFavoriteItineraries(null)
+    setItineraryLists(null)
     setTimeout(() => setLoadingProfile(false), 500)
     setTimeout(() => {
       setFollowers(null)
@@ -79,27 +102,42 @@ export const Profile = () => {
     }
   }, [location.state?.tab, setActiveTab])
 
-  const [itineraries, setItineraries] = useState<ItinerarySimpleType[] | null>(
-    null
-  )
-
   const handleDeleteItinerary = async (id: string) => {
     try {
       await itineraryService.delete(id)
-      setItineraries((prev) =>
-        prev ? prev.filter((itinerary) => itinerary.id !== id) : []
-      )
+      if (activeTab === 'Itinerarios') {
+        setItineraries((prev) =>
+          prev ? prev.filter((itinerary) => itinerary.id !== id) : []
+        )
+      } else {
+        setFavoriteItineraries((prev) =>
+          prev ? prev.filter((itinerary) => itinerary.id !== id) : []
+        )
+      }
     } catch {
       setError('Error al borrar el itinerario. Por favor, inténtalo de nuevo.')
     }
   }
 
+  const handleDeleteItineraryList = async (id: string) => {
+    try {
+      await itineraryListService.delete(id)
+      setItineraryLists((prev) =>
+        prev ? prev.filter((list) => list.id !== id) : []
+      )
+    } catch {
+      setError('Error al borrar la lista. Por favor, inténtalo de nuevo.')
+    }
+  }
+
   useEffect(() => {
-    const fetchUserItineraries = async () => {
+    const fetchTabData = async () => {
       try {
         if (userId) {
           let itinerariesData
           if (activeTab === 'Itinerarios') {
+            setFavoriteItineraries(null)
+            setItineraryLists(null)
             itinerariesData = await itineraryService.getAll({
               userId: userId,
               visibility: authUser ? 'all' : 'public',
@@ -107,18 +145,27 @@ export const Profile = () => {
             })
             setItineraries(itinerariesData)
           } else if (activeTab === 'Favoritos') {
+            setItineraries(null)
+            setItineraryLists(null)
             itinerariesData = await itineraryService.getAll({
               likedBy: userId,
               visibility: authUser ? 'all' : 'public',
               limit: 3
             })
-            setItineraries(itinerariesData)
+            setFavoriteItineraries(itinerariesData)
           } else if (activeTab === 'Listas') {
-            setItineraries([])
+            setItineraries(null)
+            setFavoriteItineraries(null)
+            const itineraryListsData = await itineraryListService.getAll({
+              userId: userId,
+              visibility: authUser ? 'all' : 'public',
+              limit: 3
+            })
+            setItineraryLists(itineraryListsData)
           }
         }
       } catch {
-        console.error('Error fetching itineraries')
+        console.error('Error fetching tab data')
       } finally {
         setTimeout(() => {
           setLoadingTab(false)
@@ -126,7 +173,7 @@ export const Profile = () => {
       }
     }
 
-    fetchUserItineraries()
+    fetchTabData()
   }, [userId, activeTab, authUser])
 
   useEffect(() => {
@@ -173,7 +220,7 @@ export const Profile = () => {
   if (notFoundError) {
     return <NotFound from='profile' />
   }
-  if (!userId || loadingProfile || !itineraries) {
+  if (!userId || loadingProfile) {
     return (
       <div className='flex items-center justify-center w-full h-full my-[25%]'>
         <Loader color='teal' />
@@ -236,40 +283,129 @@ export const Profile = () => {
         </div>
         <div className='flex items-center justify-between my-4'>
           <h2 className='text-xl font-medium'>{activeTab}</h2>
-          {(activeTab === 'Itinerarios' || activeTab === 'Favoritos') && (
-            <Link
-              to={
-                activeTab === 'Itinerarios'
-                  ? `/${username}/itineraries`
-                  : `/${username}/favorites`
-              }
-              className='text-sm font-medium text-emerald-600'
-            >
-              <div className='flex items-center gap-0.5 leading-none'>
-                <span className='pb-0.5'>Ver todos</span>
-                <IoIosArrowForward size={14} strokeWidth={2} />
-              </div>
-            </Link>
-          )}
+          <Link
+            to={
+              activeTab === 'Itinerarios'
+                ? `/${username}/itineraries`
+                : activeTab === 'Favoritos'
+                ? `/${username}/favorites`
+                : `/${username}/lists`
+            }
+            className='text-sm font-medium text-emerald-600'
+          >
+            <div className='flex items-center gap-0.5 leading-none'>
+              <span className='pb-0.5'>Ver todos</span>
+              <IoIosArrowForward size={14} strokeWidth={2} />
+            </div>
+          </Link>
         </div>
-        {loadingTab ? (
-          <div className='flex items-center justify-center h-[295px] pb-[15%]'>
+        {loadingTab ||
+        (activeTab === 'Itinerarios' && !itineraries) ||
+        (activeTab === 'Favoritos' && !favoriteItineraries) ||
+        (activeTab === 'Listas' && !itineraryLists) ? (
+          <div className='flex items-center justify-center h-[136px]'>
             <Loader color='teal' />
           </div>
         ) : activeTab === 'Listas' ? (
-          <div className='flex items-center text-gray-500 justify-center h-[295px] pb-[15%]'>
-            <span>Las listas estarán disponibles próximamente.</span>
-          </div>
-        ) : itineraries?.length === 0 ? (
-          <div className='flex items-center text-gray-500 justify-center h-[295px] pb-[15%]'>
-            <span>No hay itinerarios</span>
+          itineraryLists?.length === 0 ? (
+            authUser?.username === username ? (
+              <div className='flex items-center justify-center h-[136px]'>
+                <Button
+                  variant='outline'
+                  color='teal'
+                  size='sm'
+                  radius='sm'
+                  className='text-nowrap'
+                  onClick={() => {
+                    navigate('/create-list')
+                  }}
+                >
+                  Crea tu primera lista
+                </Button>
+              </div>
+            ) : (
+              <div className='flex items-center text-gray-500 justify-center h-[136px]'>
+                <span>
+                  No hay listas
+                  {authUser?.username !== username && ' públicas'}
+                </span>
+              </div>
+            )
+          ) : (
+            <ItineraryListsList
+              handleDelete={handleDeleteItineraryList}
+              lists={itineraryLists ?? []}
+            />
+          )
+        ) : activeTab === 'Itinerarios' ? (
+          itineraries?.length === 0 ? (
+            authUser?.username === username ? (
+              <div className='flex items-center justify-center h-[136px]'>
+                <Button
+                  variant='outline'
+                  color='teal'
+                  size='sm'
+                  radius='sm'
+                  className='text-nowrap'
+                  onClick={() => {
+                    navigate('/create-list')
+                  }}
+                >
+                  Crea tu primer itinerario
+                </Button>
+              </div>
+            ) : (
+              <div className='flex items-center text-gray-500 justify-center h-[136px]'>
+                <span>
+                  No hay itinerarios
+                  {authUser?.username !== username && ' públicos'}
+                </span>
+              </div>
+            )
+          ) : (
+            <ItinerariesList
+              handleDelete={handleDeleteItinerary}
+              itineraries={itineraries ?? []}
+            />
+          )
+        ) : favoriteItineraries?.length === 0 ? (
+          <div className='flex items-center text-gray-500 justify-center h-[136px]'>
+            <span>No hay favoritos</span>
           </div>
         ) : (
           <ItinerariesList
             handleDelete={handleDeleteItinerary}
-            itineraries={itineraries}
+            itineraries={favoriteItineraries ?? []}
           />
         )}
+        {authUser?.username === username &&
+          ((activeTab === 'Itinerarios' &&
+            itineraries &&
+            itineraries?.length !== 0) ||
+            (activeTab === 'Listas' &&
+              itineraryLists &&
+              itineraryLists?.length !== 0)) && (
+            <div className='flex items-center justify-center'>
+              <Button
+                variant='outline'
+                color='teal'
+                size='sm'
+                radius='sm'
+                className='mt-5 text-nowrap'
+                onClick={() => {
+                  if (activeTab === 'Itinerarios') {
+                    navigate('/create-itinerary')
+                  } else if (activeTab === 'Listas') {
+                    navigate('/create-list')
+                  }
+                }}
+              >
+                {activeTab === 'Itinerarios'
+                  ? 'Nuevo itinerario'
+                  : 'Nueva lista'}
+              </Button>
+            </div>
+          )}
       </div>
     </>
   )

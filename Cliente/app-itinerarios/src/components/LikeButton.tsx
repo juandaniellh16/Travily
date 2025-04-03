@@ -1,40 +1,55 @@
 import { useAuth } from '@/hooks/useAuth'
 import { itineraryService } from '@/services/itineraryService'
-import { ItinerarySimpleType } from '@/types'
+import { ItineraryListType, ItinerarySimpleType } from '@/types'
 import { ActionIcon } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
 import { FaHeart, FaRegHeart } from 'react-icons/fa'
 import { LoginModal } from './LoginModal'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { itineraryListService } from '@/services/itineraryListService'
 
 interface ItineraryCardProps {
-  itinerary: ItinerarySimpleType
+  itinerary?: ItinerarySimpleType
+  itineraryList?: ItineraryListType
 }
 
-export const LikeButton = ({ itinerary }: ItineraryCardProps) => {
+export const LikeButton = ({
+  itinerary,
+  itineraryList
+}: ItineraryCardProps) => {
   const navigate = useNavigate()
   const location = useLocation()
   const [liked, setLiked] = useState(false)
-  const [likes, setLikes] = useState(itinerary.likes)
+  const [likes, setLikes] = useState(
+    itinerary?.likes || itineraryList?.likes || 0
+  )
   const [opened, { open, close }] = useDisclosure(false)
 
   const { user } = useAuth()
 
   useEffect(() => {
     if (!user) return
+    const id = itinerary?.id || itineraryList?.id
+    if (!id) return
 
     const fetchLikedStatus = async () => {
       try {
-        const likedStatus = await itineraryService.checkIfLiked(itinerary.id)
-        setLiked(likedStatus)
+        let likedStatus
+        if (itinerary) {
+          likedStatus = await itineraryService.checkIfLiked(id)
+          setLiked(likedStatus)
+        } else if (itineraryList) {
+          likedStatus = await itineraryListService.checkIfLiked(id)
+          setLiked(likedStatus)
+        }
       } catch {
         console.error('Error fetching liked status')
       }
     }
 
     fetchLikedStatus()
-  }, [user, itinerary.id])
+  }, [user, itinerary, itineraryList])
 
   const handleLike = async () => {
     if (!user) {
@@ -44,18 +59,32 @@ export const LikeButton = ({ itinerary }: ItineraryCardProps) => {
 
     const previousLikedState = liked
     const previousLikesCount = likes
+
+    const id = itinerary?.id || itineraryList?.id
+    if (!id) return
+
     try {
       if (!liked) {
         setLiked(!liked)
         setLikes(likes + 1)
-        await itineraryService.like(itinerary.id)
+
+        if (itinerary) {
+          await itineraryService.like(id)
+        } else if (itineraryList) {
+          await itineraryListService.like(id)
+        }
       } else {
         setLiked(!liked)
         setLikes(likes - 1)
-        await itineraryService.unlike(itinerary.id)
+
+        if (itinerary) {
+          await itineraryService.unlike(id)
+        } else if (itineraryList) {
+          await itineraryListService.unlike(id)
+        }
       }
     } catch {
-      console.error('Error liking/unliking itinerary')
+      console.error('Error liking/unliking')
       setLiked(previousLikedState)
       setLikes(previousLikesCount)
     }

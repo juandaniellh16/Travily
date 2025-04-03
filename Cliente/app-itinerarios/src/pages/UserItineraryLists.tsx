@@ -1,21 +1,22 @@
-import { ItinerariesList } from '@/components/ItinerariesList'
 import { useAuth } from '@/hooks/useAuth'
-import { itineraryService } from '@/services/itineraryService'
 import { userService } from '@/services/userService'
-import { ItinerarySimpleType, UserPublic } from '@/types'
+import { ItineraryListType, UserPublic } from '@/types'
 import { ActionIcon, Loader } from '@mantine/core'
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { NotFound } from './NotFound'
 import { IoIosArrowBack } from 'react-icons/io'
+import { itineraryListService } from '@/services/itineraryListService'
+import { ItineraryListsList } from '@/components/ItineraryListsList'
 import { FiPlus } from 'react-icons/fi'
 
-export const UserItineraries = () => {
+export const UserItineraryLists = () => {
   const { user: authUser } = useAuth()
   const { username } = useParams()
+  const navigate = useNavigate()
   const [profileUser, setProfileUser] = useState<UserPublic | null>(null)
-  const [itineraries, setItineraries] = useState<ItinerarySimpleType[]>([])
-  const [loadingItineraries, setLoadingItineraries] = useState(true)
+  const [itineraryLists, setItineraryLists] = useState<ItineraryListType[]>([])
+  const [loadingItineraryLists, setLoadingItineraryLists] = useState(true)
   const [notFoundError, setNotFoundError] = useState(false)
   const [error, setError] = useState(false)
   const [deleteError, setDeleteError] = useState('')
@@ -41,55 +42,35 @@ export const UserItineraries = () => {
   }, [authUser, username])
 
   useEffect(() => {
-    const fetchUserItineraries = async () => {
+    const fetchUserItineraryLists = async () => {
       if (profileUser) {
-        if (location.pathname.includes('itineraries')) {
-          try {
-            const itineraries = await itineraryService.getAll({
-              userId: profileUser.id,
-              visibility: authUser ? 'all' : 'public',
-              sort: 'newest'
-            })
-            setItineraries(itineraries)
-          } catch {
-            console.error('Error fetching user itineraries')
-            setError(true)
-          } finally {
-            setTimeout(() => {
-              setLoadingItineraries(false)
-            }, 500)
-          }
-        } else if (location.pathname.includes('favorites')) {
-          try {
-            const itineraries = await itineraryService.getAll({
-              likedBy: profileUser.id,
-              visibility: authUser ? 'all' : 'public',
-              sort: 'newest'
-            })
-            setItineraries(itineraries)
-          } catch {
-            console.error('Error fetching user liked itineraries')
-            setError(true)
-          } finally {
-            setTimeout(() => {
-              setLoadingItineraries(false)
-            }, 500)
-          }
+        try {
+          const lists = await itineraryListService.getAll({
+            userId: profileUser.id,
+            visibility: authUser ? 'all' : 'public',
+            sort: 'newest'
+          })
+          setItineraryLists(lists)
+        } catch {
+          console.error('Error fetching user itinerary lists')
+          setError(true)
+        } finally {
+          setTimeout(() => {
+            setLoadingItineraryLists(false)
+          }, 500)
         }
       }
     }
 
-    fetchUserItineraries()
+    fetchUserItineraryLists()
   }, [profileUser, authUser])
 
-  const handleDeleteItinerary = async (id: string) => {
+  const handleDeleteItineraryList = async (id: string) => {
     try {
-      await itineraryService.delete(id)
-      setItineraries((prev) => prev.filter((itinerary) => itinerary.id !== id))
+      await itineraryListService.delete(id)
+      setItineraryLists((prev) => prev.filter((list) => list.id !== id))
     } catch {
-      setDeleteError(
-        'Error al borrar el itinerario. Por favor, inténtalo de nuevo.'
-      )
+      setDeleteError('Error al borrar la lista. Por favor, inténtalo de nuevo.')
     }
   }
 
@@ -137,18 +118,13 @@ export const UserItineraries = () => {
           </Link>
           <div className='text-center'>
             <h2 className='text-lg font-semibold leading-none text-white xs:text-xl'>
-              {location.pathname.includes('itineraries')
-                ? `Itinerarios`
-                : `Favoritos`}
+              Listas
             </h2>
           </div>
           <Link
-            to={'/create-itinerary'}
+            to={'/create-list'}
             className={`${
-              location.pathname.includes('itineraries') &&
-              authUser?.username === username
-                ? 'flex'
-                : 'hidden'
+              authUser?.username === username ? 'flex' : 'hidden'
             } justify-end ml-auto group`}
           >
             {window.innerWidth > 480 ? (
@@ -157,7 +133,7 @@ export const UserItineraries = () => {
                 color='white'
                 size={30}
                 radius='xl'
-                aria-label='Create new itinerary'
+                aria-label='Create new list'
               >
                 <FiPlus size={22} strokeWidth={3} className='text-gray-50' />
               </ActionIcon>
@@ -174,34 +150,30 @@ export const UserItineraries = () => {
         </div>
       )}
       <div className='w-full mt-5 mb-8'>
-        {loadingItineraries ? (
+        {loadingItineraryLists ? (
           <div className='flex items-center justify-center w-full my-[25%]'>
             <Loader color='teal' />
           </div>
-        ) : itineraries?.length === 0 ? (
+        ) : itineraryLists?.length === 0 ? (
           <div className='flex items-center justify-center my-[25%]'>
             <span className='text-center text-gray-500'>
               {error ? (
                 <>
-                  No se han podido cargar los itinerarios en este momento.
+                  No se han podido cargar las listas en este momento.
                   <br />
                   Inténtalo más tarde.
                 </>
+              ) : authUser?.username !== username ? (
+                'No hay listas públicas'
               ) : (
-                `${
-                  location.pathname.includes('itineraries')
-                    ? authUser?.username !== username
-                      ? 'No hay itinerarios públicos'
-                      : 'No hay itinerarios'
-                    : 'No hay favoritos'
-                }`
+                'No hay listas'
               )}
             </span>
           </div>
         ) : (
-          <ItinerariesList
-            itineraries={itineraries}
-            handleDelete={handleDeleteItinerary}
+          <ItineraryListsList
+            lists={itineraryLists}
+            handleDelete={handleDeleteItineraryList}
           />
         )}
       </div>

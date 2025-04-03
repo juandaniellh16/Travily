@@ -4,6 +4,8 @@ export interface Event {
   label: string
   description: string
   image: string | null
+  startTime: string | null
+  endTime: string | null
 }
 
 export interface Day {
@@ -38,6 +40,17 @@ export interface ItinerarySimpleType {
   isPublic: boolean
   userId: string
   likes: number
+}
+
+export interface ItineraryListType {
+  id: string
+  title: string
+  description: string
+  image: string | null
+  isPublic: boolean
+  userId: string
+  likes: number
+  itineraries: ItinerarySimpleType[]
 }
 
 export interface UserPublic {

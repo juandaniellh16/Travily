@@ -1,13 +1,5 @@
 import { useAuth } from '@/hooks/useAuth'
-import {
-  Button,
-  Checkbox,
-  Group,
-  PasswordInput,
-  TextInput,
-  Text,
-  Title
-} from '@mantine/core'
+import { Button, PasswordInput, TextInput, Text, Title } from '@mantine/core'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
@@ -95,15 +87,6 @@ export const Login = ({ onLoginSuccess }: { onLoginSuccess?: () => void }) => {
             withAsterisk={false}
             mt='sm'
           />
-          <Group justify='space-between' mt='lg' wrap='nowrap'>
-            <Checkbox label='Recuérdame' size='sm' />
-            <Link
-              to='#'
-              className='text-sm leading-tight text-center text-blue-500 hover:underline'
-            >
-              ¿Has olvidado la contraseña?
-            </Link>
-          </Group>
           <Button
             type='submit'
             loading={loading}

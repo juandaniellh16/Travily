@@ -8,9 +8,12 @@ import {
   FileButton,
   PasswordInput,
   TextInput,
-  Title
+  Loader,
+  ActionIcon
 } from '@mantine/core'
 import { useEffect, useState } from 'react'
+import { IoIosArrowBack } from 'react-icons/io'
+import { Link } from 'react-router-dom'
 
 export const ProfileSettings = () => {
   const { user, refreshUser } = useAuth()
@@ -122,97 +125,138 @@ export const ProfileSettings = () => {
     }
   }
 
-  return (
-    <div className='flex items-center justify-center'>
-      <div className='w-full max-w-md px-8'>
-        <Title order={2} ta='center' mb='xl'>
-          Configuración del perfil
-        </Title>
-        {error && (
-          <p className='max-w-xs mx-auto mb-4 text-center text-red-500'>
-            {error}
-          </p>
-        )}
-        {success && (
-          <p className='max-w-xs mx-auto mb-4 text-center text-emerald-500'>
-            {success}
-          </p>
-        )}
-        <form onSubmit={handleSubmit} className='mb-4'>
-          <TextInput
-            placeholder='Nombre'
-            label='Nombre'
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            size='md'
-          />
-          <TextInput
-            placeholder='Nombre de usuario'
-            label='Nombre de usuario'
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            size='md'
-            mt='sm'
-          />
-          <TextInput
-            type='email'
-            placeholder='Correo electrónico'
-            label='Correo electrónico'
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            size='md'
-            mt='sm'
-          />
-          <Text fw={500} mt='sm'>
-            Cambia tu contraseña
-          </Text>
-          <PasswordInput
-            placeholder='Contraseña actual'
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            size='md'
-          />
-          <PasswordInput
-            placeholder='Nueva contraseña'
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            size='md'
-            mt='sm'
-          />
-          <PasswordInput
-            placeholder='Confirmar nueva contraseña'
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            size='md'
-            mt='sm'
-          />
-          <div className='flex justify-center mt-4'>
-            <FileButton
-              onChange={handleAvatarChange}
-              accept='.png, .jpg, .jpeg'
-            >
-              {(props) => (
-                <Avatar
-                  src={avatar || '/images/avatar-placeholder.svg'}
-                  size={100}
-                  className='transition cursor-pointer hover:opacity-80'
-                  {...props}
-                />
-              )}
-            </FileButton>
-          </div>
-          <Button
-            type='submit'
-            loading={loading}
-            loaderProps={{ type: 'dots' }}
-            fullWidth
-            color='teal'
-            mt='lg'
-          >
-            Guardar cambios
-          </Button>
-        </form>
+  if (!user) {
+    return (
+      <div className='flex items-center justify-center w-full h-full my-[25%]'>
+        <Loader color='teal' />
       </div>
-    </div>
+    )
+  }
+
+  return (
+    <>
+      <div className='grid items-center grid-cols-8 gap-3 py-1.5 xxs:py-1 px-1 xxs:px-1.5 rounded-t-lg bg-[#12b886] mb-8'>
+        <Link to={`/${user.username}`} className='flex items-center col-span-1'>
+          {window.innerWidth > 480 ? (
+            <ActionIcon
+              variant='subtle'
+              color='white'
+              size={30}
+              radius='xl'
+              aria-label='Back to profile'
+              className='pt-1'
+            >
+              <IoIosArrowBack
+                size={22}
+                strokeWidth={3}
+                className='text-gray-50'
+              />
+            </ActionIcon>
+          ) : (
+            <button>
+              <IoIosArrowBack
+                size={22}
+                strokeWidth={3}
+                className='text-gray-50 hover:text-emerald-300 pt-0.5'
+              />
+            </button>
+          )}
+        </Link>
+        <div className='col-span-6 text-center text-nowrap'>
+          <h2 className='text-lg font-semibold leading-none text-white xs:text-xl'>
+            Configuración del perfil
+          </h2>
+        </div>
+        <div className='col-span-1'></div>
+      </div>
+      <div className='flex items-center justify-center'>
+        <div className='w-full max-w-md px-8'>
+          {error && (
+            <p className='max-w-xs mx-auto mb-4 text-center text-red-500'>
+              {error}
+            </p>
+          )}
+          {success && (
+            <p className='max-w-xs mx-auto mb-4 text-center text-emerald-500'>
+              {success}
+            </p>
+          )}
+          <form onSubmit={handleSubmit} className='mb-4'>
+            <TextInput
+              placeholder='Nombre'
+              label='Nombre'
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              size='md'
+            />
+            <TextInput
+              placeholder='Nombre de usuario'
+              label='Nombre de usuario'
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              size='md'
+              mt='sm'
+            />
+            <TextInput
+              type='email'
+              placeholder='Correo electrónico'
+              label='Correo electrónico'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              size='md'
+              mt='sm'
+            />
+            <Text fw={500} mt='sm'>
+              Cambia tu contraseña
+            </Text>
+            <PasswordInput
+              placeholder='Contraseña actual'
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              size='md'
+            />
+            <PasswordInput
+              placeholder='Nueva contraseña'
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              size='md'
+              mt='sm'
+            />
+            <PasswordInput
+              placeholder='Confirmar nueva contraseña'
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              size='md'
+              mt='sm'
+            />
+            <div className='flex justify-center mt-4'>
+              <FileButton
+                onChange={handleAvatarChange}
+                accept='.png, .jpg, .jpeg'
+              >
+                {(props) => (
+                  <Avatar
+                    src={avatar || '/images/avatar-placeholder.svg'}
+                    size={100}
+                    className='transition cursor-pointer hover:opacity-80'
+                    {...props}
+                  />
+                )}
+              </FileButton>
+            </div>
+            <Button
+              type='submit'
+              loading={loading}
+              loaderProps={{ type: 'dots' }}
+              fullWidth
+              color='teal'
+              mt='lg'
+            >
+              Guardar cambios
+            </Button>
+          </form>
+        </div>
+      </div>
+    </>
   )
 }

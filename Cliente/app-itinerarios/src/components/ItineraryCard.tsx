@@ -31,7 +31,7 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
       <div className='h-[52%] min-h-[52%] rounded-xl overflow-hidden'>
         <Link to={`/itineraries/${itinerary.id}`}>
           <Image
-            src={itinerary.image}
+            src={itinerary.image || '/images/landscape-placeholder.svg'}
             h='100%'
             alt={itinerary.title}
             className='transition duration-300 transform hover:scale-105'

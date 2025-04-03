@@ -10,22 +10,31 @@ export const Footer = () => {
           </Link>
           <ul className='justify-center font-semibold text-center transition-all duration-500 text-md sm:flex items-cente gap-14 lg:gap-10 xl:gap-14'>
             <li className='my-2 sm:my-0'>
-              <Link to={'#'} className='text-white hover:text-gray-400'>
+              <Link to={'/about-us'} className='text-white hover:text-gray-400'>
                 Sobre nosotros
               </Link>
             </li>
             <li>
-              <Link to={'#'} className='text-white hover:text-gray-400'>
+              <Link
+                to={'/contact-us'}
+                className='text-white hover:text-gray-400'
+              >
                 Contacto
               </Link>
             </li>
             <li className='my-2 sm:my-0'>
-              <Link to={'#'} className='text-white hover:text-gray-400'>
+              <Link
+                to={'/privacy-policy'}
+                className='text-white hover:text-gray-400'
+              >
                 Política de privacidad
               </Link>
             </li>
             <li>
-              <Link to={'#'} className='text-white hover:text-gray-400'>
+              <Link
+                to={'/terms-of-use'}
+                className='text-white hover:text-gray-400'
+              >
                 Términos de uso
               </Link>
             </li>

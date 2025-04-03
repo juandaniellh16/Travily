@@ -3,12 +3,12 @@ import { DatabaseError, NotFoundError } from '../../errors/errors.js'
 
 export class EventModel {
   static async addEvent ({ dayId, event }) {
-    const { orderIndex, label, description, image } = event
+    const { orderIndex, label, description, image, startTime, endTime } = event
     const connection = await getConnection()
     try {
       const [result] = await connection.query(
-        'INSERT INTO itinerary_events (day_id, order_index, label, description, image) VALUES (?, ?, ?, ?, ?);',
-        [dayId, orderIndex, label, description, image]
+        'INSERT INTO itinerary_events (day_id, order_index, label, description, image, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?);',
+        [dayId, orderIndex, label, description, image, startTime || null, endTime || null]
       )
 
       if (!result.insertId) {
@@ -17,7 +17,7 @@ export class EventModel {
 
       const newEventId = result.insertId
 
-      return { id: newEventId, dayId, orderIndex, label, description, image }
+      return { id: newEventId, dayId, orderIndex, label, description, image, startTime, endTime }
     } catch (error) {
       throw new DatabaseError('Error adding event: ' + error.message)
     } finally {
@@ -71,6 +71,14 @@ export class EventModel {
       if (updatedEventData.image) {
         updateFields.push('image = ?')
         queryParams.push(updatedEventData.image)
+      }
+      if (updatedEventData.startTime) {
+        updateFields.push('start_time = ?')
+        queryParams.push(updatedEventData.startTime)
+      }
+      if (updatedEventData.endTime) {
+        updateFields.push('end_time = ?')
+        queryParams.push(updatedEventData.endTime)
       }
 
       queryParams.push(eventId)

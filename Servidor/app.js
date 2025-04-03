@@ -3,11 +3,13 @@ import { corsMiddleware } from './middlewares/cors.js'
 import cookieParser from 'cookie-parser'
 import { createItinerariesRouter } from './routes/itineraries.js'
 import { createUsersRouter } from './routes/users.js'
+import { createItineraryListsRouter } from './routes/itineraryLists.js'
 import { createSearchRouter } from './routes/search.js'
 import { createAuthRouter } from './routes/auth.js'
 import { uploadRouter } from './routes/upload.js'
 import { ItineraryModel } from './models/mysql/itinerary.js'
 import { UserModel } from './models/mysql/user.js'
+import { ItineraryListModel } from './models/mysql/itineraryList.js'
 import { DayModel } from './models/mysql/day.js'
 import { EventModel } from './models/mysql/event.js'
 import { SearchModel } from './models/mysql/search.js'
@@ -29,6 +31,7 @@ app.use(auth)
 app.use('/auth', createAuthRouter({ userModel: UserModel }))
 app.use('/users', createUsersRouter({ userModel: UserModel }))
 app.use('/itineraries', createItinerariesRouter({ itineraryModel: ItineraryModel }))
+app.use('/lists', createItineraryListsRouter({ itineraryListModel: ItineraryListModel }))
 app.use('/search', createSearchRouter({ searchModel: SearchModel }))
 
 app.use('/upload', uploadRouter)

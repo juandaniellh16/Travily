@@ -27,3 +27,11 @@ uploadRouter.post('/event-image', upload.single('file'), (req, res) => {
   const eventImageUrl = `${API_BASE_URL}/uploads/events/${req.file.filename}`
   res.json({ eventImageUrl })
 })
+
+uploadRouter.post('/list-image', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' })
+  }
+  const listImageUrl = `${API_BASE_URL}/uploads/lists/${req.file.filename}`
+  res.json({ listImageUrl })
+})

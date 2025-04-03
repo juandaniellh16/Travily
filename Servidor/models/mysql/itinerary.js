@@ -248,7 +248,9 @@ export class ItineraryModel {
             order_index AS orderIndex,
             label,
             description,
-            image
+            image,
+            start_time AS startTime,
+            end_time AS endTime
         FROM itinerary_events
         WHERE day_id IN (SELECT id FROM itinerary_days WHERE itinerary_id = ?)
         ORDER BY day_id, order_index ASC;`,
@@ -273,7 +275,9 @@ export class ItineraryModel {
             orderIndex: event.orderIndex,
             label: event.label,
             description: event.description,
-            image: event.image
+            image: event.image,
+            startTime: event.startTime,
+            endTime: event.endTime
           })
         }
       })

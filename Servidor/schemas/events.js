@@ -14,7 +14,25 @@ const eventSchema = z.object({
   }).optional(),
   image: z.string({
     invalid_type_error: 'Event image must be a string'
-  }).url('Event image must be a valid URL').or(z.string().refine((value) => value.startsWith('/images/'))).nullable().optional()
+  }).url('Event image must be a valid URL').or(z.string().refine((value) => value.startsWith('/images/'))).nullable().optional(),
+  startTime: z.preprocess(
+    (arg) => (arg === '' || arg === null ? undefined : arg),
+    z.string({
+      invalid_type_error: 'Event startTime must be a string'
+    })
+      .regex(/^([01]?[0-9]|2[0-3]):([0-5]?[0-9])$/, {
+        message: 'Event startTime must be a valid time in HH:MM format'
+      }).optional()
+  ),
+  endTime: z.preprocess(
+    (arg) => (arg === '' || arg === null ? undefined : arg),
+    z.string({
+      invalid_type_error: 'Event endTime must be a string'
+    })
+      .regex(/^([01]?[0-9]|2[0-3]):([0-5]?[0-9])$/, {
+        message: 'Event endTime must be a valid time in HH:MM format'
+      }).optional()
+  )
 })
 
 export function validateEvent (input) {

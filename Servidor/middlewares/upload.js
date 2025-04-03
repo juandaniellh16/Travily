@@ -11,6 +11,8 @@ const storage = multer.diskStorage({
       uploadDir = 'uploads/itineraries'
     } else if (req.url.includes('/event-image')) {
       uploadDir = 'uploads/events'
+    } else if (req.url.includes('/list-image')) {
+      uploadDir = 'uploads/lists'
     }
 
     if (!fs.existsSync(uploadDir)) {

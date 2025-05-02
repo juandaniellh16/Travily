@@ -5,7 +5,7 @@ import { userService } from '@/services/userService'
 import { ItinerarySimpleType, UserPublic } from '@/types'
 import { ActionIcon, Loader } from '@mantine/core'
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router'
 import { NotFound } from './NotFound'
 import { IoIosArrowBack } from 'react-icons/io'
 import { FiPlus } from 'react-icons/fi'
@@ -87,9 +87,7 @@ export const UserItineraries = () => {
       await itineraryService.delete(id)
       setItineraries((prev) => prev.filter((itinerary) => itinerary.id !== id))
     } catch {
-      setDeleteError(
-        'Error al borrar el itinerario. Por favor, inténtalo de nuevo.'
-      )
+      setDeleteError('Error al borrar el itinerario. Por favor, inténtalo de nuevo.')
     }
   }
 
@@ -114,11 +112,7 @@ export const UserItineraries = () => {
                 aria-label='Back to profile'
                 className='pt-1'
               >
-                <IoIosArrowBack
-                  size={22}
-                  strokeWidth={3}
-                  className='text-gray-50'
-                />
+                <IoIosArrowBack size={22} strokeWidth={3} className='text-gray-50' />
               </ActionIcon>
             ) : (
               <button>
@@ -137,16 +131,13 @@ export const UserItineraries = () => {
           </Link>
           <div className='text-center'>
             <h2 className='text-lg font-semibold leading-none text-white xs:text-xl'>
-              {location.pathname.includes('itineraries')
-                ? `Itinerarios`
-                : `Favoritos`}
+              {location.pathname.includes('itineraries') ? `Itinerarios` : `Favoritos`}
             </h2>
           </div>
           <Link
             to={'/create-itinerary'}
             className={`${
-              location.pathname.includes('itineraries') &&
-              authUser?.username === username
+              location.pathname.includes('itineraries') && authUser?.username === username
                 ? 'flex'
                 : 'hidden'
             } justify-end ml-auto group`}
@@ -199,10 +190,7 @@ export const UserItineraries = () => {
             </span>
           </div>
         ) : (
-          <ItinerariesList
-            itineraries={itineraries}
-            handleDelete={handleDeleteItinerary}
-          />
+          <ItinerariesList itineraries={itineraries} handleDelete={handleDeleteItinerary} />
         )}
       </div>
     </>

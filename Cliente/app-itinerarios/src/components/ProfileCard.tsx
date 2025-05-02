@@ -4,7 +4,7 @@ import { UserPublic } from '@/types'
 import { Avatar, Button, Card, Group, Text } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router'
 import { LoginModal } from './LoginModal'
 
 interface ProfileCardProps {
@@ -17,9 +17,7 @@ export const ProfileCard = ({ setOpened }: ProfileCardProps) => {
   const navigate = useNavigate()
 
   const isAuthUser = !username || username === authUser?.username
-  const [profileUser, setProfileUser] = useState<UserPublic | null>(
-    isAuthUser ? authUser : null
-  )
+  const [profileUser, setProfileUser] = useState<UserPublic | null>(isAuthUser ? authUser : null)
   const [isFollowing, setIsFollowing] = useState(false)
   const [opened, { open, close }] = useDisclosure(false)
 
@@ -57,24 +55,18 @@ export const ProfileCard = ({ setOpened }: ProfileCardProps) => {
     try {
       if (isFollowing) {
         setIsFollowing(!isFollowing)
-        setProfileUser((prev) =>
-          prev ? { ...prev, followers: prev.followers - 1 } : prev
-        )
+        setProfileUser((prev) => (prev ? { ...prev, followers: prev.followers - 1 } : prev))
         await userService.unfollowUser(profileUser.id)
       } else {
         setIsFollowing(!isFollowing)
-        setProfileUser((prev) =>
-          prev ? { ...prev, followers: prev.followers + 1 } : prev
-        )
+        setProfileUser((prev) => (prev ? { ...prev, followers: prev.followers + 1 } : prev))
         await userService.followUser(profileUser.id)
       }
       await refreshUser()
     } catch {
       console.error('Error following/unfollowing user')
       setIsFollowing(previousFollowingState)
-      setProfileUser((prev) =>
-        prev ? { ...prev, followers: previousFollowersCount } : prev
-      )
+      setProfileUser((prev) => (prev ? { ...prev, followers: previousFollowersCount } : prev))
     }
   }
 
@@ -95,7 +87,7 @@ export const ProfileCard = ({ setOpened }: ProfileCardProps) => {
           }}
         />
         <Avatar
-          src={profileUser?.avatar || '/images/avatar-placeholder.svg'}
+          src={profileUser?.avatar || '/images/placeholder/avatar-placeholder.svg'}
           size={80}
           mx='auto'
           mt={-30}

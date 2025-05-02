@@ -1,5 +1,5 @@
 import { Carousel } from '@mantine/carousel'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 const destinations = [
   {
@@ -9,8 +9,7 @@ const destinations = [
   },
   {
     name: 'Paris',
-    image:
-      'https://a.eu.mktgcdn.com/f/100004519/N2BB4ohwclor2uLoZ7XMHgJmxOZaMOokMdQqqXQAq3s.jpg'
+    image: 'https://a.eu.mktgcdn.com/f/100004519/N2BB4ohwclor2uLoZ7XMHgJmxOZaMOokMdQqqXQAq3s.jpg'
   },
   {
     name: 'Roma',
@@ -44,114 +43,48 @@ const destinations = [
 ]
 
 export const PopularDestinations = () => {
-  //const [opened, { toggle }] = useDisclosure(false)
-
   return (
-    <>
-      {/*
-      <div className='flex flex-col items-center mt-3 mb-8'>
-        <div className='grid w-full grid-cols-4 gap-4'>
-          {destinations.slice(0, 4).map((destination) => (
+    <Carousel
+      slideSize={{
+        base: '37%',
+        xs: '27%',
+        sm: '22%',
+        md: '22%',
+        lg: '27%',
+        xl: '22%'
+      }}
+      height={140}
+      slideGap='xs'
+      align='start'
+      slidesToScroll='auto'
+      withControls={window.innerWidth > 640}
+      dragFree
+      className='mt-3 mb-8 group'
+      classNames={{
+        control:
+          '!opacity-0 group-hover:!opacity-100 !transition-opacity !duration-300 -mx-1 w-7 h-7'
+      }}
+    >
+      {destinations.map((destination) => (
+        <Carousel.Slide key={destination.name}>
+          <div className='flex h-full overflow-hidden transition-transform duration-300 transform rounded-lg hover:scale-95'>
             <Link
-              key={destination.name}
               to={`/search?q=${destination.name}&type=itinerary`}
-              className='relative overflow-hidden rounded-lg group h-[140px]'
+              className='relative w-full h-full'
             >
               <img
                 src={destination.image}
                 alt={destination.name}
-                className='object-cover w-full h-full transition-transform duration-300 transform group-hover:scale-105'
+                className='object-cover w-full h-full'
               />
               <div className='absolute inset-0 bg-gradient-to-t from-black/50 via-transparent'></div>
               <div className='absolute left-0 w-full font-semibold text-center text-white bottom-2'>
                 {destination.name}
               </div>
             </Link>
-          ))}
-        </div>
-        
-        <Collapse in={opened} transitionDuration={300} className='w-full mt-4'>
-          <div className='grid grid-cols-4 gap-4'>
-            {destinations.slice(4, 8).map((destination) => (
-              <Link
-                key={destination.name}
-                to={`/search?q=${destination.name}&type=itinerary`}
-                className='relative overflow-hidden rounded-lg group h-[140px]'
-              >
-                <img
-                  src={destination.image}
-                  alt={destination.name}
-                  className='object-cover w-full h-full transition-transform duration-300 transform group-hover:scale-105'
-                />
-                <div className='absolute inset-0 bg-gradient-to-t from-black/50 via-transparent'></div>
-                <div className='absolute left-0 w-full font-semibold text-center text-white bottom-2'>
-                  {destination.name}
-                </div>
-              </Link>
-            ))}
           </div>
-        </Collapse>
-
-        <Button
-          onClick={toggle}
-          variant='light'
-          color='gray'
-          mt='md'
-          leftSection={
-            <FaChevronDown
-              className={`w-5 h-5 transition-transform ${
-                opened ? 'rotate-180' : ''
-              }`}
-            />
-          }
-        >
-          {opened ? 'Ver menos' : 'Ver más'}
-        </Button>
-      </div>
-      */}
-
-      <Carousel
-        slideSize={{
-          base: '37%',
-          xs: '27%',
-          sm: '22%',
-          md: '22%',
-          lg: '27%',
-          xl: '22%'
-        }}
-        height={140}
-        slideGap='xs'
-        align='start'
-        slidesToScroll='auto'
-        withControls={window.innerWidth > 640}
-        dragFree
-        className='mt-3 mb-8 group'
-        classNames={{
-          control:
-            '!opacity-0 group-hover:!opacity-100 !transition-opacity !duration-300 -mx-1 w-7 h-7'
-        }}
-      >
-        {destinations.map((destination) => (
-          <Carousel.Slide key={destination.name}>
-            <div className='flex h-full overflow-hidden transition-transform duration-300 transform rounded-lg hover:scale-95'>
-              <Link
-                to={`/search?q=${destination.name}&type=itinerary`}
-                className='relative w-full h-full'
-              >
-                <img
-                  src={destination.image}
-                  alt={destination.name}
-                  className='object-cover w-full h-full'
-                />
-                <div className='absolute inset-0 bg-gradient-to-t from-black/50 via-transparent'></div>
-                <div className='absolute left-0 w-full font-semibold text-center text-white bottom-2'>
-                  {destination.name}
-                </div>
-              </Link>
-            </div>
-          </Carousel.Slide>
-        ))}
-      </Carousel>
-    </>
+        </Carousel.Slide>
+      ))}
+    </Carousel>
   )
 }

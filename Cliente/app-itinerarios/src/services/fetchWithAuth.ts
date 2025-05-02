@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/config/config'
+import { authService } from './authService'
 
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   const response = await fetch(`${API_BASE_URL}${url}`, {
@@ -13,6 +14,9 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     })
 
     if (!refreshResponse.ok) {
+      window.location.replace('/login')
+      await authService.logout()
+      localStorage.removeItem('userId')
       throw new Error('Refresh token error')
     }
 

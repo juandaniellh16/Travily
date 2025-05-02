@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { userService } from '@/services/userService'
 import { UserWithFollowStatus } from '@/types'
 import { Loader } from '@mantine/core'
-import { useOutletContext } from 'react-router-dom'
+import { useOutletContext } from 'react-router'
 
 export const Following = () => {
   const { refreshUser } = useAuth()
@@ -21,9 +21,7 @@ export const Following = () => {
         await userService.followUser(userId)
       }
       setFollowing((prev) =>
-        prev.map((f) =>
-          f.id === userId ? { ...f, isFollowing: !isFollowing } : f
-        )
+        prev.map((f) => (f.id === userId ? { ...f, isFollowing: !isFollowing } : f))
       )
       await refreshUser()
     } catch {

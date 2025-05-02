@@ -3,7 +3,9 @@ import { IoShareSocialSharp } from 'react-icons/io5'
 import { Toaster, toast } from 'sonner'
 
 export const ShareButton = ({ url }: { url?: string }) => {
-  const handleCopy = async () => {
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.preventDefault()
+
     await navigator.clipboard.writeText(url ? url : window.location.href)
     toast('¡URL copiada al portapapeles!', {
       style: {
@@ -18,13 +20,7 @@ export const ShareButton = ({ url }: { url?: string }) => {
 
   return (
     <>
-      <ActionIcon
-        variant='subtle'
-        color='gray'
-        size={24}
-        p={3}
-        onClick={handleCopy}
-      >
+      <ActionIcon variant='subtle' color='gray' size={24} p={3} onClick={handleCopy}>
         <IoShareSocialSharp size={16} color='black' />
       </ActionIcon>
 

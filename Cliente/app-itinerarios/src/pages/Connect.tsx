@@ -7,9 +7,7 @@ import { useEffect, useState } from 'react'
 
 export const Connect = () => {
   const { user: authUser, refreshUser } = useAuth()
-  const [suggestedUsers, setSuggestedUsers] = useState<
-    UserWithFollowStatus[] | null
-  >(null)
+  const [suggestedUsers, setSuggestedUsers] = useState<UserWithFollowStatus[] | null>(null)
 
   useEffect(() => {
     const fetchSuggestedUsers = async () => {
@@ -29,11 +27,7 @@ export const Connect = () => {
   const handleFollow = async (userId: string, isFollowing: boolean) => {
     try {
       setSuggestedUsers((prev) =>
-        prev
-          ? prev.map((f) =>
-              f.id === userId ? { ...f, isFollowing: !isFollowing } : f
-            )
-          : null
+        prev ? prev.map((f) => (f.id === userId ? { ...f, isFollowing: !isFollowing } : f)) : null
       )
       if (isFollowing) {
         await userService.unfollowUser(userId)

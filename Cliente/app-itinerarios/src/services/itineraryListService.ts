@@ -43,9 +43,7 @@ export const itineraryListService = {
           'Content-Type': 'application/json'
         }
       }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 7000)
-      )
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Request timeout')), 7000))
     ])) as Response
 
     if (response instanceof Response) {
@@ -117,10 +115,7 @@ export const itineraryListService = {
     }
   },
 
-  update: async (
-    listId: string,
-    updatedListData: Partial<ItineraryListType>
-  ) => {
+  update: async (listId: string, updatedListData: Partial<ItineraryListType>) => {
     const response = await fetchWithAuth(`/lists/${listId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -167,9 +162,7 @@ export const itineraryListService = {
 
     if (!response.ok) {
       const errorData = await response.json()
-      throw new Error(
-        errorData.error || 'Error checking if itinerary list is liked'
-      )
+      throw new Error(errorData.error || 'Error checking if itinerary list is liked')
     }
 
     const data = await response.json()

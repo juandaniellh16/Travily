@@ -4,27 +4,10 @@ import { useAuth } from '@/hooks/useAuth'
 import { ActiveTab } from '@/layouts/MainLayout'
 import { itineraryService } from '@/services/itineraryService'
 import { userService } from '@/services/userService'
-import {
-  ItineraryListType,
-  ItinerarySimpleType,
-  UserWithFollowStatus
-} from '@/types'
-import {
-  Button,
-  Loader,
-  Modal,
-  ScrollArea,
-  SegmentedControl
-} from '@mantine/core'
+import { ItineraryListType, ItinerarySimpleType, UserWithFollowStatus } from '@/types'
+import { Button, Loader, Modal, ScrollArea, SegmentedControl } from '@mantine/core'
 import { useEffect, useRef, useState } from 'react'
-import {
-  Link,
-  Outlet,
-  useLocation,
-  useNavigate,
-  useOutletContext,
-  useParams
-} from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router'
 import { NotFound } from './NotFound'
 import { ItinerariesList } from '@/components/ItinerariesList'
 import { IoIosArrowForward } from 'react-icons/io'
@@ -37,24 +20,14 @@ export const Profile = () => {
   const location = useLocation()
   const { username } = useParams()
   const [userId, setUserId] = useState<string | null>(null)
-  const [followers, setFollowers] = useState<UserWithFollowStatus[] | null>(
-    null
-  )
-  const [following, setFollowing] = useState<UserWithFollowStatus[] | null>(
-    null
-  )
+  const [followers, setFollowers] = useState<UserWithFollowStatus[] | null>(null)
+  const [following, setFollowing] = useState<UserWithFollowStatus[] | null>(null)
   const [opened, setOpened] = useState(false)
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [loadingTab, setLoadingTab] = useState(false)
-  const [itineraries, setItineraries] = useState<ItinerarySimpleType[] | null>(
-    null
-  )
-  const [favoriteItineraries, setFavoriteItineraries] = useState<
-    ItinerarySimpleType[] | null
-  >(null)
-  const [itineraryLists, setItineraryLists] = useState<
-    ItineraryListType[] | null
-  >(null)
+  const [itineraries, setItineraries] = useState<ItinerarySimpleType[] | null>(null)
+  const [favoriteItineraries, setFavoriteItineraries] = useState<ItinerarySimpleType[] | null>(null)
+  const [itineraryLists, setItineraryLists] = useState<ItineraryListType[] | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const scrollPosition = useRef(0)
   const [notFoundError, setNotFoundError] = useState(false)
@@ -106,9 +79,7 @@ export const Profile = () => {
     try {
       await itineraryService.delete(id)
       if (activeTab === 'Itinerarios') {
-        setItineraries((prev) =>
-          prev ? prev.filter((itinerary) => itinerary.id !== id) : []
-        )
+        setItineraries((prev) => (prev ? prev.filter((itinerary) => itinerary.id !== id) : []))
       } else {
         setFavoriteItineraries((prev) =>
           prev ? prev.filter((itinerary) => itinerary.id !== id) : []
@@ -122,9 +93,7 @@ export const Profile = () => {
   const handleDeleteItineraryList = async (id: string) => {
     try {
       await itineraryListService.delete(id)
-      setItineraryLists((prev) =>
-        prev ? prev.filter((list) => list.id !== id) : []
-      )
+      setItineraryLists((prev) => (prev ? prev.filter((list) => list.id !== id) : []))
     } catch {
       setError('Error al borrar la lista. Por favor, inténtalo de nuevo.')
     }
@@ -203,13 +172,7 @@ export const Profile = () => {
     }
 
     fetchFollowingData()
-  }, [
-    userId,
-    location.state?.fromProfile,
-    location.pathname,
-    username,
-    navigate
-  ])
+  }, [userId, location.state?.fromProfile, location.pathname, username, navigate])
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -288,8 +251,8 @@ export const Profile = () => {
               activeTab === 'Itinerarios'
                 ? `/${username}/itineraries`
                 : activeTab === 'Favoritos'
-                ? `/${username}/favorites`
-                : `/${username}/lists`
+                  ? `/${username}/favorites`
+                  : `/${username}/lists`
             }
             className='text-sm font-medium text-emerald-600'
           >
@@ -348,7 +311,7 @@ export const Profile = () => {
                   radius='sm'
                   className='text-nowrap'
                   onClick={() => {
-                    navigate('/create-list')
+                    navigate('/create-itinerary')
                   }}
                 >
                   Crea tu primer itinerario
@@ -363,10 +326,7 @@ export const Profile = () => {
               </div>
             )
           ) : (
-            <ItinerariesList
-              handleDelete={handleDeleteItinerary}
-              itineraries={itineraries ?? []}
-            />
+            <ItinerariesList handleDelete={handleDeleteItinerary} itineraries={itineraries ?? []} />
           )
         ) : favoriteItineraries?.length === 0 ? (
           <div className='flex items-center text-gray-500 justify-center h-[136px]'>
@@ -379,12 +339,8 @@ export const Profile = () => {
           />
         )}
         {authUser?.username === username &&
-          ((activeTab === 'Itinerarios' &&
-            itineraries &&
-            itineraries?.length !== 0) ||
-            (activeTab === 'Listas' &&
-              itineraryLists &&
-              itineraryLists?.length !== 0)) && (
+          ((activeTab === 'Itinerarios' && itineraries && itineraries?.length !== 0) ||
+            (activeTab === 'Listas' && itineraryLists && itineraryLists?.length !== 0)) && (
             <div className='flex items-center justify-center'>
               <Button
                 variant='outline'
@@ -400,9 +356,7 @@ export const Profile = () => {
                   }
                 }}
               >
-                {activeTab === 'Itinerarios'
-                  ? 'Nuevo itinerario'
-                  : 'Nueva lista'}
+                {activeTab === 'Itinerarios' ? 'Nuevo itinerario' : 'Nueva lista'}
               </Button>
             </div>
           )}

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router'
 import { ColorSchemeToggle } from './ColorSchemeToggle'
 import { Avatar, Button, Menu } from '@mantine/core'
 import { useAuth } from '@/hooks/useAuth'
@@ -28,7 +28,7 @@ export const Header = () => {
     <header className='sticky top-0 z-50 px-4 py-3 mb-3 bg-white border-b sm:px-6'>
       <div className='flex items-center justify-between mx-auto max-w-[1200px] gap-y-0'>
         <Link to='/'>
-          <img src='/logo-prueba-2.png' alt='Logo' className='h-9' />
+          <img src='/logo-travily.png' alt='Logo' className='h-9' />
         </Link>
         {!isLoading && (
           <div className='flex items-center gap-1.5 sm:gap-3'>
@@ -43,7 +43,7 @@ export const Header = () => {
                 <Menu position='bottom-end' shadow='md' width={160} withArrow>
                   <Menu.Target>
                     <Avatar
-                      src={user.avatar || '/images/default-avatar.svg'}
+                      src={user.avatar || '/images/placeholder/avatar-placeholder.svg'}
                       className='cursor-pointer'
                     />
                   </Menu.Target>

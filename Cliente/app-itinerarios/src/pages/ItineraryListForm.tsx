@@ -1,16 +1,8 @@
 import { API_BASE_URL } from '@/config/config'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { useAuth } from '@/hooks/useAuth'
-import {
-  Avatar,
-  Button,
-  FileButton,
-  Switch,
-  Textarea,
-  TextInput,
-  Title
-} from '@mantine/core'
+import { Avatar, Button, FileButton, Switch, Textarea, TextInput, Title } from '@mantine/core'
 import '@mantine/dates/styles.css'
 import { MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 import { itineraryListService } from '@/services/itineraryListService'
@@ -75,9 +67,7 @@ export const ItineraryListForm = () => {
         } else if (error.message.includes('access not authorized')) {
           setError('Por favor, inicia sesión para poder crear una lista.')
         } else {
-          setError(
-            'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
-          )
+          setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
         }
       } else {
         setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
@@ -110,11 +100,11 @@ export const ItineraryListForm = () => {
             size='md'
             mt='sm'
           />
-          <div className='flex justify-center mt-5'>
+          <div className='relative mx-auto w-[130px] h-[90px] mt-5'>
             <FileButton onChange={handleImageChange} accept='.png, .jpg, .jpeg'>
               {(props) => (
                 <Avatar
-                  src={image || '/images/landscape-placeholder.svg'}
+                  src={image || '/images/placeholder/landscape-placeholder.svg'}
                   w={130}
                   h={90}
                   radius='md'
@@ -123,6 +113,16 @@ export const ItineraryListForm = () => {
                 />
               )}
             </FileButton>
+            {image && (
+              <button
+                type='button'
+                onClick={() => setImage(null)}
+                className='absolute top-[-8px] right-[-8px] bg-gray-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs hover:bg-gray-500'
+                aria-label='Remove image'
+              >
+                ✕
+              </button>
+            )}
           </div>
           <Switch
             size='lg'

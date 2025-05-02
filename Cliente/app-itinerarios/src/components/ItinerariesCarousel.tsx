@@ -2,11 +2,7 @@ import { Carousel } from '@mantine/carousel'
 import { ItineraryCard } from './ItineraryCard'
 import { ItinerarySimpleType } from '@/types'
 
-export const ItinerariesCarousel = ({
-  itineraries
-}: {
-  itineraries: ItinerarySimpleType[]
-}) => {
+export const ItinerariesCarousel = ({ itineraries }: { itineraries: ItinerarySimpleType[] }) => {
   return (
     <Carousel
       height={295}
@@ -20,17 +16,6 @@ export const ItinerariesCarousel = ({
         lg72rem: '51%',
         xl: '33.33333%'
       }}
-      /*
-      slideSize={{
-        base: '75%',
-        xxs: '58%',
-        xs: '45%',
-        sm: '38%',
-        md: '31%',
-        lg: '40%',
-        xl: '31%'
-      }}
-      */
       slideGap='xs'
       align='center'
       slidesToScroll='auto'

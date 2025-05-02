@@ -3,11 +3,7 @@ import { fetchWithAuth } from './fetchWithAuth'
 import { UserUpdate } from '@/types'
 
 export const userService = {
-  getAll: async (params: {
-    name?: string
-    username?: string
-    limit?: number
-  }) => {
+  getAll: async (params: { name?: string; username?: string; limit?: number }) => {
     let queryString = `${API_BASE_URL}/users`
     const queryParams = new URLSearchParams()
 
@@ -31,9 +27,7 @@ export const userService = {
           'Content-Type': 'application/json'
         }
       }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 7000)
-      )
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Request timeout')), 7000))
     ])) as Response
 
     if (response instanceof Response) {
@@ -70,15 +64,12 @@ export const userService = {
   },
 
   getById: async (userId: string, includeEmail = false) => {
-    const response = await fetchWithAuth(
-      `/users/${userId}?includeEmail=${includeEmail}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+    const response = await fetchWithAuth(`/users/${userId}?includeEmail=${includeEmail}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
       }
-    )
+    })
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -89,15 +80,12 @@ export const userService = {
   },
 
   getByUsername: async (username: string, includeEmail = false) => {
-    const response = await fetchWithAuth(
-      `/users/${username}?includeEmail=${includeEmail}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+    const response = await fetchWithAuth(`/users/${username}?includeEmail=${includeEmail}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
       }
-    )
+    })
 
     if (!response.ok) {
       const errorData = await response.json()

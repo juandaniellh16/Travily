@@ -1,14 +1,12 @@
 import { SegmentedControl } from '@mantine/core'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router'
 
 export const FollowersFollowingTabs = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { username } = useParams()
 
-  const activeTab: 'Seguidores' | 'Siguiendo' = location.pathname.includes(
-    'following'
-  )
+  const activeTab: 'Seguidores' | 'Siguiendo' = location.pathname.includes('following')
     ? 'Siguiendo'
     : 'Seguidores'
 
@@ -20,14 +18,9 @@ export const FollowersFollowingTabs = () => {
         size='sm'
         value={activeTab}
         onChange={(value) =>
-          navigate(
-            value === 'Seguidores'
-              ? `/${username}/followers`
-              : `/${username}/following`,
-            {
-              state: { fromProfile: true }
-            }
-          )
+          navigate(value === 'Seguidores' ? `/${username}/followers` : `/${username}/following`, {
+            state: { fromProfile: true }
+          })
         }
         data={['Seguidores', 'Siguiendo']}
         withItemsBorders={false}

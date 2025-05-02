@@ -26,18 +26,12 @@ export const ExpandableText = ({
       ? `${size}px`
       : size
     : isMobile
-    ? 'md'
-    : '14.5px'
+      ? 'md'
+      : '14.5px'
 
   return (
     <Group onClick={() => setOpened((prev) => !prev)}>
-      <Text
-        size={fontSize}
-        c={c}
-        fw={fw}
-        lh={lh}
-        lineClamp={opened ? undefined : lines}
-      >
+      <Text size={fontSize} c={c} fw={fw} lh={lh} lineClamp={opened ? undefined : lines}>
         {text}
       </Text>
     </Group>

@@ -1,16 +1,22 @@
 import { useAuth } from '@/hooks/useAuth'
-import { Button, PasswordInput, TextInput, Text, Title } from '@mantine/core'
-import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Button, PasswordInput, TextInput, Text, Title, Loader } from '@mantine/core'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router'
 
 export const Login = ({ onLoginSuccess }: { onLoginSuccess?: () => void }) => {
-  const { login } = useAuth()
+  const { user, login, isLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [usernameOrEmail, setUsernameOrEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (user) {
+      navigate('/')
+    }
+  }, [user])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -34,19 +40,13 @@ export const Login = ({ onLoginSuccess }: { onLoginSuccess?: () => void }) => {
             )
             break
           case 'UnauthorizedError':
-            setError(
-              'Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.'
-            )
+            setError('Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.')
             break
           case 'NotFoundError':
-            setError(
-              'Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.'
-            )
+            setError('Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.')
             break
           default:
-            setError(
-              'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
-            )
+            setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
         }
       } else {
         setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
@@ -54,19 +54,23 @@ export const Login = ({ onLoginSuccess }: { onLoginSuccess?: () => void }) => {
     }
   }
 
+  if (isLoading || user) {
+    return (
+      <div className='flex items-center justify-center w-full h-full my-[25%]'>
+        <Loader color='teal' />
+      </div>
+    )
+  }
+
   return (
     <div className='flex items-center justify-center'>
       <div className='w-full max-w-md'>
         <div className='sticky top-0 z-10 w-full pb-1 text-center bg-white'>
           <Title order={2} ta='center' mb='xl'>
-            Inicia sesión en Tripify
+            Inicia sesión en Travily
           </Title>
         </div>
-        {error && (
-          <p className='max-w-xs mx-auto mb-4 text-center text-red-500'>
-            {error}
-          </p>
-        )}
+        {error && <p className='max-w-xs mx-auto mb-4 text-center text-red-500'>{error}</p>}
         <form onSubmit={handleSubmit} className='mb-4'>
           <TextInput
             label='Usuario/Correo electrónico'

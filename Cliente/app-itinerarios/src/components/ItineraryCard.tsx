@@ -3,7 +3,7 @@ import { LikeButton } from './LikeButton'
 import { ItinerarySimpleType, UserPublic } from '@/types'
 import { userService } from '@/services/userService'
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { calculateTotalDays } from '@/utils'
 
 interface ItineraryCardProps {
@@ -31,7 +31,7 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
       <div className='h-[52%] min-h-[52%] rounded-xl overflow-hidden'>
         <Link to={`/itineraries/${itinerary.id}`}>
           <Image
-            src={itinerary.image || '/images/landscape-placeholder.svg'}
+            src={itinerary.image || '/images/placeholder/landscape-placeholder.svg'}
             h='100%'
             alt={itinerary.title}
             className='transition duration-300 transform hover:scale-105'
@@ -47,10 +47,14 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
             </Text>
           </Link>
           <div className='flex gap-1 mb-1'>
-            <Badge variant='light' color='orange' size='xs'>
-              {itinerary.locations[0]}
+            <Badge variant='light' color='orange' size='sm' className='!normal-case'>
+              {itinerary.location.countryName
+                ? itinerary.location.name === itinerary.location.countryName
+                  ? itinerary.location.name
+                  : `${itinerary.location.name}, ${itinerary.location.countryName}`
+                : itinerary.location.name}
             </Badge>
-            <Badge variant='light' color='pink' size='xs'>
+            <Badge variant='light' color='pink' size='sm' className='!normal-case'>
               {calculateTotalDays(itinerary.startDate, itinerary.endDate)} días
             </Badge>
           </div>
@@ -65,7 +69,7 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
             <Center>
               <Link to={`/${userData?.username}`}>
                 <Avatar
-                  src={userData?.avatar || '/images/avatar-placeholder.svg'}
+                  src={userData?.avatar || '/images/placeholder/avatar-placeholder.svg'}
                   mr='xs'
                   size={32}
                 />

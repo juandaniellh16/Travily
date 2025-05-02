@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { userService } from '@/services/userService'
 import { UserWithFollowStatus } from '@/types'
 import { Loader } from '@mantine/core'
-import { useOutletContext } from 'react-router-dom'
+import { useOutletContext } from 'react-router'
 
 export const Followers = () => {
   const { refreshUser } = useAuth()
@@ -16,9 +16,7 @@ export const Followers = () => {
   const handleFollow = async (userId: string, isFollowing: boolean) => {
     try {
       setFollowers((prev) =>
-        prev.map((f) =>
-          f.id === userId ? { ...f, isFollowing: !isFollowing } : f
-        )
+        prev.map((f) => (f.id === userId ? { ...f, isFollowing: !isFollowing } : f))
       )
       if (isFollowing) {
         await userService.unfollowUser(userId)
@@ -43,9 +41,7 @@ export const Followers = () => {
     <div className='flex flex-col justify-center'>
       <div className='w-full'>
         {followers.length === 0 ? (
-          <p className='mt-6 text-center text-gray-500'>
-            Aún no tiene seguidores
-          </p>
+          <p className='mt-6 text-center text-gray-500'>Aún no tiene seguidores</p>
         ) : (
           <UsersList users={followers} handleFollow={handleFollow} />
         )}

@@ -4,13 +4,11 @@ import { UserWithFollowStatus } from '@/types'
 import { ActionIcon, Avatar, Loader, Text } from '@mantine/core'
 import { useEffect, useState } from 'react'
 import { BiSolidUserPlus, BiSolidUserX } from 'react-icons/bi'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 export const RightColumn = () => {
   const { user: authUser, refreshUser } = useAuth()
-  const [suggestedUsers, setSuggestedUsers] = useState<
-    UserWithFollowStatus[] | null
-  >(null)
+  const [suggestedUsers, setSuggestedUsers] = useState<UserWithFollowStatus[] | null>(null)
 
   useEffect(() => {
     const fetchSuggestedUsers = async () => {
@@ -30,11 +28,7 @@ export const RightColumn = () => {
   const handleFollow = async (userId: string, isFollowing: boolean) => {
     try {
       setSuggestedUsers((prev) =>
-        prev
-          ? prev.map((f) =>
-              f.id === userId ? { ...f, isFollowing: !isFollowing } : f
-            )
-          : null
+        prev ? prev.map((f) => (f.id === userId ? { ...f, isFollowing: !isFollowing } : f)) : null
       )
       if (isFollowing) {
         await userService.unfollowUser(userId)
@@ -58,9 +52,7 @@ export const RightColumn = () => {
             <Loader color='teal' size='sm' />
           </div>
         ) : suggestedUsers?.length === 0 ? (
-          <p className='my-3 text-sm text-center text-gray-500'>
-            No hay sugerencias
-          </p>
+          <p className='my-3 text-sm text-center text-gray-500'>No hay sugerencias</p>
         ) : (
           suggestedUsers?.map((user) => (
             <li
@@ -70,7 +62,7 @@ export const RightColumn = () => {
               <Link to={`/${user?.username}`}>
                 <div className='flex items-center'>
                   <Avatar
-                    src={user.avatar || '/images/avatar-placeholder.svg'}
+                    src={user.avatar || '/images/placeholder/avatar-placeholder.svg'}
                     mr='xs'
                     size={32}
                   />
@@ -87,11 +79,7 @@ export const RightColumn = () => {
                 color={user.isFollowing ? 'red' : 'teal'}
                 onClick={() => handleFollow(user.id, user.isFollowing)}
               >
-                {user.isFollowing ? (
-                  <BiSolidUserX size={22} />
-                ) : (
-                  <BiSolidUserPlus size={22} />
-                )}
+                {user.isFollowing ? <BiSolidUserX size={22} /> : <BiSolidUserPlus size={22} />}
               </ActionIcon>
             </li>
           ))

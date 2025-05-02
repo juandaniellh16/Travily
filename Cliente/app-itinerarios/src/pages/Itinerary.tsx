@@ -19,26 +19,23 @@ import {
   Title
 } from '@mantine/core'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate, useParams, useLocation } from 'react-router-dom'
-import { ItineraryType, Event, UserPublic, ItineraryListType } from '@/types'
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult
-} from '@hello-pangea/dnd'
-import { FaCamera, FaGripVertical, FaUsers } from 'react-icons/fa6'
-import {
-  MdEdit,
-  MdOutlineVisibility,
-  MdOutlineVisibilityOff
-} from 'react-icons/md'
+import { Link, useNavigate, useParams, useLocation } from 'react-router'
+import { ItineraryType, Event, UserPublic, ItineraryListType, EventCategory } from '@/types'
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
+import { FaGripVertical, FaUsers } from 'react-icons/fa6'
+import { MdEdit, MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 import { IoTrashOutline } from 'react-icons/io5'
 import { HiOutlineDotsVertical } from 'react-icons/hi'
 import { API_BASE_URL } from '@/config/config'
 import { io, Socket } from 'socket.io-client'
 import { useDisclosure } from '@mantine/hooks'
-import { calculateTotalDays, getRandomEventImage } from '@/utils'
+import {
+  calculateTotalDays,
+  eventCategories,
+  categoryTranslations,
+  getCategoryIcon,
+  getCategoryImage
+} from '@/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { LuCalendarDays } from 'react-icons/lu'
 import { LikeButton } from '@/components/LikeButton'
@@ -65,14 +62,11 @@ export const Itinerary = () => {
   const [unauthorizedError, setUnauthorizedError] = useState(false)
   const [error, setError] = useState('')
 
-  const [isEditingItinerary, setIsEditingItinerary] = useState(
-    location.state?.created ?? false
-  )
+  const [isEditingItinerary, setIsEditingItinerary] = useState(location.state?.created ?? false)
   const [itineraryTitle, setItineraryTitle] = useState('')
   const [isEditingItineraryTitle, setIsEditingItineraryTitle] = useState(false)
   const [itineraryDescription, setItineraryDescription] = useState('')
-  const [isEditingItineraryDescription, setIsEditingItineraryDescription] =
-    useState(false)
+  const [isEditingItineraryDescription, setIsEditingItineraryDescription] = useState(false)
   const [itineraryStartDate, setItineraryStartDate] = useState('')
   const [itineraryEndDate, setItineraryEndDate] = useState('')
   const [totalDays, setTotalDays] = useState(0)
@@ -88,6 +82,7 @@ export const Itinerary = () => {
   const [eventDescription, setEventDescription] = useState('')
   const [eventStartTime, setEventStartTime] = useState('')
   const [eventEndTime, setEventEndTime] = useState('')
+  const [eventCategory, setEventCategory] = useState<EventCategory | null>(null)
   const [eventImage, setEventImage] = useState<string | null>(null)
   const [formError, setFormError] = useState('')
 
@@ -103,9 +98,7 @@ export const Itinerary = () => {
     setIsEditingItineraryTitle(false)
   }
 
-  const handleItineraryTitleChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleItineraryTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setItineraryTitle(e.target.value)
   }
 
@@ -118,25 +111,17 @@ export const Itinerary = () => {
     setIsEditingItineraryDescription(false)
   }
 
-  const handleItineraryDescriptionChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
+  const handleItineraryDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setItineraryDescription(e.target.value)
   }
 
   const handleStartDateChange = (date: Date | null) => {
     if (date) {
-      const localDate = new Date(
-        date.getTime() - date.getTimezoneOffset() * 60000
-      )
+      const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
       localDate.setUTCHours(0, 0, 0, 0)
       const newStartDate = localDate.toISOString()
 
-      if (
-        itineraryId &&
-        itineraryData &&
-        newStartDate !== itineraryData.startDate
-      ) {
+      if (itineraryId && itineraryData && newStartDate !== itineraryData.startDate) {
         if (newStartDate <= itineraryData.endDate) {
           setItineraryStartDate(newStartDate)
           handleEditItinerary(itineraryId, {
@@ -145,9 +130,7 @@ export const Itinerary = () => {
           setTotalDays(calculateTotalDays(newStartDate, itineraryData.endDate))
           if (error) setError('')
         } else {
-          setError(
-            'La fecha de inicio no puede ser posterior a la fecha de fin.'
-          )
+          setError('La fecha de inicio no puede ser posterior a la fecha de fin.')
         }
       }
     } else {
@@ -157,17 +140,11 @@ export const Itinerary = () => {
 
   const handleEndDateChange = (date: Date | null) => {
     if (date) {
-      const localDate = new Date(
-        date.getTime() - date.getTimezoneOffset() * 60000
-      )
+      const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
       localDate.setUTCHours(0, 0, 0, 0)
       const newEndDate = localDate.toISOString()
 
-      if (
-        itineraryId &&
-        itineraryData &&
-        newEndDate !== itineraryData.endDate
-      ) {
+      if (itineraryId && itineraryData && newEndDate !== itineraryData.endDate) {
         if (newEndDate >= itineraryData.startDate) {
           setItineraryEndDate(newEndDate)
           handleEditItinerary(itineraryId, {
@@ -176,9 +153,7 @@ export const Itinerary = () => {
           setTotalDays(calculateTotalDays(itineraryData.startDate, newEndDate))
           if (error) setError('')
         } else {
-          setError(
-            'La fecha de fin no puede ser anterior a la fecha de inicio.'
-          )
+          setError('La fecha de fin no puede ser anterior a la fecha de inicio.')
         }
       }
     } else {
@@ -186,9 +161,7 @@ export const Itinerary = () => {
     }
   }
 
-  const handleKeyPress = (
-    e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
       if (isEditingItineraryTitle) {
         handleItineraryTitleBlur()
@@ -228,17 +201,12 @@ export const Itinerary = () => {
     }
     try {
       if (itineraryId) {
-        await itineraryService.addCollaborator(
-          itineraryId,
-          collaboratorUsername
-        )
+        await itineraryService.addCollaborator(itineraryId, collaboratorUsername)
       }
       setCollaboratorUsername('')
       setCollaboratorError('')
     } catch {
-      setCollaboratorError(
-        'Error al añadir colaborador. Por favor, inténtalo de nuevo.'
-      )
+      setCollaboratorError('Error al añadir colaborador. Por favor, inténtalo de nuevo.')
     }
   }
 
@@ -293,6 +261,7 @@ export const Itinerary = () => {
     setEventDescription(event.description || '')
     setEventStartTime(event.startTime ? event.startTime.slice(0, 5) : '')
     setEventEndTime(event.endTime ? event.endTime.slice(0, 5) : '')
+    setEventCategory(event.category)
     setEventImage(event.image || null)
     editEventDisclosure.open()
   }
@@ -302,10 +271,7 @@ export const Itinerary = () => {
     editEventDisclosure.close()
   }
 
-  const scrollComponent = useMemo(
-    () => ScrollArea.Autosize.withProps({ scrollbars: false }),
-    []
-  )
+  const scrollComponent = useMemo(() => ScrollArea.Autosize.withProps({ scrollbars: false }), [])
 
   const handleEventImageChange = async (
     file: File | null,
@@ -347,13 +313,12 @@ export const Itinerary = () => {
 
     if (editingDayId) {
       const eventData = {
-        orderIndex:
-          itineraryData?.days.find((d) => d.id === editingDayId)?.events
-            .length || 0,
+        orderIndex: itineraryData?.days.find((d) => d.id === editingDayId)?.events.length || 0,
         label: eventLabel,
         description: eventDescription,
         startTime: eventStartTime,
         endTime: eventEndTime,
+        category: eventCategory,
         image: eventImage
       }
       handleAddEvent(editingDayId, eventData)
@@ -373,6 +338,7 @@ export const Itinerary = () => {
         description: eventDescription,
         startTime: eventStartTime,
         endTime: eventEndTime,
+        category: eventCategory,
         image: eventImage
       }
       handleEditEvent(editingEvent.id, updatedData, editingDayId)
@@ -389,6 +355,7 @@ export const Itinerary = () => {
     setEventDescription('')
     setEventStartTime('')
     setEventEndTime('')
+    setEventCategory(null)
     setEventImage(null)
     setFormError('')
   }
@@ -402,9 +369,7 @@ export const Itinerary = () => {
           let localIsCollaborator = false
           if (user) {
             try {
-              localIsCollaborator = await itineraryService.checkIfCollaborator(
-                itineraryId
-              )
+              localIsCollaborator = await itineraryService.checkIfCollaborator(itineraryId)
             } catch {
               localIsCollaborator = false
             }
@@ -412,15 +377,11 @@ export const Itinerary = () => {
           }
 
           if (!localIsCollaborator) {
-            const localItineraryData = await itineraryService.getById(
-              itineraryId
-            )
+            const localItineraryData = await itineraryService.getById(itineraryId)
             setItineraryData(localItineraryData)
 
             if (localItineraryData.userId) {
-              const localUserData = await userService.getById(
-                localItineraryData.userId
-              )
+              const localUserData = await userService.getById(localItineraryData.userId)
               setUserData(localUserData)
             }
           }
@@ -435,14 +396,10 @@ export const Itinerary = () => {
               setUnauthorizedError(true)
               break
             default:
-              setError(
-                'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
-              )
+              setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
           }
         } else {
-          setError(
-            'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
-          )
+          setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
         }
       }
     }
@@ -463,24 +420,15 @@ export const Itinerary = () => {
           const localItineraryData = await itineraryService.getById(itineraryId)
           setItineraryData(localItineraryData)
           if (localItineraryData.userId) {
-            const userData = await userService.getById(
-              localItineraryData.userId
-            )
+            const userData = await userService.getById(localItineraryData.userId)
             setUserData(userData)
           }
           setItineraryStartDate(localItineraryData.startDate)
           setItineraryEndDate(localItineraryData.endDate)
           setIsPublic(localItineraryData.isPublic)
-          setTotalDays(
-            calculateTotalDays(
-              localItineraryData.startDate,
-              localItineraryData.endDate
-            )
-          )
+          setTotalDays(calculateTotalDays(localItineraryData.startDate, localItineraryData.endDate))
         } catch {
-          setError(
-            'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
-          )
+          setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
         }
       }
 
@@ -504,8 +452,7 @@ export const Itinerary = () => {
                   day: 'numeric',
                   month: 'long'
                 })
-                formattedDate =
-                  formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
+                formattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
 
                 return {
                   ...day,
@@ -527,10 +474,7 @@ export const Itinerary = () => {
 
             return {
               ...prevData,
-              days: [
-                ...prevData.days,
-                { ...updatedData.day, events: updatedData.day.events ?? [] }
-              ]
+              days: [...prevData.days, { ...updatedData.day, events: updatedData.day.events ?? [] }]
             }
           })
         } else if (updatedData.action === 'delete-day') {
@@ -566,9 +510,7 @@ export const Itinerary = () => {
               if (day.id === updatedData.dayId) {
                 return {
                   ...day,
-                  events: day.events.filter(
-                    (event) => event.id !== updatedData.eventId
-                  )
+                  events: day.events.filter((event) => event.id !== updatedData.eventId)
                 }
               }
               return day
@@ -687,8 +629,7 @@ export const Itinerary = () => {
       month: 'long'
     })
 
-    formattedDate =
-      formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
+    formattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
 
     const newDay = {
       label: `Día ${itineraryData.days.length + 1} - ${formattedDate}`,
@@ -859,7 +800,7 @@ export const Itinerary = () => {
           >
             {(props) => (
               <img
-                src={itineraryData.image || '/images/landscape-placeholder.svg'}
+                src={itineraryData.image || '/images/placeholder/landscape-placeholder.svg'}
                 alt={itineraryData.title}
                 className='w-full h-[250px] object-cover rounded-t-xl transition cursor-pointer hover:opacity-80'
                 {...props}
@@ -868,7 +809,7 @@ export const Itinerary = () => {
           </FileButton>
         ) : (
           <img
-            src={itineraryData.image || '/images/landscape-placeholder.svg'}
+            src={itineraryData.image || '/images/placeholder/landscape-placeholder.svg'}
             alt={itineraryData.title}
             className='w-full h-[250px] object-cover rounded-t-xl'
           />
@@ -908,15 +849,15 @@ export const Itinerary = () => {
               )}
 
               <div className='flex flex-shrink-0 gap-1 mt-1 sm:mt-0'>
-                <Badge variant='light' color='orange' size='md'>
-                  {itineraryData.locations[0]}
+                <Badge variant='light' color='orange' size='md' className='!normal-case'>
+                  {itineraryData.location.countryName
+                    ? itineraryData.location.name === itineraryData.location.countryName
+                      ? itineraryData.location.name
+                      : `${itineraryData.location.name}, ${itineraryData.location.countryName}`
+                    : itineraryData.location.name}
                 </Badge>
-                <Badge variant='light' color='pink' size='md'>
-                  {calculateTotalDays(
-                    itineraryData.startDate,
-                    itineraryData.endDate
-                  )}{' '}
-                  días
+                <Badge variant='light' color='pink' size='md' className='!normal-case'>
+                  {calculateTotalDays(itineraryData.startDate, itineraryData.endDate)} días
                 </Badge>
               </div>
             </div>
@@ -946,12 +887,21 @@ export const Itinerary = () => {
                   {isCollaborator && (
                     <>
                       <Menu.Divider />
-                      <Menu.Item
-                        leftSection={<MdEdit size={14} />}
-                        onClick={() => setIsEditingItinerary(true)}
-                      >
-                        Editar itinerario
-                      </Menu.Item>
+                      {isEditingItinerary ? (
+                        <Menu.Item
+                          leftSection={<MdEdit size={14} />}
+                          onClick={() => setIsEditingItinerary(false)}
+                        >
+                          Dejar de editar
+                        </Menu.Item>
+                      ) : (
+                        <Menu.Item
+                          leftSection={<MdEdit size={14} />}
+                          onClick={() => setIsEditingItinerary(true)}
+                        >
+                          Editar itinerario
+                        </Menu.Item>
+                      )}
 
                       {itineraryData.userId === user?.id && (
                         <>
@@ -969,9 +919,7 @@ export const Itinerary = () => {
                             <TextInput
                               placeholder='Nombre de usuario'
                               value={collaboratorUsername}
-                              onChange={(e) =>
-                                setCollaboratorUsername(e.target.value)
-                              }
+                              onChange={(e) => setCollaboratorUsername(e.target.value)}
                               size='xs'
                               leftSection={<span>@</span>}
                               error={collaboratorError}
@@ -1016,9 +964,7 @@ export const Itinerary = () => {
                 <>
                   <DatePickerInput
                     valueFormat='DD-MM-YYYY'
-                    value={
-                      itineraryStartDate ? new Date(itineraryStartDate) : null
-                    }
+                    value={itineraryStartDate ? new Date(itineraryStartDate) : null}
                     onChange={handleStartDateChange}
                     classNames={{
                       input:
@@ -1039,14 +985,11 @@ export const Itinerary = () => {
                 </>
               ) : (
                 <p className='!text-[15px]'>
-                  {new Date(itineraryData.startDate).toLocaleDateString(
-                    'es-ES',
-                    {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: '2-digit'
-                    }
-                  )}
+                  {new Date(itineraryData.startDate).toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: '2-digit'
+                  })}
                   {' - '}
                   {new Date(itineraryData.endDate).toLocaleDateString('es-ES', {
                     day: '2-digit',
@@ -1092,16 +1035,14 @@ export const Itinerary = () => {
                 }
               }}
             >
-              {itineraryDescription ||
-                itineraryData.description ||
-                'Sin descripción'}
+              {itineraryDescription || itineraryData.description || 'Sin descripción'}
             </p>
           )}
           <div className='flex items-center justify-between w-full mt-6'>
             <div className='flex items-center'>
               <Link to={`/${userData?.username}`}>
                 <Avatar
-                  src={userData?.avatar || '/images/avatar-placeholder.svg'}
+                  src={userData?.avatar || '/images/placeholder/avatar-placeholder.svg'}
                   mr='xs'
                   size={32}
                 />
@@ -1125,9 +1066,7 @@ export const Itinerary = () => {
       <div className='w-full mt-3 mb-8'>
         <Accordion
           multiple
-          defaultValue={
-            itineraryData?.days[0]?.label ? [itineraryData?.days[0]?.label] : []
-          }
+          defaultValue={itineraryData?.days[0]?.label ? [itineraryData?.days[0]?.label] : []}
         >
           {itineraryData &&
             itineraryData.days.map((day) => (
@@ -1138,153 +1077,135 @@ export const Itinerary = () => {
                   </Text>
                 </Accordion.Control>
                 <Accordion.Panel>
-                  <DragDropContext
-                    onDragEnd={(result) => handleDragEnd(result, day.id)}
-                  >
-                    <Droppable
-                      droppableId={day.id.toString()}
-                      direction='vertical'
-                    >
+                  <DragDropContext onDragEnd={(result) => handleDragEnd(result, day.id)}>
+                    <Droppable droppableId={day.id.toString()} direction='vertical'>
                       {(provided) => (
                         <div
-                          {...(isEditingItinerary
-                            ? provided.droppableProps
-                            : {})}
+                          {...(isEditingItinerary ? provided.droppableProps : {})}
                           ref={provided.innerRef}
                         >
-                          {day.events.map((event, index) => (
-                            <Draggable
-                              key={event.id.toString()}
-                              draggableId={event.id.toString()}
-                              index={index}
-                            >
-                              {(provided) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...(isEditingItinerary
-                                    ? provided.draggableProps
-                                    : {})}
-                                  className={`flex items-center mb-2 rounded-md group ${
-                                    isEditingItinerary ? 'cursor-grab' : ''
-                                  }`}
-                                >
-                                  <span
-                                    {...provided.dragHandleProps}
-                                    className={`hidden mr-2 cursor-grab self-start content-center h-[80px] sm:h-[100px] ${
-                                      isEditingItinerary ? 'sm:block' : ''
+                          {day.events.map((event, index) => {
+                            const EventIcon = getCategoryIcon(event.category)
+
+                            return (
+                              <Draggable
+                                key={event.id.toString()}
+                                draggableId={event.id.toString()}
+                                index={index}
+                              >
+                                {(provided) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...(isEditingItinerary ? provided.draggableProps : {})}
+                                    className={`flex items-center mb-2 rounded-md group ${
+                                      isEditingItinerary ? 'cursor-grab' : ''
                                     }`}
                                   >
-                                    <FaGripVertical size={20} color='gray' />
-                                  </span>
-
-                                  <div className='flex items-center justify-between w-full'>
-                                    <Group
-                                      {...(isEditingItinerary
-                                        ? provided.dragHandleProps
-                                        : {})}
-                                      wrap='nowrap'
-                                      gap={6}
-                                      className='flex items-center w-full'
+                                    <span
+                                      {...provided.dragHandleProps}
+                                      className={`hidden mr-2 cursor-grab self-start content-center h-[80px] sm:h-[100px] ${
+                                        isEditingItinerary ? 'sm:block' : ''
+                                      }`}
                                     >
-                                      <Container
-                                        pl={32}
-                                        py={8}
-                                        pr={8}
-                                        className={`flex-grow gap-y-1 justify-between flex flex-col min-h-[80px] sm:min-h-[100px] rounded-lg bg-neutral-100 relative`}
-                                      >
-                                        <div className='absolute top-0 left-0 translate-y-1 -translate-x-1 flex items-center justify-center py-1.5 px-1.5 rounded-sm bg-emerald-500'>
-                                          <FaCamera size={15} color='white' />
-                                        </div>
+                                      <FaGripVertical size={20} color='gray' />
+                                    </span>
 
-                                        <div className='gap-y-1'>
-                                          <ExpandableText
-                                            text={event.label}
-                                            lines={1}
-                                            lh={1.2}
-                                          />
-                                          <ExpandableText
-                                            text={event.description}
-                                            c='dimmed'
-                                            lines={2}
-                                            fw={400}
-                                            size='sm'
-                                          />
-                                        </div>
-                                        {event.startTime && (
-                                          <div className='text-sm font-medium text-gray-500'>
-                                            {event.startTime.slice(0, 5)}
-                                            {event.endTime &&
-                                              ` - ${event.endTime.slice(0, 5)}`}
+                                    <div className='flex items-center justify-between w-full'>
+                                      <Group
+                                        {...(isEditingItinerary ? provided.dragHandleProps : {})}
+                                        wrap='nowrap'
+                                        gap={6}
+                                        className='flex items-center w-full'
+                                      >
+                                        <Container
+                                          pl={32}
+                                          py={8}
+                                          pr={8}
+                                          className={`flex-grow gap-y-1 justify-between flex flex-col min-h-[80px] sm:min-h-[100px] rounded-lg bg-neutral-100 relative`}
+                                        >
+                                          <div className='absolute top-0 left-0 translate-y-1 -translate-x-1 flex items-center justify-center py-1.5 px-1.5 rounded-sm bg-emerald-500'>
+                                            <EventIcon size={15} color='white' />
                                           </div>
-                                        )}
-                                      </Container>
-                                      {isEditingItinerary ? (
-                                        <FileButton
-                                          onChange={(file) => {
-                                            handleEventImageChange(
-                                              file,
-                                              event,
-                                              day.id
-                                            )
-                                          }}
-                                          accept='.png, .jpg, .jpeg'
-                                        >
-                                          {(props) => (
-                                            <Avatar
-                                              src={
-                                                event.image ||
-                                                '/images/landscape-placeholder.svg'
-                                              }
-                                              radius='md'
-                                              className={`flex-none !h-[80px] !w-[100px] sm:!h-[100px] sm:!w-[140px] self-start transition cursor-pointer hover:opacity-80`}
-                                              {...props}
+
+                                          <div className='gap-y-1'>
+                                            <ExpandableText text={event.label} lines={1} lh={1.2} />
+                                            <ExpandableText
+                                              text={event.description}
+                                              c='dimmed'
+                                              lines={2}
+                                              fw={400}
+                                              size='sm'
                                             />
+                                          </div>
+                                          {event.startTime && (
+                                            <div className='text-sm font-medium text-gray-500'>
+                                              {event.startTime.slice(0, 5)}
+                                              {event.endTime && ` - ${event.endTime.slice(0, 5)}`}
+                                            </div>
                                           )}
-                                        </FileButton>
-                                      ) : (
-                                        <Avatar
-                                          src={
-                                            event.image ||
-                                            '/images/landscape-placeholder.svg'
-                                          }
-                                          radius='md'
-                                          className='flex-none !h-[80px] !w-[100px] sm:!h-[100px] sm:!w-[140px] self-start'
-                                        />
+                                        </Container>
+                                        {isEditingItinerary ? (
+                                          <FileButton
+                                            onChange={(file) => {
+                                              handleEventImageChange(file, event, day.id)
+                                            }}
+                                            accept='.png, .jpg, .jpeg'
+                                          >
+                                            {(props) => (
+                                              <Avatar
+                                                src={
+                                                  eventImage ||
+                                                  getCategoryImage(event.category) ||
+                                                  '/images/placeholder/landscape-placeholder.svg'
+                                                }
+                                                radius='md'
+                                                className={`flex-none !h-[80px] !w-[100px] sm:!h-[100px] sm:!w-[140px] self-start transition cursor-pointer hover:opacity-80`}
+                                                {...props}
+                                              />
+                                            )}
+                                          </FileButton>
+                                        ) : (
+                                          <Avatar
+                                            src={
+                                              eventImage ||
+                                              getCategoryImage(event.category) ||
+                                              '/images/placeholder/landscape-placeholder.svg'
+                                            }
+                                            radius='md'
+                                            className='flex-none !h-[80px] !w-[100px] sm:!h-[100px] sm:!w-[140px] self-start'
+                                          />
+                                        )}
+                                      </Group>
+                                      {isEditingItinerary && (
+                                        <div className='flex flex-col self-start justify-center h-[80px] sm:h-[100px] gap-1 ml-2 cursor-default'>
+                                          <ActionIcon
+                                            variant='light'
+                                            color='teal'
+                                            size='lg'
+                                            radius='xl'
+                                            aria-label='Editar'
+                                            onClick={() => openEditEventModal(event, day.id)}
+                                          >
+                                            <MdEdit />
+                                          </ActionIcon>
+                                          <ActionIcon
+                                            variant='light'
+                                            color='red'
+                                            size='lg'
+                                            radius='xl'
+                                            aria-label='Eliminar'
+                                            onClick={() => handleDeleteEvent(event.id, day.id)}
+                                          >
+                                            <IoTrashOutline />
+                                          </ActionIcon>
+                                        </div>
                                       )}
-                                    </Group>
-                                    {isEditingItinerary && (
-                                      <div className='flex flex-col self-start justify-center h-[80px] sm:h-[100px] gap-1 ml-2 cursor-default'>
-                                        <ActionIcon
-                                          variant='light'
-                                          color='teal'
-                                          size='lg'
-                                          radius='xl'
-                                          aria-label='Editar'
-                                          onClick={() =>
-                                            openEditEventModal(event, day.id)
-                                          }
-                                        >
-                                          <MdEdit />
-                                        </ActionIcon>
-                                        <ActionIcon
-                                          variant='light'
-                                          color='red'
-                                          size='lg'
-                                          radius='xl'
-                                          aria-label='Eliminar'
-                                          onClick={() =>
-                                            handleDeleteEvent(event.id, day.id)
-                                          }
-                                        >
-                                          <IoTrashOutline />
-                                        </ActionIcon>
-                                      </div>
-                                    )}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
-                            </Draggable>
-                          ))}
+                                )}
+                              </Draggable>
+                            )
+                          })}
                           {provided.placeholder}
                         </div>
                       )}
@@ -1319,11 +1240,7 @@ export const Itinerary = () => {
         </Accordion>
         {isEditingItinerary && itineraryData.days.length < totalDays && (
           <div className='flex justify-center mt-4'>
-            <Button
-              variant='outline'
-              onClick={() => handleAddDay()}
-              color='teal'
-            >
+            <Button variant='outline' onClick={() => handleAddDay()} color='teal'>
               Añadir día
             </Button>
           </div>
@@ -1342,34 +1259,46 @@ export const Itinerary = () => {
           <Title order={2} ta='center' mb='lg' className='sticky top-0 z-10'>
             Selecciona una lista
           </Title>
-          <div className='overflow-y-auto max-h-[70vh]'>
-            <div className='px-8'>
-              {!userLists ? (
-                <div className='flex items-center justify-center w-full my-[25%]'>
-                  <Loader color='teal' />
-                </div>
-              ) : userLists.length === 0 ? (
-                <p className='mt-6 text-center text-gray-500'>
-                  No tienes listas disponibles
-                </p>
-              ) : (
-                <>
-                  {userLists.map((list) => (
-                    <Button
-                      key={list.id}
-                      fullWidth
-                      variant='light'
-                      color='teal'
-                      onClick={() => handleAddToList(list.id)}
-                      className='mb-2'
-                    >
-                      {list.title}
-                    </Button>
-                  ))}
-                </>
-              )}
+          {!userLists ? (
+            <div className='flex px-8 items-center justify-center w-full my-[25%]'>
+              <Loader color='teal' />
             </div>
-          </div>
+          ) : userLists.length === 0 ? (
+            <div className='px-8'>
+              <p className='mt-6 text-center text-gray-500'>No tienes listas disponibles</p>
+              <div className='flex items-center justify-center mt-10'>
+                <Button
+                  variant='outline'
+                  color='teal'
+                  size='sm'
+                  radius='sm'
+                  className='text-nowrap'
+                  onClick={() => {
+                    navigate('/create-list')
+                  }}
+                >
+                  Crea tu primera lista
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className='overflow-y-auto max-h-[70vh]'>
+              <div className='px-8'>
+                {userLists.map((list) => (
+                  <Button
+                    key={list.id}
+                    fullWidth
+                    variant='light'
+                    color='teal'
+                    onClick={() => handleAddToList(list.id)}
+                    className='mb-2'
+                  >
+                    {list.title}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
 
@@ -1386,9 +1315,7 @@ export const Itinerary = () => {
             Crear nuevo evento
           </Title>
           <div className='overflow-y-auto max-h-[70vh]'>
-            {formError && (
-              <p className='mb-4 text-center text-red-500'>{formError}</p>
-            )}
+            {formError && <p className='mb-4 text-center text-red-500'>{formError}</p>}
             <div className='px-8'>
               <form onSubmit={handleSubmitAddEvent} className='mb-4'>
                 <TextInput
@@ -1412,9 +1339,7 @@ export const Itinerary = () => {
                     label='Hora de inicio'
                     leftSection={<GoClock size={18} />}
                     value={eventStartTime}
-                    onChange={(event) =>
-                      setEventStartTime(event.currentTarget.value)
-                    }
+                    onChange={(event) => setEventStartTime(event.currentTarget.value)}
                     size='md'
                     className='w-full'
                   />
@@ -1422,77 +1347,52 @@ export const Itinerary = () => {
                     label='Hora de fin'
                     leftSection={<GoClock size={18} />}
                     value={eventEndTime}
-                    onChange={(event) =>
-                      setEventEndTime(event.currentTarget.value)
-                    }
+                    onChange={(event) => setEventEndTime(event.currentTarget.value)}
                     size='md'
                     className='w-full'
                   />
                 </div>
                 <Text size='md' fw={500} mt='sm' className='!mb-1'>
-                  Imagen
+                  Categoría
                 </Text>
                 <div className='grid grid-cols-3 gap-2'>
-                  <button
-                    key={'/images/monument.svg'}
-                    type='button'
-                    onClick={() => setEventImage('/images/monument.svg')}
-                    className={`w-full h-20 rounded-md overflow-hidden border-2 ${
-                      eventImage === '/images/monument.svg'
-                        ? 'border-blue-500'
-                        : 'border-gray-300'
-                    }`}
-                  >
-                    <img
-                      src={'/images/monument.svg'}
-                      alt='Imagen predefinida'
-                      className='object-cover w-full h-full'
-                    />
-                  </button>
-                  <button
-                    key={'/images/food.svg'}
-                    type='button'
-                    onClick={() => setEventImage('/images/food.svg')}
-                    className={`w-full h-20 rounded-md overflow-hidden border-2 ${
-                      eventImage === '/images/food.svg'
-                        ? 'border-blue-500'
-                        : 'border-gray-300'
-                    }`}
-                  >
-                    <img
-                      src={'/images/food.svg'}
-                      alt='Imagen predefinida'
-                      className='object-cover w-full h-full'
-                    />
-                  </button>
-                  <button
-                    key={'/images/art.svg'}
-                    type='button'
-                    onClick={() => setEventImage('/images/art.svg')}
-                    className={`w-full h-20 rounded-md overflow-hidden border-2 ${
-                      eventImage === '/images/art.svg'
-                        ? 'border-blue-500'
-                        : 'border-gray-300'
-                    }`}
-                  >
-                    <img
-                      src={'/images/art.svg'}
-                      alt='Imagen predefinida'
-                      className='object-cover w-full h-full'
-                    />
-                  </button>
+                  {eventCategories.map((name) => {
+                    const Icon = getCategoryIcon(name)
+                    return (
+                      <button
+                        key={name}
+                        type='button'
+                        onClick={() => {
+                          if (eventCategory === name) {
+                            setEventCategory(null)
+                          } else {
+                            setEventCategory(name)
+                          }
+                        }}
+                        className={`w-full h-20 flex flex-col items-center justify-center rounded-md border-2 bg-emerald-500 ${
+                          eventCategory === name ? 'border-blue-500' : 'border-gray-300'
+                        }`}
+                      >
+                        <Icon size={24} color='white' />
+                        <span className='mt-1 text-[13px] capitalize text-white'>
+                          {categoryTranslations[name]}
+                        </span>
+                      </button>
+                    )
+                  })}
                 </div>
-                <Text size='sm' ta='center' mt='sm' className='!text-gray-500'>
+                <Text size='md' fw={500} ta='center' mt='sm'>
                   Subir imagen
                 </Text>
-                <div className='flex justify-center mt-2'>
-                  <FileButton
-                    onChange={handleEventImageChange}
-                    accept='.png, .jpg, .jpeg'
-                  >
+                <div className='relative mx-auto w-[130px] h-[90px] mt-2'>
+                  <FileButton onChange={handleEventImageChange} accept='.png, .jpg, .jpeg'>
                     {(props) => (
                       <Avatar
-                        src={eventImage || '/images/landscape-placeholder.svg'}
+                        src={
+                          eventImage ||
+                          (eventCategory && getCategoryImage(eventCategory)) ||
+                          '/images/placeholder/landscape-placeholder.svg'
+                        }
                         w={130}
                         h={90}
                         radius='md'
@@ -1501,6 +1401,16 @@ export const Itinerary = () => {
                       />
                     )}
                   </FileButton>
+                  {eventImage && (
+                    <button
+                      type='button'
+                      onClick={() => setEventImage(null)}
+                      className='absolute top-[-8px] right-[-8px] bg-gray-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs hover:bg-gray-500'
+                      aria-label='Remove image'
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
                 <Button type='submit' color='teal' fullWidth mt='lg'>
                   Guardar
@@ -1524,9 +1434,7 @@ export const Itinerary = () => {
             Editar evento
           </Title>
           <div className='overflow-y-auto max-h-[70vh]'>
-            {formError && (
-              <p className='mb-4 text-center text-red-500'>{formError}</p>
-            )}
+            {formError && <p className='mb-4 text-center text-red-500'>{formError}</p>}
             <div className='px-8'>
               <form onSubmit={handleSubmitEditEvent} className='mb-4'>
                 <TextInput
@@ -1555,9 +1463,7 @@ export const Itinerary = () => {
                     label='Hora de inicio'
                     leftSection={<GoClock size={18} />}
                     value={eventStartTime}
-                    onChange={(event) =>
-                      setEventStartTime(event.currentTarget.value)
-                    }
+                    onChange={(event) => setEventStartTime(event.currentTarget.value)}
                     size='md'
                     className='w-full'
                   />
@@ -1565,77 +1471,52 @@ export const Itinerary = () => {
                     label='Hora de fin'
                     leftSection={<GoClock size={18} />}
                     value={eventEndTime}
-                    onChange={(event) =>
-                      setEventEndTime(event.currentTarget.value)
-                    }
+                    onChange={(event) => setEventEndTime(event.currentTarget.value)}
                     size='md'
                     className='w-full'
                   />
                 </div>
                 <Text size='md' fw={500} mt='sm' className='!mb-1'>
-                  Imagen
+                  Categoría
                 </Text>
                 <div className='grid grid-cols-3 gap-2'>
-                  <button
-                    key={'/images/monument.svg'}
-                    type='button'
-                    onClick={() => setEventImage('/images/monument.svg')}
-                    className={`w-full h-24 rounded-md overflow-hidden border-2 ${
-                      eventImage === '/images/monument.svg'
-                        ? 'border-blue-500'
-                        : 'border-gray-300'
-                    }`}
-                  >
-                    <img
-                      src={'/images/monument.svg'}
-                      alt='Imagen predefinida'
-                      className='object-cover w-full h-full'
-                    />
-                  </button>
-                  <button
-                    key={'/images/food.svg'}
-                    type='button'
-                    onClick={() => setEventImage('/images/food.svg')}
-                    className={`w-full h-24 rounded-md overflow-hidden border-2 ${
-                      eventImage === '/images/food.svg'
-                        ? 'border-blue-500'
-                        : 'border-gray-300'
-                    }`}
-                  >
-                    <img
-                      src={'/images/food.svg'}
-                      alt='Imagen predefinida'
-                      className='object-cover w-full h-full'
-                    />
-                  </button>
-                  <button
-                    key={'/images/art.svg'}
-                    type='button'
-                    onClick={() => setEventImage('/images/art.svg')}
-                    className={`w-full h-24 rounded-md overflow-hidden border-2 ${
-                      eventImage === '/images/art.svg'
-                        ? 'border-blue-500'
-                        : 'border-gray-300'
-                    }`}
-                  >
-                    <img
-                      src={'/images/art.svg'}
-                      alt='Imagen predefinida'
-                      className='object-cover w-full h-full'
-                    />
-                  </button>
+                  {eventCategories.map((name) => {
+                    const Icon = getCategoryIcon(name)
+                    return (
+                      <button
+                        key={name}
+                        type='button'
+                        onClick={() => {
+                          if (eventCategory === name) {
+                            setEventCategory(null)
+                          } else {
+                            setEventCategory(name)
+                          }
+                        }}
+                        className={`w-full h-20 flex flex-col items-center justify-center rounded-md border-2 bg-emerald-500 ${
+                          eventCategory === name ? 'border-blue-500' : 'border-gray-300'
+                        }`}
+                      >
+                        <Icon size={24} color='white' />
+                        <span className='mt-1 text-[13px] capitalize text-white'>
+                          {categoryTranslations[name]}
+                        </span>
+                      </button>
+                    )
+                  })}
                 </div>
-                <Text size='sm' ta='center' mt='sm' className='!text-gray-500'>
+                <Text size='sm' fw={500} ta='center' mt='sm'>
                   Subir imagen
                 </Text>
-                <div className='flex justify-center mt-2'>
-                  <FileButton
-                    onChange={handleEventImageChange}
-                    accept='.png, .jpg, .jpeg'
-                  >
+                <div className='relative mx-auto w-[130px] h-[90px] mt-2'>
+                  <FileButton onChange={handleEventImageChange} accept='.png, .jpg, .jpeg'>
                     {(props) => (
                       <Avatar
-                        src={eventImage || '/images/landscape-placeholder.svg'}
+                        src={
+                          eventImage ||
+                          (eventCategory && getCategoryImage(eventCategory)) ||
+                          '/images/placeholder/landscape-placeholder.svg'
+                        }
                         w={130}
                         h={90}
                         radius='md'
@@ -1644,6 +1525,16 @@ export const Itinerary = () => {
                       />
                     )}
                   </FileButton>
+                  {eventImage && (
+                    <button
+                      type='button'
+                      onClick={() => setEventImage(null)}
+                      className='absolute top-[-8px] right-[-8px] bg-gray-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs hover:bg-gray-500'
+                      aria-label='Remove image'
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
                 <Button type='submit' color='teal' fullWidth mt='lg'>
                   Guardar

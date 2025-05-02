@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '@/config/config'
 import { useAuth } from '@/hooks/useAuth'
 import { userService } from '@/services/userService'
+import { defaultAvatars } from '@/utils'
 import {
   Text,
   Avatar,
@@ -13,7 +14,7 @@ import {
 } from '@mantine/core'
 import { useEffect, useState } from 'react'
 import { IoIosArrowBack } from 'react-icons/io'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 export const ProfileSettings = () => {
   const { user, refreshUser } = useAuth()
@@ -105,19 +106,13 @@ export const ProfileSettings = () => {
               setError('El nombre de usuario ya existe. Por favor, elige otro.')
               break
             case 'EmailConflictError':
-              setError(
-                'La dirección de correo electrónico ya está en uso. Por favor, elige otra.'
-              )
+              setError('La dirección de correo electrónico ya está en uso. Por favor, elige otra.')
               break
             default:
-              setError(
-                'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
-              )
+              setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
           }
         } else {
-          setError(
-            'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
-          )
+          setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
         }
       } finally {
         setLoading(false)
@@ -146,11 +141,7 @@ export const ProfileSettings = () => {
               aria-label='Back to profile'
               className='pt-1'
             >
-              <IoIosArrowBack
-                size={22}
-                strokeWidth={3}
-                className='text-gray-50'
-              />
+              <IoIosArrowBack size={22} strokeWidth={3} className='text-gray-50' />
             </ActionIcon>
           ) : (
             <button>
@@ -170,16 +161,10 @@ export const ProfileSettings = () => {
         <div className='col-span-1'></div>
       </div>
       <div className='flex items-center justify-center'>
-        <div className='w-full max-w-md px-8'>
-          {error && (
-            <p className='max-w-xs mx-auto mb-4 text-center text-red-500'>
-              {error}
-            </p>
-          )}
+        <div className='w-full max-w-sm'>
+          {error && <p className='max-w-xs mx-auto mb-4 text-center text-red-500'>{error}</p>}
           {success && (
-            <p className='max-w-xs mx-auto mb-4 text-center text-emerald-500'>
-              {success}
-            </p>
+            <p className='max-w-xs mx-auto mb-4 text-center text-emerald-500'>{success}</p>
           )}
           <form onSubmit={handleSubmit} className='mb-4'>
             <TextInput
@@ -229,20 +214,45 @@ export const ProfileSettings = () => {
               size='md'
               mt='sm'
             />
-            <div className='flex justify-center mt-4'>
-              <FileButton
-                onChange={handleAvatarChange}
-                accept='.png, .jpg, .jpeg'
-              >
+            <Text size='md' fw={500} mt='sm' className='!mb-1.5'>
+              Cambia tu avatar
+            </Text>
+            <div className='grid grid-cols-6 gap-2'>
+              {defaultAvatars.map((url) => (
+                <button
+                  key={url}
+                  type='button'
+                  onClick={() => setAvatar(url)}
+                  className={`border-2 rounded-full transition ${
+                    avatar === url ? 'border-blue-500' : 'border-transparent hover:border-blue-300'
+                  }`}
+                >
+                  <img src={url} alt='avatar' className='object-cover w-full h-auto rounded-md' />
+                </button>
+              ))}
+            </div>
+            <div className='relative mx-auto w-[90px] h-[90px] mt-4'>
+              <FileButton onChange={handleAvatarChange} accept='.png, .jpg, .jpeg'>
                 {(props) => (
                   <Avatar
-                    src={avatar || '/images/avatar-placeholder.svg'}
-                    size={100}
+                    src={avatar || '/images/placeholder/avatar-placeholder.svg'}
+                    w={90}
+                    h={90}
                     className='transition cursor-pointer hover:opacity-80'
                     {...props}
                   />
                 )}
               </FileButton>
+              {avatar && (
+                <button
+                  type='button'
+                  onClick={() => setAvatar(null)}
+                  className='absolute top-[-4px] right-[-12px] bg-gray-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs hover:bg-gray-500'
+                  aria-label='Remove avatar'
+                >
+                  ✕
+                </button>
+              )}
             </div>
             <Button
               type='submit'

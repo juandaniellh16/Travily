@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 export const Footer = () => {
   return (
@@ -6,7 +6,7 @@ export const Footer = () => {
       <div className='px-4 mx-auto max-w-[1200px] sm:px-6'>
         <div className='flex flex-col items-center justify-between gap-8 py-9 lg:flex-row'>
           <Link to='/'>
-            <img src='/logo-prueba-2.png' className='h-9' alt='Logo' />
+            <img src='/logo-travily.png' className='h-9' alt='Logo' />
           </Link>
           <ul className='justify-center font-semibold text-center transition-all duration-500 text-md sm:flex items-cente gap-14 lg:gap-10 xl:gap-14'>
             <li className='my-2 sm:my-0'>
@@ -15,26 +15,17 @@ export const Footer = () => {
               </Link>
             </li>
             <li>
-              <Link
-                to={'/contact-us'}
-                className='text-white hover:text-gray-400'
-              >
+              <Link to={'/contact-us'} className='text-white hover:text-gray-400'>
                 Contacto
               </Link>
             </li>
             <li className='my-2 sm:my-0'>
-              <Link
-                to={'/privacy-policy'}
-                className='text-white hover:text-gray-400'
-              >
+              <Link to={'/privacy-policy'} className='text-white hover:text-gray-400'>
                 Política de privacidad
               </Link>
             </li>
             <li>
-              <Link
-                to={'/terms-of-use'}
-                className='text-white hover:text-gray-400'
-              >
+              <Link to={'/terms-of-use'} className='text-white hover:text-gray-400'>
                 Términos de uso
               </Link>
             </li>

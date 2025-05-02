@@ -4,7 +4,7 @@ import App from './App.tsx'
 import './index.css'
 import '@mantine/core/styles.css'
 import '@mantine/carousel/styles.css'
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router'
 import { AuthProvider } from './auth/AuthProvider.tsx'
 
 createRoot(document.getElementById('root')!).render(

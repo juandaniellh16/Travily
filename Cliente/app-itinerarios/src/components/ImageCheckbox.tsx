@@ -41,12 +41,7 @@ export const ImageCheckbox = ({
       <Image src={image} alt={label} w={40} h={40} radius='xl' />
 
       <div className='flex-1 ml-3 text-left '>
-        <Text
-          fw={500}
-          lh={1}
-          size='sm'
-          className='text-gray-900 dark:text-gray-100'
-        >
+        <Text fw={500} lh={1} size='sm' className='text-gray-900 dark:text-gray-100'>
           {label}
         </Text>
       </div>

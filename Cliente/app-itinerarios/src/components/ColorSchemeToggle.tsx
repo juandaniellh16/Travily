@@ -1,10 +1,6 @@
 import { LuSunMedium } from 'react-icons/lu'
 import { IoMoonOutline } from 'react-icons/io5'
-import {
-  ActionIcon,
-  useComputedColorScheme,
-  useMantineColorScheme
-} from '@mantine/core'
+import { ActionIcon, useComputedColorScheme, useMantineColorScheme } from '@mantine/core'
 
 export const ColorSchemeToggle = () => {
   const { setColorScheme } = useMantineColorScheme()
@@ -14,9 +10,7 @@ export const ColorSchemeToggle = () => {
 
   return (
     <ActionIcon
-      onClick={() =>
-        setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')
-      }
+      onClick={() => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')}
       variant='default'
       size='lg'
       radius='md'

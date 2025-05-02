@@ -6,7 +6,7 @@ import { useDisclosure } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
 import { FaHeart, FaRegHeart } from 'react-icons/fa'
 import { LoginModal } from './LoginModal'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router'
 import { itineraryListService } from '@/services/itineraryListService'
 
 interface ItineraryCardProps {
@@ -14,16 +14,11 @@ interface ItineraryCardProps {
   itineraryList?: ItineraryListType
 }
 
-export const LikeButton = ({
-  itinerary,
-  itineraryList
-}: ItineraryCardProps) => {
+export const LikeButton = ({ itinerary, itineraryList }: ItineraryCardProps) => {
   const navigate = useNavigate()
   const location = useLocation()
   const [liked, setLiked] = useState(false)
-  const [likes, setLikes] = useState(
-    itinerary?.likes || itineraryList?.likes || 0
-  )
+  const [likes, setLikes] = useState(itinerary?.likes || itineraryList?.likes || 0)
   const [opened, { open, close }] = useDisclosure(false)
 
   const { user } = useAuth()
@@ -51,7 +46,9 @@ export const LikeButton = ({
     fetchLikedStatus()
   }, [user, itinerary, itineraryList])
 
-  const handleLike = async () => {
+  const handleLike = async (e: React.MouseEvent) => {
+    e.preventDefault()
+
     if (!user) {
       open()
       return
@@ -101,14 +98,7 @@ export const LikeButton = ({
         }}
       />
       <div className='flex items-center justify-center'>
-        <ActionIcon
-          variant='subtle'
-          color='gray'
-          onClick={handleLike}
-          w={36}
-          size={24}
-          p={3}
-        >
+        <ActionIcon variant='subtle' color='gray' onClick={handleLike} w={36} size={24} p={3}>
           {liked ? (
             <FaHeart color='red' size={16} className='flex-none' />
           ) : (

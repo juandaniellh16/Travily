@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button, TextInput, Textarea, Title } from '@mantine/core'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 export const ContactUs = () => {
   const [name, setName] = useState('')
@@ -21,9 +21,7 @@ export const ContactUs = () => {
       }, 2000)
     } catch {
       setLoading(false)
-      setError(
-        'Ocurrió un error al enviar tu mensaje. Por favor, inténtalo de nuevo.'
-      )
+      setError('Ocurrió un error al enviar tu mensaje. Por favor, inténtalo de nuevo.')
     }
   }
 
@@ -50,11 +48,7 @@ export const ContactUs = () => {
             Contacta con nosotros
           </Title>
 
-          {error && (
-            <p className='max-w-xs mx-auto mb-4 text-center text-red-500'>
-              {error}
-            </p>
-          )}
+          {error && <p className='max-w-xs mx-auto mb-4 text-center text-red-500'>{error}</p>}
 
           <form onSubmit={handleSubmit} className='mb-4'>
             <TextInput

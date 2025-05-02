@@ -1,21 +1,16 @@
 import { API_BASE_URL } from '@/config/config'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { useAuth } from '@/hooks/useAuth'
-import {
-  Avatar,
-  Button,
-  FileButton,
-  Switch,
-  Textarea,
-  TextInput,
-  Title
-} from '@mantine/core'
+import { Avatar, Button, FileButton, Switch, Textarea, TextInput, Title } from '@mantine/core'
 import { itineraryService } from '@/services/itineraryService'
 import { LuCalendarDays } from 'react-icons/lu'
 import { DatePickerInput } from '@mantine/dates'
 import '@mantine/dates/styles.css'
 import { MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
+import { LocationCombobox } from '@/components/LocationCombobox'
+import { LocationSuggestion, LocationType } from '@/types'
+import { getSpanishName } from '@/utils'
 
 export const ItineraryForm = () => {
   const { user } = useAuth()
@@ -25,8 +20,9 @@ export const ItineraryForm = () => {
   const [image, setImage] = useState<string | null>(null)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [locations, setLocations] = useState<string[]>([])
-  const [inputValue, setInputValue] = useState('')
+  const [datesError, setDatesError] = useState(false)
+  const [location, setLocation] = useState<LocationType | null>(null)
+  const [locationError, setLocationError] = useState(false)
   const [isPublic, setIsPublic] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -54,13 +50,6 @@ export const ItineraryForm = () => {
     }
   }
 
-  const handleAddLocation = () => {
-    if (inputValue.trim() !== '') {
-      setLocations([...locations, inputValue.trim()])
-      setInputValue('')
-    }
-  }
-
   const handleStartDateChange = (date: Date | null) => {
     if (date) {
       setStartDate(date.toISOString())
@@ -77,18 +66,44 @@ export const ItineraryForm = () => {
     }
   }
 
+  const handleLocationSelect = (selectedLocation: LocationSuggestion | null) => {
+    if (!selectedLocation) {
+      setLocation(null)
+    } else {
+      // eslint-disable-next-line
+      const { type, name, alternateNames, ...rest } = selectedLocation
+
+      let finalName = name
+
+      if (alternateNames) {
+        const nameInSpanish = getSpanishName(alternateNames)
+        if (nameInSpanish) {
+          finalName = nameInSpanish
+        }
+      }
+
+      setLocation({
+        ...rest,
+        name: finalName
+      } as LocationType)
+
+      setLocationError(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
     if (startDate > endDate) {
-      setError('La fecha de inicio no puede ser posterior a la fecha de fin.')
+      setDatesError(true)
       setLoading(false)
       return
     }
-    if (locations.length === 0) {
-      setError('Por favor, añade al menos un destino.')
+    setDatesError(false)
+    if (!location) {
+      setLocationError(true)
       setLoading(false)
       return
     }
@@ -102,7 +117,7 @@ export const ItineraryForm = () => {
           image,
           startDate,
           endDate,
-          locations,
+          location,
           isPublic,
           userId
         )
@@ -120,9 +135,7 @@ export const ItineraryForm = () => {
         } else if (error.message.includes('access not authorized')) {
           setError('Por favor, inicia sesión para poder crear un itinerario.')
         } else {
-          setError(
-            'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
-          )
+          setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
         }
       } else {
         setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
@@ -148,31 +161,13 @@ export const ItineraryForm = () => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             size='md'
+            mb='sm'
             withAsterisk={false}
             required
           />
-          <div className='flex items-center gap-2 mt-5'>
-            <TextInput
-              label='Añadir destino'
-              placeholder='Londres, París, Madrid...'
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              size='md'
-              className='w-full'
-            />
-            <Button
-              onClick={handleAddLocation}
-              className='flex-shrink-0 mt-auto'
-              color='teal'
-              size='md'
-            >
-              Añadir
-            </Button>
-          </div>
-          {locations.length > 0 && (
-            <label className='block mt-2 text-sm'>
-              Destinos: {locations.join(', ')}
-            </label>
+          <LocationCombobox onLocationSelect={handleLocationSelect} />
+          {locationError && (
+            <p className='mt-0.5 text-red-500 text-sm'>Por favor, selecciona un destino.</p>
           )}
           <Textarea
             label='Descripción (opcional)'
@@ -189,9 +184,7 @@ export const ItineraryForm = () => {
               leftSectionPointerEvents='none'
               withAsterisk={false}
               label='Fecha de inicio'
-              placeholder={placeHolderStartDate
-                .toLocaleDateString('es-ES')
-                .replace(/\//g, '-')}
+              placeholder={placeHolderStartDate.toLocaleDateString('es-ES').replace(/\//g, '-')}
               value={startDate ? new Date(startDate) : null}
               onChange={handleStartDateChange}
               className='w-full'
@@ -204,9 +197,7 @@ export const ItineraryForm = () => {
               leftSectionPointerEvents='none'
               withAsterisk={false}
               label='Fecha de fin'
-              placeholder={placeHolderEndDate
-                .toLocaleDateString('es-ES')
-                .replace(/\//g, '-')}
+              placeholder={placeHolderEndDate.toLocaleDateString('es-ES').replace(/\//g, '-')}
               value={endDate ? new Date(endDate) : null}
               onChange={handleEndDateChange}
               className='w-full'
@@ -214,11 +205,16 @@ export const ItineraryForm = () => {
               required
             />
           </div>
-          <div className='flex justify-center mt-5'>
+          {datesError && (
+            <p className='mt-0.5 text-red-500 text-sm'>
+              La fecha de inicio no puede ser posterior a la fecha de fin.
+            </p>
+          )}
+          <div className='relative mx-auto w-[130px] h-[90px] mt-5'>
             <FileButton onChange={handleImageChange} accept='.png, .jpg, .jpeg'>
               {(props) => (
                 <Avatar
-                  src={image || '/images/landscape-placeholder.svg'}
+                  src={image || '/images/placeholder/landscape-placeholder.svg'}
                   w={130}
                   h={90}
                   radius='md'
@@ -227,6 +223,16 @@ export const ItineraryForm = () => {
                 />
               )}
             </FileButton>
+            {image && (
+              <button
+                type='button'
+                onClick={() => setImage(null)}
+                className='absolute top-[-8px] right-[-8px] bg-gray-400 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs hover:bg-gray-500'
+                aria-label='Remove image'
+              >
+                ✕
+              </button>
+            )}
           </div>
           <Switch
             size='lg'

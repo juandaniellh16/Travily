@@ -1,5 +1,5 @@
 import { ProfileButton } from './ProfileButton'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router'
 import { ActiveTab } from '@/layouts/MainLayout'
 import { FaPlus, FaRegHeart } from 'react-icons/fa'
 import { FiMap } from 'react-icons/fi'
@@ -67,12 +67,11 @@ export const SideBar = ({ activeTab, setActiveTab }: SideBarProps) => {
           <ProfileButton />
         </div>
         <div className='w-full mb-3 overflow-hidden'>
-          {(['Itinerarios', 'Favoritos', 'Listas'] as ActiveTab[]).map(
-            (tab) => (
-              <button
-                key={tab}
-                onClick={() => handleTabClick(tab)}
-                className={`
+          {(['Itinerarios', 'Favoritos', 'Listas'] as ActiveTab[]).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => handleTabClick(tab)}
+              className={`
             w-full text-left flex items-center px-4 py-2 h-10 leading-none
             ${
               isOnOwnProfile && activeTab === tab
@@ -81,12 +80,11 @@ export const SideBar = ({ activeTab, setActiveTab }: SideBarProps) => {
             }
             hover:transition-all hover:duration-200 
           `}
-              >
-                {getIconForTab(tab)}
-                {tab}
-              </button>
-            )
-          )}
+            >
+              {getIconForTab(tab)}
+              {tab}
+            </button>
+          ))}
         </div>
       </div>
       <div className='flex justify-center w-full my-3'>

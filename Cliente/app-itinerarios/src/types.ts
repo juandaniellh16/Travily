@@ -3,10 +3,23 @@ export interface Event {
   orderIndex: number
   label: string
   description: string
+  category: EventCategory | null
   image: string | null
   startTime: string | null
   endTime: string | null
 }
+
+export type EventCategory =
+  | 'landmark'
+  | 'food'
+  | 'accommodation'
+  | 'activity'
+  | 'transport'
+  | 'entertainment'
+  | 'shopping'
+  | 'art'
+  | 'relax'
+  | 'other'
 
 export interface Day {
   id: string
@@ -22,7 +35,7 @@ export interface ItineraryType {
   image: string | null
   startDate: string
   endDate: string
-  locations: string[]
+  location: LocationType
   isPublic: boolean
   userId: string
   likes: number
@@ -36,7 +49,7 @@ export interface ItinerarySimpleType {
   image: string | null
   startDate: string
   endDate: string
-  locations: string[]
+  location: LocationType
   isPublic: boolean
   userId: string
   likes: number
@@ -81,3 +94,27 @@ export interface Collaborator {
   name: string
   username: string
 }
+
+export interface LocationType {
+  geonameId: number
+  name: string
+  countryName?: string
+  adminName1?: string
+  fcode?: string
+  lat?: number
+  lng?: number
+}
+
+export interface LocationSuggestion extends LocationType {
+  type: 'location'
+  alternateNames?: { name: string; lang: string }[]
+}
+
+export interface UserSuggestion {
+  type: 'user'
+  id: string
+  name: string
+  avatar: string | null
+}
+
+export type Suggestion = LocationSuggestion | UserSuggestion

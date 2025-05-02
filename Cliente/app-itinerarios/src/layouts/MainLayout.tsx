@@ -5,7 +5,7 @@ import { RightColumn } from '@/components/RightColumn'
 import { SideBar } from '@/components/SideBar'
 import { useAuth } from '@/hooks/useAuth'
 import { useState } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet } from 'react-router'
 
 export type ActiveTab = 'Itinerarios' | 'Favoritos' | 'Listas'
 

@@ -3,7 +3,7 @@ import { userService } from '@/services/userService'
 import { ItineraryListType, UserPublic } from '@/types'
 import { ActionIcon, Loader } from '@mantine/core'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router'
 import { NotFound } from './NotFound'
 import { IoIosArrowBack } from 'react-icons/io'
 import { itineraryListService } from '@/services/itineraryListService'
@@ -95,11 +95,7 @@ export const UserItineraryLists = () => {
                 aria-label='Back to profile'
                 className='pt-1'
               >
-                <IoIosArrowBack
-                  size={22}
-                  strokeWidth={3}
-                  className='text-gray-50'
-                />
+                <IoIosArrowBack size={22} strokeWidth={3} className='text-gray-50' />
               </ActionIcon>
             ) : (
               <button>
@@ -117,9 +113,7 @@ export const UserItineraryLists = () => {
             </span>
           </Link>
           <div className='text-center'>
-            <h2 className='text-lg font-semibold leading-none text-white xs:text-xl'>
-              Listas
-            </h2>
+            <h2 className='text-lg font-semibold leading-none text-white xs:text-xl'>Listas</h2>
           </div>
           <Link
             to={'/create-list'}
@@ -171,10 +165,7 @@ export const UserItineraryLists = () => {
             </span>
           </div>
         ) : (
-          <ItineraryListsList
-            lists={itineraryLists}
-            handleDelete={handleDeleteItineraryList}
-          />
+          <ItineraryListsList lists={itineraryLists} handleDelete={handleDeleteItineraryList} />
         )}
       </div>
     </>

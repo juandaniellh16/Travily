@@ -15,14 +15,10 @@ import {
   TextInput
 } from '@mantine/core'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router'
 import { NotFound } from './NotFound'
 import { HiOutlineDotsVertical } from 'react-icons/hi'
-import {
-  MdEdit,
-  MdOutlineVisibility,
-  MdOutlineVisibilityOff
-} from 'react-icons/md'
+import { MdEdit, MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 import { IoTrashOutline } from 'react-icons/io5'
 import { ShareButton } from '@/components/ShareButton'
 import { API_BASE_URL } from '@/config/config'
@@ -41,8 +37,7 @@ export const ItineraryList = () => {
   const [listTitle, setListTitle] = useState('')
   const [isEditingListTitle, setIsEditingListTitle] = useState(false)
   const [listDescription, setListDescription] = useState('')
-  const [isEditingListDescription, setIsEditingListDescription] =
-    useState(false)
+  const [isEditingListDescription, setIsEditingListDescription] = useState(false)
   const [isPublic, setIsPublic] = useState(false)
 
   const [notFoundError, setNotFoundError] = useState(false)
@@ -72,15 +67,11 @@ export const ItineraryList = () => {
     setIsEditingListDescription(false)
   }
 
-  const handleListDescriptionChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
+  const handleListDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setListDescription(e.target.value)
   }
 
-  const handleKeyPress = (
-    e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
       if (isEditingListTitle) {
         handleListTitleBlur()
@@ -122,9 +113,7 @@ export const ItineraryList = () => {
           setIsPublic(localListData.isPublic)
 
           if (localListData.userId) {
-            const localUserData = await userService.getById(
-              localListData.userId
-            )
+            const localUserData = await userService.getById(localListData.userId)
             setUserData(localUserData)
           }
         }
@@ -138,14 +127,10 @@ export const ItineraryList = () => {
               setUnauthorizedError(true)
               break
             default:
-              setError(
-                'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
-              )
+              setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
           }
         } else {
-          setError(
-            'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'
-          )
+          setError('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.')
         }
       }
     }
@@ -176,10 +161,7 @@ export const ItineraryList = () => {
     }
   }
 
-  const handleEditList = async (
-    listId: string,
-    updatedListData: Partial<ItineraryListType>
-  ) => {
+  const handleEditList = async (listId: string, updatedListData: Partial<ItineraryListType>) => {
     if (!listData) return
 
     try {
@@ -197,15 +179,11 @@ export const ItineraryList = () => {
 
         return {
           ...prev,
-          itineraries: prev.itineraries.filter(
-            (itinerary) => itinerary.id !== id
-          )
+          itineraries: prev.itineraries.filter((itinerary) => itinerary.id !== id)
         }
       })
     } catch {
-      setDeleteError(
-        'Error al borrar el itinerario. Por favor, inténtalo de nuevo.'
-      )
+      setDeleteError('Error al borrar el itinerario. Por favor, inténtalo de nuevo.')
     }
   }
 
@@ -218,9 +196,7 @@ export const ItineraryList = () => {
 
         return {
           ...prev,
-          itineraries: prev.itineraries.filter(
-            (itinerary) => itinerary.id !== itineraryId
-          )
+          itineraries: prev.itineraries.filter((itinerary) => itinerary.id !== itineraryId)
         }
       })
     } catch {
@@ -254,7 +230,7 @@ export const ItineraryList = () => {
           >
             {(props) => (
               <img
-                src={listData.image || '/images/landscape-placeholder.svg'}
+                src={listData.image || '/images/placeholder/landscape-placeholder.svg'}
                 alt={listData.title}
                 className='w-full h-[250px] object-cover rounded-t-xl transition cursor-pointer hover:opacity-80'
                 {...props}
@@ -263,7 +239,7 @@ export const ItineraryList = () => {
           </FileButton>
         ) : (
           <img
-            src={listData.image || '/images/landscape-placeholder.svg'}
+            src={listData.image || '/images/placeholder/landscape-placeholder.svg'}
             alt={listData.title}
             className='w-full h-[250px] object-cover rounded-t-xl'
           />
@@ -317,12 +293,21 @@ export const ItineraryList = () => {
                 </Menu.Target>
 
                 <Menu.Dropdown>
-                  <Menu.Item
-                    leftSection={<MdEdit size={14} />}
-                    onClick={() => setIsEditingList(true)}
-                  >
-                    Editar lista
-                  </Menu.Item>
+                  {isEditingList ? (
+                    <Menu.Item
+                      leftSection={<MdEdit size={14} />}
+                      onClick={() => setIsEditingList(false)}
+                    >
+                      Dejar de editar
+                    </Menu.Item>
+                  ) : (
+                    <Menu.Item
+                      leftSection={<MdEdit size={14} />}
+                      onClick={() => setIsEditingList(true)}
+                    >
+                      Editar lista
+                    </Menu.Item>
+                  )}
 
                   {listData.userId === authUser?.id && (
                     <>
@@ -394,7 +379,7 @@ export const ItineraryList = () => {
             <div className='flex items-center'>
               <Link to={`/${userData?.username}`}>
                 <Avatar
-                  src={userData?.avatar || '/images/avatar-placeholder.svg'}
+                  src={userData?.avatar || '/images/placeholder/avatar-placeholder.svg'}
                   mr='xs'
                   size={32}
                 />

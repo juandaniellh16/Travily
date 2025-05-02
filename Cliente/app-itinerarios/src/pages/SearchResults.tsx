@@ -5,23 +5,24 @@ import { useAuth } from '@/hooks/useAuth'
 import { itineraryService } from '@/services/itineraryService'
 import { userService } from '@/services/userService'
 import { ItinerarySimpleType, UserWithFollowStatus } from '@/types'
-import { Loader, Tabs } from '@mantine/core'
+import { Checkbox, Loader, Tabs } from '@mantine/core'
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router'
 
 export const SearchResults = () => {
-  const { refreshUser } = useAuth()
+  const { user: authUser, refreshUser } = useAuth()
   const navigate = useNavigate()
-  const [itineraries, setItineraries] = useState<ItinerarySimpleType[] | null>(
-    null
-  )
+  const [itineraries, setItineraries] = useState<ItinerarySimpleType[] | null>(null)
   const [users, setUsers] = useState<UserWithFollowStatus[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
 
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const query = searchParams.get('q') || ''
   const type = searchParams.get('type') || 'itinerary'
+  const initialOnlyFriends = searchParams.get('onlyFriends') === 'true'
+
+  const [onlyFriends, setOnlyFriends] = useState(initialOnlyFriends)
 
   useEffect(() => {
     if (!query) return
@@ -30,10 +31,19 @@ export const SearchResults = () => {
       try {
         setLoading(true)
         if (type === 'itinerary') {
-          const itineraryResults = await itineraryService.getAll({
-            location: query,
-            sort: 'popular'
-          })
+          let itineraryResults
+          if (onlyFriends) {
+            itineraryResults = await itineraryService.getAll({
+              location: query,
+              sort: 'popular',
+              followedBy: authUser?.id
+            })
+          } else {
+            itineraryResults = await itineraryService.getAll({
+              location: query,
+              sort: 'popular'
+            })
+          }
           setItineraries(itineraryResults)
         } else if (type === 'user') {
           const userResults = await userService.getAll({
@@ -53,16 +63,14 @@ export const SearchResults = () => {
     }
 
     fetchResults()
-  }, [query, type])
+  }, [query, type, onlyFriends, authUser?.id])
 
   const handleFollow = async (userId: string, isFollowing: boolean) => {
     try {
       setUsers((prev) => {
         if (!prev) return prev
 
-        return prev.map((f) =>
-          f.id === userId ? { ...f, isFollowing: !isFollowing } : f
-        )
+        return prev.map((f) => (f.id === userId ? { ...f, isFollowing: !isFollowing } : f))
       })
       if (isFollowing) {
         await userService.unfollowUser(userId)
@@ -82,12 +90,36 @@ export const SearchResults = () => {
           Explora destinos y conecta <br />
           con otros viajeros
         </h2>
-        <SearchInput defaultValue={query} />
+        <SearchInput defaultValue={query} onlyFriends={onlyFriends} />
+        {authUser && (
+          <div className='flex items-center justify-center mt-3'>
+            <Checkbox
+              label='Solo itinerarios de amigos'
+              color='teal'
+              checked={onlyFriends}
+              onChange={() => {
+                const newVal = !onlyFriends
+                setOnlyFriends(newVal)
+
+                const updatedParams = new URLSearchParams(searchParams)
+                if (newVal && type === 'itinerary') {
+                  updatedParams.set('onlyFriends', 'true')
+                } else {
+                  updatedParams.delete('onlyFriends')
+                }
+                setSearchParams(updatedParams)
+              }}
+              classNames={{
+                label: 'text-sm md:text-[15px]'
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {query && (
-        <h3 className='text-lg text-center md:text-xl'>
-          Resultados de búsqueda para "{query}"
+        <h3 className='text-lg text-center md:text-xl mx-7 md:mx-0'>
+          Resultados de búsqueda para <br className='md:hidden' />"{query}"
         </h3>
       )}
 
@@ -101,7 +133,11 @@ export const SearchResults = () => {
             } else if (value === 'user') {
               setUsers(null)
             }
-            navigate(`/search?q=${query}&type=${value}`)
+            navigate(
+              `/search?q=${query}&type=${value}${
+                onlyFriends && value === 'itinerary' ? '&onlyFriends=true' : ''
+              }`
+            )
           }}
         >
           <Tabs.List grow className='mb-5'>
@@ -126,17 +162,13 @@ export const SearchResults = () => {
               ) : itineraries.length === 0 ? (
                 <div className='flex items-center justify-center h-[295px] mx-9 md:mx-0'>
                   <span className='text-center text-gray-500'>
-                    No se han encontrado resultados para "{query}" en
-                    itinerarios.
+                    No se han encontrado resultados para "{query}" en itinerarios.
                   </span>
                 </div>
               ) : (
                 <div className='grid grid-cols-1 gap-4 mx-9 xxs:mx-16 xs:mx-0 xs:grid-cols-2 md:!grid-cols-3'>
                   {itineraries.map((itinerary) => (
-                    <div
-                      key={itinerary.id}
-                      className='flex h-[295px] overflow-hidden rounded-xl'
-                    >
+                    <div key={itinerary.id} className='flex h-[295px] overflow-hidden rounded-xl'>
                       <ItineraryCard itinerary={itinerary} />
                     </div>
                   ))}

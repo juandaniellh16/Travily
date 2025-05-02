@@ -1,12 +1,8 @@
 import { useAuth } from '@/hooks/useAuth'
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router'
 
-export const BottomNavBar = ({
-  defaultActiveButton
-}: {
-  defaultActiveButton: string
-}) => {
+export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: string }) => {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [activeButton, setActiveButton] = useState<string>(defaultActiveButton)

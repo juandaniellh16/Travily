@@ -4,7 +4,7 @@ import { Button } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useEffect, useRef, useState } from 'react'
 import { BiSolidUserX } from 'react-icons/bi'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router'
 import { LoginModal } from './LoginModal'
 
 interface FollowButtonProps {
@@ -94,9 +94,7 @@ export const FollowButton = ({ user, handleFollow }: FollowButtonProps) => {
               </span>
             </>
           ) : (
-            <span className='min-w-[100px]'>
-              {user.isFollowing ? 'Siguiendo' : 'Seguir'}
-            </span>
+            <span className='min-w-[100px]'>{user.isFollowing ? 'Siguiendo' : 'Seguir'}</span>
           )}
         </Button>
 

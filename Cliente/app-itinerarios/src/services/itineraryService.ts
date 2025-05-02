@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '@/config/config'
 import { fetchWithAuth } from './fetchWithAuth'
-import { ItineraryType } from '@/types'
+import { ItineraryType, LocationType } from '@/types'
 
 export const itineraryService = {
   getAll: async (params: {
@@ -55,9 +55,7 @@ export const itineraryService = {
           'Content-Type': 'application/json'
         }
       }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 7000)
-      )
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Request timeout')), 7000))
     ])) as Response
 
     if (response instanceof Response) {
@@ -91,7 +89,7 @@ export const itineraryService = {
     image: string | null,
     startDate: string,
     endDate: string,
-    locations: string[],
+    location: LocationType,
     isPublic: boolean,
     userId: string
   ) => {
@@ -104,7 +102,7 @@ export const itineraryService = {
         image,
         startDate,
         endDate,
-        locations,
+        location,
         isPublic,
         userId
       })
@@ -135,10 +133,7 @@ export const itineraryService = {
     }
   },
 
-  update: async (
-    itineraryId: string,
-    updatedItineraryData: Partial<ItineraryType>
-  ) => {
+  update: async (itineraryId: string, updatedItineraryData: Partial<ItineraryType>) => {
     const response = await fetchWithAuth(`/itineraries/${itineraryId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -176,15 +171,12 @@ export const itineraryService = {
   },
 
   checkIfLiked: async (itineraryId: string) => {
-    const response = await fetchWithAuth(
-      `/itineraries/${itineraryId}/is-liked`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+    const response = await fetchWithAuth(`/itineraries/${itineraryId}/is-liked`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
       }
-    )
+    })
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -196,18 +188,15 @@ export const itineraryService = {
   },
 
   addCollaborator: async (itineraryId: string, username: string) => {
-    const response = await fetchWithAuth(
-      `/itineraries/${itineraryId}/collaborators`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username
-        })
-      }
-    )
+    const response = await fetchWithAuth(`/itineraries/${itineraryId}/collaborators`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username
+      })
+    })
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -216,15 +205,12 @@ export const itineraryService = {
   },
 
   getCollaborators: async (itineraryId: string) => {
-    const response = await fetchWithAuth(
-      `/itineraries/${itineraryId}/collaborators`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+    const response = await fetchWithAuth(`/itineraries/${itineraryId}/collaborators`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
       }
-    )
+    })
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -235,21 +221,16 @@ export const itineraryService = {
   },
 
   checkIfCollaborator: async (itineraryId: string) => {
-    const response = await fetchWithAuth(
-      `/itineraries/${itineraryId}/is-collaborator`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+    const response = await fetchWithAuth(`/itineraries/${itineraryId}/is-collaborator`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
       }
-    )
+    })
 
     if (!response.ok) {
       const errorData = await response.json()
-      throw new Error(
-        errorData.error || 'Error checking if user is collaborator'
-      )
+      throw new Error(errorData.error || 'Error checking if user is collaborator')
     }
 
     const data = await response.json()

@@ -10,12 +10,9 @@ import { useEffect, useState } from 'react'
 export const Home = () => {
   const { user } = useAuth()
   const [itineraries, setItineraries] = useState<ItinerarySimpleType[]>([])
-  const [friendsItineraries, setFriendsItineraries] = useState<
-    ItinerarySimpleType[]
-  >([])
+  const [friendsItineraries, setFriendsItineraries] = useState<ItinerarySimpleType[]>([])
   const [loadingItineraries, setLoadingItineraries] = useState(true)
-  const [loadingFriendsItineraries, setLoadingFriendsItineraries] =
-    useState(true)
+  const [loadingFriendsItineraries, setLoadingFriendsItineraries] = useState(true)
   const [error, setError] = useState(false)
 
   useEffect(() => {
@@ -61,7 +58,7 @@ export const Home = () => {
       <div className='flex flex-col items-center w-full px-5 pb-8'>
         <h1 className='mb-4 text-4xl font-bold text-center md:text-5xl'>
           Planifica tus viajes <br className='hidden xxs:block' />
-          con <span className='text-emerald-500'>Tripify</span>
+          con <span className='text-emerald-500'>Travily</span>
         </h1>
         <h2 className='mb-6 text-lg text-center md:text-xl'>
           La red social para crear, compartir y descubrir itinerarios de viaje
@@ -69,9 +66,7 @@ export const Home = () => {
         <SearchInput />
       </div>
       <span className='flex flex-row items-center'>
-        <h2 className='text-xl font-medium md:text-2xl'>
-          Populares esta semana
-        </h2>
+        <h2 className='text-xl font-medium md:text-2xl'>Populares esta semana</h2>
         {loadingItineraries && <Loader color='teal' size='sm' ml='sm' />}
       </span>
       <div className='w-full mt-3 mb-8'>
@@ -147,12 +142,8 @@ export const Home = () => {
       {user && user.following > 0 && (
         <>
           <span className='flex flex-row items-center'>
-            <h2 className='text-xl font-medium md:text-2xl'>
-              Novedades de tus amigos
-            </h2>
-            {loadingFriendsItineraries && (
-              <Loader color='teal' size='sm' ml='sm' />
-            )}
+            <h2 className='text-xl font-medium md:text-2xl'>Novedades de tus amigos</h2>
+            {loadingFriendsItineraries && <Loader color='teal' size='sm' ml='sm' />}
           </span>
           <div className='w-full mt-3 mb-8'>
             {loadingFriendsItineraries ? (

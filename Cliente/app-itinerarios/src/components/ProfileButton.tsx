@@ -2,7 +2,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Avatar, Group, Text, UnstyledButton } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { SlArrowRight } from 'react-icons/sl'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { LoginModal } from './LoginModal'
 
 export const ProfileButton = () => {
@@ -34,7 +34,7 @@ export const ProfileButton = () => {
           wrap='nowrap'
           className='justify-between p-1 m-2 rounded-lg hover:bg-primary-foreground'
         >
-          <Avatar src={user?.avatar || '/images/avatar-placeholder.svg'} />
+          <Avatar src={user?.avatar || '/images/placeholder/avatar-placeholder.svg'} />
 
           <div className='flex-1'>
             <Text size='sm' fw={500}>

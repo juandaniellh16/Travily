@@ -1,7 +1,7 @@
 import { useAuth } from '@/hooks/useAuth'
 import { UserWithFollowStatus } from '@/types'
 import { Avatar } from '@mantine/core'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { FollowButton } from './FollowButton'
 
 interface UsersListProps {
@@ -22,7 +22,7 @@ export const UsersList = ({ users, handleFollow }: UsersListProps) => {
           <Link to={`/${user?.username}`}>
             <div className='flex items-center'>
               <Avatar
-                src={user.avatar || '/images/avatar-placeholder.svg'}
+                src={user.avatar || '/images/placeholder/avatar-placeholder.svg'}
                 mr='xs'
                 className='!size-[40px] sm:!size-[45px]'
               />
@@ -32,9 +32,7 @@ export const UsersList = ({ users, handleFollow }: UsersListProps) => {
               </div>
             </div>
           </Link>
-          {authUser?.id != user.id && (
-            <FollowButton user={user} handleFollow={handleFollow} />
-          )}
+          {authUser?.id != user.id && <FollowButton user={user} handleFollow={handleFollow} />}
         </li>
       ))}
     </ul>

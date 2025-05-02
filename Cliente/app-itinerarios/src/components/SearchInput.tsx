@@ -1,23 +1,26 @@
 import { searchService } from '@/services/searchService'
-import {
-  ActionIcon,
-  Combobox,
-  ScrollArea,
-  TextInput,
-  useCombobox
-} from '@mantine/core'
+import { Suggestion } from '@/types'
+import { getLocationSubtitle, getLocationTitle } from '@/utils'
+import { ActionIcon, Avatar, Combobox, ScrollArea, TextInput, useCombobox } from '@mantine/core'
+import { useDebouncedValue } from '@mantine/hooks'
 import { useEffect, useRef, useState } from 'react'
 import { CiSearch } from 'react-icons/ci'
-import { FaMapPin, FaUser } from 'react-icons/fa'
+import { FaLocationDot } from 'react-icons/fa6'
 import { GoArrowRight } from 'react-icons/go'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router'
 
-export const SearchInput = ({ defaultValue }: { defaultValue?: string }) => {
+export const SearchInput = ({
+  defaultValue,
+  onlyFriends = false
+}: {
+  defaultValue?: string
+  onlyFriends?: boolean
+}) => {
   const navigate = useNavigate()
+  const location = useLocation()
   const [query, setQuery] = useState(defaultValue || '')
-  const [suggestions, setSuggestions] = useState<
-    { type: 'location' | 'user'; name: string }[]
-  >([])
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([])
+  const [debounced] = useDebouncedValue(query, 200)
 
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption()
@@ -28,10 +31,16 @@ export const SearchInput = ({ defaultValue }: { defaultValue?: string }) => {
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (document.activeElement != inputRef.current) return
-      if (query.length < 2) return setSuggestions([])
+      if (debounced.length < 2) {
+        setSuggestions([])
+        return
+      }
 
       try {
-        const results = await searchService.getSuggestions(query)
+        const results = await searchService.getSuggestions({
+          query,
+          lang: 'es'
+        })
         setSuggestions(results)
         combobox.openDropdown()
       } catch {
@@ -41,11 +50,15 @@ export const SearchInput = ({ defaultValue }: { defaultValue?: string }) => {
 
     fetchSuggestions()
     // eslint-disable-next-line
-  }, [query])
+  }, [debounced])
 
   const handleSearch = (suggestedQuery?: string) => {
     const localQuery = suggestedQuery || query.trim()
     if (!localQuery) return
+
+    if (suggestedQuery) {
+      setQuery(suggestedQuery)
+    }
 
     const foundSuggestion = suggestions.find(
       (item) => item.name.toLowerCase() === localQuery.toLowerCase()
@@ -58,7 +71,9 @@ export const SearchInput = ({ defaultValue }: { defaultValue?: string }) => {
     } else {
       const searchQuery = encodeURIComponent(localQuery)
       const searchType = 'itinerary'
-      navigate(`/search?q=${searchQuery}&type=${searchType}`)
+      navigate(
+        `/search?q=${searchQuery}&type=${searchType}${onlyFriends ? '&onlyFriends=true' : ''}`
+      )
     }
     combobox.closeDropdown()
     inputRef.current?.blur()
@@ -99,39 +114,59 @@ export const SearchInput = ({ defaultValue }: { defaultValue?: string }) => {
 
         {suggestions.length > 0 && (
           <Combobox.Dropdown>
-            <ScrollArea.Autosize type='scroll' mah={200}>
+            <ScrollArea.Autosize type='scroll' mah={400}>
               <Combobox.Options>
                 {/* Grupo de Localizaciones */}
-                {suggestions.some((item) => item.type === 'location') && (
-                  <Combobox.Group label='Localizaciones'>
-                    {suggestions
-                      .filter((item) => item.type === 'location')
-                      .map((item) => (
-                        <Combobox.Option key={item.name} value={item.name}>
-                          <span className='flex items-center gap-2'>
-                            <FaMapPin size={16} color='red' />
-                            {item.name}
-                          </span>
-                        </Combobox.Option>
-                      ))}
-                  </Combobox.Group>
-                )}
+                {!location.search.includes('type=user') &&
+                  suggestions.some((item) => item.type === 'location') && (
+                    <Combobox.Group label='Localizaciones'>
+                      {suggestions
+                        .filter((item) => item.type === 'location')
+                        .slice(0, 3)
+                        .map((item) => (
+                          <Combobox.Option
+                            key={item.geonameId}
+                            value={`${getLocationTitle(item)}${
+                              getLocationSubtitle(item) ? `, ${getLocationSubtitle(item)}` : ''
+                            }`}
+                          >
+                            <span className='flex items-center gap-2'>
+                              <div className='flex items-center justify-center w-6 h-6 rounded-full'>
+                                <FaLocationDot size={20} color='red' />
+                              </div>
+                              <span className='flex flex-col'>
+                                <span className='font-bold'>{getLocationTitle(item)}</span>
+                                <span className='text-sm text-gray-500'>
+                                  {getLocationSubtitle(item)}
+                                </span>
+                              </span>
+                            </span>
+                          </Combobox.Option>
+                        ))}
+                    </Combobox.Group>
+                  )}
 
                 {/* Grupo de Usuarios */}
-                {suggestions.some((item) => item.type === 'user') && (
-                  <Combobox.Group label='Usuarios'>
-                    {suggestions
-                      .filter((item) => item.type === 'user')
-                      .map((item) => (
-                        <Combobox.Option key={item.name} value={item.name}>
-                          <span className='flex items-center gap-2'>
-                            <FaUser size={16} />
-                            {item.name}
-                          </span>
-                        </Combobox.Option>
-                      ))}
-                  </Combobox.Group>
-                )}
+                {!location.search.includes('type=itinerary') &&
+                  suggestions.some((item) => item.type === 'user') && (
+                    <Combobox.Group label='Usuarios'>
+                      {suggestions
+                        .filter((item) => item.type === 'user')
+                        .map((item) => (
+                          <Combobox.Option key={item.id} value={item.name}>
+                            <span className='flex items-center gap-2'>
+                              <div className='flex items-center justify-center w-6 h-6 rounded-full'>
+                                <Avatar
+                                  src={item.avatar || '/images/placeholder/avatar-placeholder.svg'}
+                                  size={24}
+                                />
+                              </div>
+                              {item.name}
+                            </span>
+                          </Combobox.Option>
+                        ))}
+                    </Combobox.Group>
+                  )}
               </Combobox.Options>
             </ScrollArea.Autosize>
           </Combobox.Dropdown>

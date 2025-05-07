@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 export const PORT = process.env.PORT || 3000
-export const API_BASE_URL = process.env.API_BASE_URL || `http://localhost:${PORT}`
+export const API_BASE_URL = process.env.API_BASE_URL
 
 const DEFAULT_CONFIG = {
   host: 'localhost',
@@ -12,6 +12,8 @@ const DEFAULT_CONFIG = {
   password: 'root',
   database: 'itineraries_db'
 }
+
+export const FRONTEND_URL = process.env.FRONTEND_URL
 
 export const DATABASE_URL = process.env.DATABASE_URL ?? DEFAULT_CONFIG
 export const JWT_SECRET = process.env.JWT_SECRET

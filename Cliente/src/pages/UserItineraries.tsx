@@ -165,6 +165,7 @@ export const UserItineraries = () => {
         </div>
       )}
       <div className='w-full mt-5 mb-8'>
+        {deleteError && <p className='mb-2 text-center text-red-500'>{deleteError}</p>}
         {loadingItineraries ? (
           <div className='flex items-center justify-center w-full my-[25%]'>
             <Loader color='teal' />

@@ -244,6 +244,7 @@ export const Profile = () => {
             withItemsBorders={false}
           />
         </div>
+        {error && <p className='mb-2 text-center text-red-500'>{error}</p>}
         <div className='flex items-center justify-between my-4'>
           <h2 className='text-xl font-medium'>{activeTab}</h2>
           <Link

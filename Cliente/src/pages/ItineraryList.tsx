@@ -398,6 +398,8 @@ export const ItineraryList = () => {
           </div>
         </div>
       </div>
+      {error && <p className='mb-2 text-center text-red-500'>{error}</p>}
+      {deleteError && <p className='mb-2 text-center text-red-500'>{deleteError}</p>}
       <div className='w-full mt-5 mb-8'>
         <ItinerariesList
           itineraries={listData.itineraries}

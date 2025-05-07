@@ -3,7 +3,7 @@ import { userService } from '@/services/userService'
 import { ItineraryListType, UserPublic } from '@/types'
 import { ActionIcon, Loader } from '@mantine/core'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { NotFound } from './NotFound'
 import { IoIosArrowBack } from 'react-icons/io'
 import { itineraryListService } from '@/services/itineraryListService'
@@ -13,7 +13,6 @@ import { FiPlus } from 'react-icons/fi'
 export const UserItineraryLists = () => {
   const { user: authUser } = useAuth()
   const { username } = useParams()
-  const navigate = useNavigate()
   const [profileUser, setProfileUser] = useState<UserPublic | null>(null)
   const [itineraryLists, setItineraryLists] = useState<ItineraryListType[]>([])
   const [loadingItineraryLists, setLoadingItineraryLists] = useState(true)
@@ -144,6 +143,7 @@ export const UserItineraryLists = () => {
         </div>
       )}
       <div className='w-full mt-5 mb-8'>
+        {deleteError && <p className='mb-2 text-center text-red-500'>{deleteError}</p>}
         {loadingItineraryLists ? (
           <div className='flex items-center justify-center w-full my-[25%]'>
             <Loader color='teal' />

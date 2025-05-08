@@ -75,12 +75,14 @@ export class AuthController {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+          domain: process.env.NODE_ENV === 'production' ? '.travily.net' : undefined,
           maxAge: 1000 * 60 * 60
         })
         .cookie('refresh_token', refreshToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+          domain: process.env.NODE_ENV === 'production' ? '.travily.net' : undefined,
           path: '/auth/refresh-token',
           maxAge: 1000 * 60 * 60 * 24 * 7
         })
@@ -102,12 +104,14 @@ export class AuthController {
       .clearCookie('access_token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        domain: process.env.NODE_ENV === 'production' ? '.travily.net' : undefined
       })
       .clearCookie('refresh_token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        domain: process.env.NODE_ENV === 'production' ? '.travily.net' : undefined,
         path: '/auth/refresh-token'
       })
       .status(204)
@@ -133,6 +137,7 @@ export class AuthController {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+          domain: process.env.NODE_ENV === 'production' ? '.travily.net' : undefined,
           maxAge: 1000 * 60 * 60
         })
         .status(204)

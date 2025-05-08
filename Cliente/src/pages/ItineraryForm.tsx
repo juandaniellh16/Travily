@@ -1,4 +1,3 @@
-import { API_BASE_URL } from '@/config/config'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useAuth } from '@/hooks/useAuth'
@@ -33,7 +32,7 @@ export const ItineraryForm = () => {
         const formData = new FormData()
         formData.append('file', file)
 
-        const response = await fetch(`${API_BASE_URL}/upload/itinerary-image`, {
+        const response = await fetch(`/api/upload/itinerary-image`, {
           method: 'POST',
           body: formData
         })

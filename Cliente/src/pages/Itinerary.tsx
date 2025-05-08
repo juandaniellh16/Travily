@@ -26,7 +26,6 @@ import { FaGripVertical, FaUsers } from 'react-icons/fa6'
 import { MdEdit, MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 import { IoTrashOutline } from 'react-icons/io5'
 import { HiOutlineDotsVertical } from 'react-icons/hi'
-import { API_BASE_URL } from '@/config/config'
 import { io, Socket } from 'socket.io-client'
 import { useDisclosure } from '@mantine/hooks'
 import {
@@ -177,7 +176,7 @@ export const Itinerary = () => {
         const formData = new FormData()
         formData.append('file', file)
 
-        const response = await fetch(`${API_BASE_URL}/upload/itinerary-image`, {
+        const response = await fetch(`/api/upload/itinerary-image`, {
           method: 'POST',
           body: formData
         })
@@ -283,7 +282,7 @@ export const Itinerary = () => {
         const formData = new FormData()
         formData.append('file', file)
 
-        const response = await fetch(`${API_BASE_URL}/upload/event-image`, {
+        const response = await fetch(`/api/upload/event-image`, {
           method: 'POST',
           body: formData
         })
@@ -410,7 +409,7 @@ export const Itinerary = () => {
   useEffect(() => {
     // Si es colaborador, establecer conexión al WebSocket
     if (isCollaborator && itineraryId) {
-      socketRef.current = io(API_BASE_URL)
+      socketRef.current = io('/api/')
 
       // Unirse a la sala del itinerario y esperar confirmación antes de cargar datos
       socketRef.current.emit('join-itinerary', itineraryId)

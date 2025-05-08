@@ -1,4 +1,3 @@
-import { API_BASE_URL } from '@/config/config'
 import { fetchWithAuth } from './fetchWithAuth'
 import { ItineraryType, LocationType } from '@/types'
 
@@ -69,7 +68,7 @@ export const itineraryService = {
   },
 
   getById: async (itineraryId: string) => {
-    const response = await fetch(`${API_BASE_URL}/itineraries/${itineraryId}`, {
+    const response = await fetch(`/api/itineraries/${itineraryId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'

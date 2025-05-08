@@ -85,7 +85,7 @@ export const ItineraryList = () => {
     if (file) {
       try {
         const formData = new FormData()
-        const fileName = `${authUser?.username}-${Date.now()}.${file.name.split('.').pop()}`
+        const fileName = `${authUser?.username}-${Date.now()}`
         const customFile = new File([file], fileName, { type: file.type })
         formData.append('file', customFile)
 

@@ -175,7 +175,7 @@ export const Itinerary = () => {
     if (file) {
       try {
         const formData = new FormData()
-        const fileName = `${user?.username}-${Date.now()}.${file.name.split('.').pop()}`
+        const fileName = `${user?.username}-${Date.now()}`
         const customFile = new File([file], fileName, { type: file.type })
         formData.append('file', customFile)
 
@@ -283,7 +283,7 @@ export const Itinerary = () => {
     if (file) {
       try {
         const formData = new FormData()
-        const fileName = `${user?.username}-${Date.now()}.${file.name.split('.').pop()}`
+        const fileName = `${user?.username}-${Date.now()}`
         const customFile = new File([file], fileName, { type: file.type })
         formData.append('file', customFile)
 

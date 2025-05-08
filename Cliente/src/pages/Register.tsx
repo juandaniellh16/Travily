@@ -50,7 +50,7 @@ export const Register = () => {
       let avatarUrl = avatar
       if (avatarFile) {
         const formData = new FormData()
-        const fileName = `${username}-${Date.now()}.${avatarFile.name.split('.').pop()}`
+        const fileName = `${username}-${Date.now()}`
         const customFile = new File([avatarFile], fileName, { type: avatarFile.type })
         formData.append('file', customFile)
         const response = await fetch(`${API_BASE_URL}/upload/avatar`, {

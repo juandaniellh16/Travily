@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '@/config/config'
+
 export const authService = {
   register: async (
     name: string,
@@ -6,7 +8,7 @@ export const authService = {
     password: string,
     avatar: string | null
   ) => {
-    const response = await fetch(`/api/auth/register`, {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, username, email, password, avatar })
@@ -19,7 +21,7 @@ export const authService = {
   },
 
   login: async (usernameOrEmail: string, password: string) => {
-    const response = await fetch(`/api/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -35,7 +37,7 @@ export const authService = {
   },
 
   logout: async () => {
-    const response = await fetch(`/api/auth/logout`, {
+    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
       method: 'POST',
       credentials: 'include'
     })

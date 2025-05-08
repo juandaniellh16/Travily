@@ -1,13 +1,14 @@
+import { API_BASE_URL } from '@/config/config'
 import { authService } from './authService'
 
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-  const response = await fetch(`/api/${url}`, {
+  const response = await fetch(`${API_BASE_URL}${url}`, {
     ...options,
     credentials: 'include'
   })
 
   if (response.status === 401) {
-    const refreshResponse = await fetch('/api/auth/refresh-token', {
+    const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
       method: 'POST',
       credentials: 'include'
     })
@@ -19,7 +20,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
       throw new Error('Refresh token error')
     }
 
-    return fetch(`/api/${url}`, {
+    return fetch(`${API_BASE_URL}${url}`, {
       ...options,
       credentials: 'include'
     })

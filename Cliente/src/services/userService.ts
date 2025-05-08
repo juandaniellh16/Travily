@@ -1,9 +1,10 @@
+import { API_BASE_URL } from '@/config/config'
 import { fetchWithAuth } from './fetchWithAuth'
 import { UserUpdate } from '@/types'
 
 export const userService = {
   getAll: async (params: { name?: string; username?: string; limit?: number }) => {
-    let queryString = `/api/users`
+    let queryString = `${API_BASE_URL}/users`
     const queryParams = new URLSearchParams()
 
     if (params.name) {

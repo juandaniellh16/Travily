@@ -1,13 +1,18 @@
+import { API_BASE_URL } from '@/config/config'
+
 export const searchService = {
   getLocationSuggestions: async ({ query, lang }: { query: string; lang?: string }) => {
     const detectedLang = lang || navigator.language?.split('-')[0] || 'es'
 
-    const response = await fetch(`/api/search/locations?query=${query}&lang=${detectedLang}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
+    const response = await fetch(
+      `${API_BASE_URL}/search/locations?query=${query}&lang=${detectedLang}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       }
-    })
+    )
 
     if (!response.ok) {
       const errorData = await response.json()
@@ -18,7 +23,7 @@ export const searchService = {
   },
 
   getUserSuggestions: async ({ query }: { query: string }) => {
-    const response = await fetch(`/api/search/users?query=${query}`, {
+    const response = await fetch(`${API_BASE_URL}/search/users?query=${query}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'

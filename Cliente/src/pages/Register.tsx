@@ -11,6 +11,7 @@ import {
   Text,
   Loader
 } from '@mantine/core'
+import { API_BASE_URL } from '@/config/config'
 import { defaultAvatars } from '@/utils'
 
 export const Register = () => {
@@ -37,7 +38,7 @@ export const Register = () => {
         const formData = new FormData()
         formData.append('file', file)
 
-        const response = await fetch(`/api/upload/avatar`, {
+        const response = await fetch(`${API_BASE_URL}/upload/avatar`, {
           method: 'POST',
           body: formData
         })

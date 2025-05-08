@@ -35,7 +35,6 @@ app.use('/lists', createItineraryListsRouter({ itineraryListModel: ItineraryList
 app.use('/search', createSearchRouter({ searchModel: SearchModel }))
 
 app.use('/upload', uploadRouter)
-app.use('/uploads', express.static('src/uploads'))
 
 app.use(errorHandler)
 

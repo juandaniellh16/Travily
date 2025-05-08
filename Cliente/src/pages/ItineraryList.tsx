@@ -85,7 +85,9 @@ export const ItineraryList = () => {
     if (file) {
       try {
         const formData = new FormData()
-        formData.append('file', file)
+        const fileName = `${authUser?.username}-${Date.now()}.${file.name.split('.').pop()}`
+        const customFile = new File([file], fileName, { type: file.type })
+        formData.append('file', customFile)
 
         const response = await fetch(`${API_BASE_URL}/upload/list-image`, {
           method: 'POST',

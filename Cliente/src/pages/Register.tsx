@@ -23,6 +23,7 @@ export const Register = () => {
   const [password, setPassword] = useState('')
   const [email, setEmail] = useState('')
   const [avatar, setAvatar] = useState<string | null>(null)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -32,24 +33,11 @@ export const Register = () => {
     }
   }, [user])
 
-  const handleAvatarChange = async (file: File | null) => {
+  const handleAvatarChange = (file: File | null) => {
     if (file) {
-      try {
-        const formData = new FormData()
-        formData.append('file', file)
-
-        const response = await fetch(`${API_BASE_URL}/upload/avatar`, {
-          method: 'POST',
-          body: formData
-        })
-
-        const data = await response.json()
-        if (data.avatarUrl) {
-          setAvatar(data.avatarUrl)
-        }
-      } catch {
-        setError('Failed to upload avatar')
-      }
+      const previewUrl = URL.createObjectURL(file)
+      setAvatar(previewUrl)
+      setAvatarFile(file)
     }
   }
 
@@ -59,7 +47,21 @@ export const Register = () => {
     setLoading(true)
 
     try {
-      await register(name, username, email, password, avatar)
+      let avatarUrl = avatar
+      if (avatarFile) {
+        const formData = new FormData()
+        const fileName = `${username}-${Date.now()}.${avatarFile.name.split('.').pop()}`
+        const customFile = new File([avatarFile], fileName, { type: avatarFile.type })
+        formData.append('file', customFile)
+        const response = await fetch(`${API_BASE_URL}/upload/avatar`, {
+          method: 'POST',
+          body: formData
+        })
+        const data = await response.json()
+        avatarUrl = data.avatarUrl
+      }
+
+      await register(name, username, email, password, avatarUrl)
       navigate(location.state?.from?.pathname || '/')
     } catch (error) {
       setLoading(false)

@@ -13,30 +13,16 @@ export const ItineraryListForm = () => {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [image, setImage] = useState<string | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [isPublic, setIsPublic] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleImageChange = async (file: File | null) => {
+  const handleImageChange = (file: File | null) => {
     if (file) {
-      try {
-        const formData = new FormData()
-        formData.append('file', file)
-
-        const response = await fetch(`${API_BASE_URL}/upload/list-image`, {
-          method: 'POST',
-          body: formData
-        })
-
-        const data = await response.json()
-        if (data.listImageUrl) {
-          setImage(data.listImageUrl)
-        }
-      } catch {
-        setError('Failed to upload image')
-      }
-    } else {
-      setImage(null)
+      const previewUrl = URL.createObjectURL(file)
+      setImage(previewUrl)
+      setImageFile(file)
     }
   }
 
@@ -48,10 +34,25 @@ export const ItineraryListForm = () => {
     try {
       if (user) {
         const userId = user.id
+
+        let imageUrl = image
+        if (imageFile) {
+          const formData = new FormData()
+          const fileName = `${user.username}-${Date.now()}.${imageFile.name.split('.').pop()}`
+          const customFile = new File([imageFile], fileName, { type: imageFile.type })
+          formData.append('file', customFile)
+          const response = await fetch(`${API_BASE_URL}/upload/list-image`, {
+            method: 'POST',
+            body: formData
+          })
+          const data = await response.json()
+          imageUrl = data.imageUrl
+        }
+
         const relativePath = await itineraryListService.create(
           title,
           description,
-          image,
+          imageUrl,
           isPublic,
           userId
         )

@@ -1,29 +1,28 @@
 import multer from 'multer'
-import fs from 'fs'
+import { CloudinaryStorage } from 'multer-storage-cloudinary'
+import cloudinary from '../../config/cloudinary.js'
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    let uploadDir = 'src/uploads/others'
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: (req, file) => {
+    let folder = 'others'
 
     if (req.url.includes('/avatar')) {
-      uploadDir = 'src/uploads/avatars'
+      folder = 'avatars'
     } else if (req.url.includes('/itinerary-image')) {
-      uploadDir = 'src/uploads/itineraries'
+      folder = 'itineraries'
     } else if (req.url.includes('/event-image')) {
-      uploadDir = 'src/uploads/events'
+      folder = 'events'
     } else if (req.url.includes('/list-image')) {
-      uploadDir = 'src/uploads/lists'
+      folder = 'lists'
     }
 
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true })
+    return {
+      folder: folder,
+      allowed_formats: ['jpg', 'jpeg', 'png'],
+      transformation: [{ width: 500, height: 500, crop: 'limit' }],
+      public_id: file.originalname
     }
-
-    cb(null, uploadDir)
-  },
-  filename: (req, file, cb) => {
-    const filename = `${Date.now()}-${file.originalname}`
-    cb(null, filename)
   }
 })
 

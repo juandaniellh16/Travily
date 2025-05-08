@@ -175,7 +175,9 @@ export const Itinerary = () => {
     if (file) {
       try {
         const formData = new FormData()
-        formData.append('file', file)
+        const fileName = `${user?.username}-${Date.now()}.${file.name.split('.').pop()}`
+        const customFile = new File([file], fileName, { type: file.type })
+        formData.append('file', customFile)
 
         const response = await fetch(`${API_BASE_URL}/upload/itinerary-image`, {
           method: 'POST',
@@ -281,7 +283,9 @@ export const Itinerary = () => {
     if (file) {
       try {
         const formData = new FormData()
-        formData.append('file', file)
+        const fileName = `${user?.username}-${Date.now()}.${file.name.split('.').pop()}`
+        const customFile = new File([file], fileName, { type: file.type })
+        formData.append('file', customFile)
 
         const response = await fetch(`${API_BASE_URL}/upload/event-image`, {
           method: 'POST',

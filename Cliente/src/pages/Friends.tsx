@@ -91,14 +91,14 @@ export const Friends = () => {
   }
 
   return (
-    <div className='flex flex-col justify-center px-8'>
+    <div className='flex flex-col justify-center'>
       <div className='flex items-center justify-between mb-5'>
-        <h2 className='text-xl font-medium md:text-2xl w-[75%]'>
+        <h2 className='text-xl font-semibold md:text-2xl w-[75%]'>
           Itinerarios recientes de tus amigos
         </h2>
         <Link to={`/friends/itineraries`} className='text-sm font-medium text-brand-600'>
           <div className='flex items-center gap-0.5 leading-none pt-0.5'>
-            <span>Ver todos</span>
+            <span className='whitespace-nowrap'>Ver todos</span>
             <IoIosArrowForward size={14} strokeWidth={2} />
           </div>
         </Link>
@@ -113,10 +113,12 @@ export const Friends = () => {
         )}
       </div>
       <div className='flex items-center justify-between mt-8 mb-5'>
-        <h2 className='text-xl font-medium md:text-2xl w-[75%]'>Listas recientes de tus amigos</h2>
+        <h2 className='text-xl font-semibold md:text-2xl w-[75%]'>
+          Listas recientes de tus amigos
+        </h2>
         <Link to={`/friends/lists`} className='text-sm font-medium text-brand-600'>
           <div className='flex items-center gap-0.5 leading-none pt-0.5'>
-            <span>Ver todas</span>
+            <span className='whitespace-nowrap'>Ver todas</span>
             <IoIosArrowForward size={14} strokeWidth={2} />
           </div>
         </Link>
@@ -131,10 +133,10 @@ export const Friends = () => {
         )}
       </div>
       <div className='flex items-center justify-between mt-8 mb-5'>
-        <h2 className='text-xl font-medium md:text-2xl w-[75%]'>Conecta con otros usuarios</h2>
+        <h2 className='text-xl font-semibold md:text-2xl w-[75%]'>Conecta con otros usuarios</h2>
         <Link to={`/connect`} className='text-sm font-medium text-brand-600'>
           <div className='flex items-center gap-0.5 leading-none pt-0.5'>
-            <span>Ver todos</span>
+            <span className='whitespace-nowrap'>Ver todos</span>
             <IoIosArrowForward size={14} strokeWidth={2} />
           </div>
         </Link>

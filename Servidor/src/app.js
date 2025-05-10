@@ -18,6 +18,7 @@ import { PORT } from '../config/config.js'
 import http from 'http'
 import { initializeWebSocket } from './websocket/websocket.js'
 import { errorHandler } from './middlewares/errorHandler.js'
+import { verifyOrigin } from './middlewares/verifyOrigin.js'
 
 const app = express()
 const server = http.createServer(app)
@@ -26,6 +27,7 @@ app.disable('x-powered-by')
 app.use(corsMiddleware())
 app.use(json())
 app.use(cookieParser())
+app.use(verifyOrigin)
 app.use(auth)
 
 app.use('/auth', createAuthRouter({ userModel: UserModel }))

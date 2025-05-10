@@ -69,37 +69,37 @@ INSERT INTO itinerary_days (itinerary_id, label, day_number) VALUES
   ((SELECT id FROM itineraries WHERE title = 'Viaje a Roma con amigos'), 'Día 3 - Miércoles 3 de abril', 3),
   
   -- Viaje a Escocia con la familia
-  ((SELECT id FROM itineraries WHERE title = 'Viaje a Escocia con la familia'), 'Día 4 - Jueves 4 de abril', 1),
-  ((SELECT id FROM itineraries WHERE title = 'Viaje a Escocia con la familia'), 'Día 5 - Viernes 5 de abril', 2),
-  ((SELECT id FROM itineraries WHERE title = 'Viaje a Escocia con la familia'), 'Día 6 - Sábado 6 de abril', 3),
+  ((SELECT id FROM itineraries WHERE title = 'Viaje a Escocia con la familia'), 'Día 1 - Jueves 4 de abril', 1),
+  ((SELECT id FROM itineraries WHERE title = 'Viaje a Escocia con la familia'), 'Día 2 - Viernes 5 de abril', 2),
+  ((SELECT id FROM itineraries WHERE title = 'Viaje a Escocia con la familia'), 'Día 3 - Sábado 6 de abril', 3),
   
   -- Fin de semana en Madrid
-  ((SELECT id FROM itineraries WHERE title = 'Fin de semana en Madrid'), 'Día 7 - Domingo 7 de abril', 1),
-  ((SELECT id FROM itineraries WHERE title = 'Fin de semana en Madrid'), 'Día 8 - Lunes 8 de abril', 2),
+  ((SELECT id FROM itineraries WHERE title = 'Fin de semana en Madrid'), 'Día 1 - Domingo 7 de abril', 1),
+  ((SELECT id FROM itineraries WHERE title = 'Fin de semana en Madrid'), 'Día 2 - Lunes 8 de abril', 2),
   
   -- Escapada a Londres
-  ((SELECT id FROM itineraries WHERE title = 'Escapada a Londres'), 'Día 10 - Martes 9 de abril', 1),
-  ((SELECT id FROM itineraries WHERE title = 'Escapada a Londres'), 'Día 11 - Miércoles 10 de abril', 2),
-  ((SELECT id FROM itineraries WHERE title = 'Escapada a Londres'), 'Día 12 - Jueves 11 de abril', 3),
+  ((SELECT id FROM itineraries WHERE title = 'Escapada a Londres'), 'Día 1 - Martes 9 de abril', 1),
+  ((SELECT id FROM itineraries WHERE title = 'Escapada a Londres'), 'Día 2 - Miércoles 10 de abril', 2),
+  ((SELECT id FROM itineraries WHERE title = 'Escapada a Londres'), 'Día 3 - Jueves 11 de abril', 3),
   
   -- París en primavera
-  ((SELECT id FROM itineraries WHERE title = 'París en primavera'), 'Día 13 - Viernes 12 de abril', 1),
-  ((SELECT id FROM itineraries WHERE title = 'París en primavera'), 'Día 14 - Sábado 13 de abril', 2),
+  ((SELECT id FROM itineraries WHERE title = 'París en primavera'), 'Día 1 - Viernes 12 de abril', 1),
+  ((SELECT id FROM itineraries WHERE title = 'París en primavera'), 'Día 2 - Sábado 13 de abril', 2),
   
   -- Explorando Tokio
-  ((SELECT id FROM itineraries WHERE title = 'Explorando Tokio'), 'Día 16 - Domingo 14 de abril', 1),
-  ((SELECT id FROM itineraries WHERE title = 'Explorando Tokio'), 'Día 17 - Lunes 15 de abril', 2),
+  ((SELECT id FROM itineraries WHERE title = 'Explorando Tokio'), 'Día 1 - Domingo 14 de abril', 1),
+  ((SELECT id FROM itineraries WHERE title = 'Explorando Tokio'), 'Día 2 - Lunes 15 de abril', 2),
   
   -- Navidad en Nueva York
-  ((SELECT id FROM itineraries WHERE title = 'Navidad en Nueva York'), 'Día 19 - Martes 16 de abril', 1),
-  ((SELECT id FROM itineraries WHERE title = 'Navidad en Nueva York'), 'Día 20 - Miércoles 17 de abril', 2),
+  ((SELECT id FROM itineraries WHERE title = 'Navidad en Nueva York'), 'Día 1 - Martes 16 de abril', 1),
+  ((SELECT id FROM itineraries WHERE title = 'Navidad en Nueva York'), 'Día 2 - Miércoles 17 de abril', 2),
   
   -- Descubriendo Praga
-  ((SELECT id FROM itineraries WHERE title = 'Descubriendo Praga'), 'Día 22 - Jueves 18 de abril', 1),
-  ((SELECT id FROM itineraries WHERE title = 'Descubriendo Praga'), 'Día 23 - Viernes 19 de abril', 2),
+  ((SELECT id FROM itineraries WHERE title = 'Descubriendo Praga'), 'Día 1 - Jueves 18 de abril', 1),
+  ((SELECT id FROM itineraries WHERE title = 'Descubriendo Praga'), 'Día 2 - Viernes 19 de abril', 2),
   
   -- Arte en Florencia
-  ((SELECT id FROM itineraries WHERE title = 'Arte en Florencia'), 'Día 24 - Sábado 20 de abril', 1);
+  ((SELECT id FROM itineraries WHERE title = 'Arte en Florencia'), 'Día 1 - Sábado 20 de abril', 1);
 
 INSERT INTO itinerary_events (day_id, order_index, label, description, category, image) VALUES
   -- Viaje a Roma con amigos

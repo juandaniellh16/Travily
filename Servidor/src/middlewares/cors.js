@@ -1,7 +1,10 @@
 import cors from 'cors'
 import { FRONTEND_URL } from '../../config/config.js'
 
-export const ACCEPTED_ORIGINS = [FRONTEND_URL, 'http://localhost:3000', 'http://localhost:5173']
+const DEV_ORIGINS = ['http://localhost:3000', 'http://localhost:5173']
+const PROD_ORIGINS = [FRONTEND_URL]
+
+export const ACCEPTED_ORIGINS = process.env.NODE_ENV === 'production' ? PROD_ORIGINS : DEV_ORIGINS
 
 export const corsMiddleware = ({ acceptedOrigins = ACCEPTED_ORIGINS } = {}) =>
   cors({

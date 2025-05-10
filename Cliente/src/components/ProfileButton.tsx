@@ -36,12 +36,11 @@ export const ProfileButton = () => {
         >
           <Avatar src={user?.avatar || '/images/placeholder/avatar-placeholder.svg'} />
 
-          <div className='flex-1'>
-            <Text size='sm' fw={500}>
+          <div className='flex-1 w-[60%] overflow-hidden'>
+            <Text truncate='end' size='sm' fw={500}>
               {user?.name ?? 'Anónimo'}
             </Text>
-
-            <Text c='dimmed' size='xs'>
+            <Text truncate='end' c={'dimmed'} size='xs'>
               {user?.username ? `@${user.username}` : '@'}
             </Text>
           </div>

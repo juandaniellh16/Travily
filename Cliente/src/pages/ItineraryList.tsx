@@ -11,6 +11,7 @@ import {
   Loader,
   Menu,
   Switch,
+  Text,
   Textarea,
   TextInput
 } from '@mantine/core'
@@ -215,7 +216,7 @@ export const ItineraryList = () => {
   if (!listData) {
     return (
       <div className='flex items-center justify-center w-full h-full my-[25%]'>
-        <Loader color='teal' />
+        <Loader color='brand' />
       </div>
     )
   }
@@ -287,7 +288,7 @@ export const ItineraryList = () => {
                     radius='xl'
                     size={26}
                     aria-label='Opciones'
-                    color='teal'
+                    color='brand'
                     className='self-start mt-2 ml-4 sm:self-center sm:mt-0'
                   >
                     <HiOutlineDotsVertical size={20} />
@@ -325,7 +326,7 @@ export const ItineraryList = () => {
 
                       <Switch
                         size='sm'
-                        color='teal'
+                        color='brand'
                         onLabel={<MdOutlineVisibility size={18} />}
                         offLabel={<MdOutlineVisibilityOff size={18} />}
                         label={isPublic ? 'Pública' : 'Privada'}
@@ -378,7 +379,7 @@ export const ItineraryList = () => {
             </p>
           )}
           <div className='flex items-center justify-between w-full mt-6'>
-            <div className='flex items-center'>
+            <div className='flex items-center w-[70%] overflow-hidden'>
               <Link to={`/${userData?.username}`}>
                 <Avatar
                   src={userData?.avatar || '/images/placeholder/avatar-placeholder.svg'}
@@ -386,10 +387,14 @@ export const ItineraryList = () => {
                   size={32}
                 />
               </Link>
-              <div className='leading-none'>
+              <div className='leading-none overflow-hidden'>
                 <Link to={`/${userData?.username}`}>
-                  <p className='text-xs font-medium'>{userData?.name}</p>
-                  <p className='text-xs text-gray-500'>@{userData?.username}</p>
+                  <Text truncate='end' className='!font-medium !text-xs'>
+                    {userData?.name}
+                  </Text>
+                  <Text truncate='end' className='!text-gray-500 !text-xs'>
+                    @{userData?.username}
+                  </Text>
                 </Link>
               </div>
             </div>

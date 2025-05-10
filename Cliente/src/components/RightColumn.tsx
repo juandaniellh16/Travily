@@ -49,7 +49,7 @@ export const RightColumn = () => {
       <ul className='w-full'>
         {suggestedUsers === null ? (
           <div className='flex items-center justify-center my-3'>
-            <Loader color='teal' size='sm' />
+            <Loader color='brand' size='sm' />
           </div>
         ) : suggestedUsers?.length === 0 ? (
           <p className='my-3 text-sm text-center text-gray-500'>No hay sugerencias</p>
@@ -59,24 +59,30 @@ export const RightColumn = () => {
               key={user.id}
               className='flex items-center justify-between gap-1 py-4 border-b last:border-b-0'
             >
-              <Link to={`/${user?.username}`}>
-                <div className='flex items-center'>
+              <div className='flex items-center overflow-hidden w-[75%]'>
+                <Link to={`/${user?.username}`}>
                   <Avatar
                     src={user.avatar || '/images/placeholder/avatar-placeholder.svg'}
                     mr='xs'
                     size={32}
                   />
-                  <div className='leading-none text-left'>
-                    <p className='mb-0.5 font-medium text-xs'>{user.name}</p>
-                    <p className='text-xs text-gray-500'>@{user.username}</p>
-                  </div>
+                </Link>
+                <div className='leading-none text-left overflow-hidden'>
+                  <Link to={`/${user?.username}`}>
+                    <Text truncate='end' className='mb-0.5 !font-medium !text-xs'>
+                      {user.name}
+                    </Text>
+                    <Text truncate='end' className='!text-gray-500 !text-xs'>
+                      @{user.username}
+                    </Text>
+                  </Link>
                 </div>
-              </Link>
+              </div>
               <ActionIcon
                 variant='subtle'
                 radius='xl'
                 size='md'
-                color={user.isFollowing ? 'red' : 'teal'}
+                color={user.isFollowing ? 'red' : 'brand'}
                 onClick={() => handleFollow(user.id, user.isFollowing)}
               >
                 {user.isFollowing ? <BiSolidUserX size={22} /> : <BiSolidUserPlus size={22} />}

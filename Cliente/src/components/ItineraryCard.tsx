@@ -65,8 +65,8 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
         </div>
 
         <Group justify='space-between'>
-          <div className='flex items-center'>
-            <Center>
+          <div className='flex items-center w-[75%] overflow-hidden'>
+            <Center className='overflow-hidden'>
               <Link to={`/${userData?.username}`}>
                 <Avatar
                   src={userData?.avatar || '/images/placeholder/avatar-placeholder.svg'}
@@ -74,10 +74,14 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
                   size={32}
                 />
               </Link>
-              <div className='leading-none'>
+              <div className='leading-none overflow-hidden'>
                 <Link to={`/${userData?.username}`}>
-                  <p className='text-xs font-medium'>{userData?.name}</p>
-                  <p className='text-xs text-gray-500'>@{userData?.username}</p>
+                  <Text truncate='end' className='!font-medium !text-xs'>
+                    {userData?.name}
+                  </Text>
+                  <Text truncate='end' className='!text-gray-500 !text-xs'>
+                    @{userData?.username}
+                  </Text>
                 </Link>
               </div>
             </Center>

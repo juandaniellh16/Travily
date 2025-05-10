@@ -6,9 +6,9 @@ export const FollowersFollowingTabs = () => {
   const navigate = useNavigate()
   const { username } = useParams()
 
-  const activeTab: 'Seguidores' | 'Siguiendo' = location.pathname.includes('following')
-    ? 'Siguiendo'
-    : 'Seguidores'
+  const activeTab: 'Siguiendo' | 'Seguidores' = location.pathname.includes('followers')
+    ? 'Seguidores'
+    : 'Siguiendo'
 
   return (
     <div className='sticky top-0 z-10 items-center justify-center w-full max-w-md gap-4 mx-auto'>
@@ -18,11 +18,11 @@ export const FollowersFollowingTabs = () => {
         size='sm'
         value={activeTab}
         onChange={(value) =>
-          navigate(value === 'Seguidores' ? `/${username}/followers` : `/${username}/following`, {
+          navigate(value === 'Siguiendo' ? `/${username}/following` : `/${username}/followers`, {
             state: { fromProfile: true }
           })
         }
-        data={['Seguidores', 'Siguiendo']}
+        data={['Siguiendo', 'Seguidores']}
         withItemsBorders={false}
       />
     </div>

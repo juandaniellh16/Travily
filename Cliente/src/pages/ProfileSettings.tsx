@@ -125,7 +125,7 @@ export const ProfileSettings = () => {
   if (!user) {
     return (
       <div className='flex items-center justify-center w-full h-full my-[25%]'>
-        <Loader color='teal' />
+        <Loader color='brand' />
       </div>
     )
   }
@@ -150,7 +150,7 @@ export const ProfileSettings = () => {
               <IoIosArrowBack
                 size={22}
                 strokeWidth={3}
-                className='text-gray-50 hover:text-emerald-300 pt-0.5'
+                className='text-gray-50 hover:text-brand-300 pt-0.5'
               />
             </button>
           )}
@@ -165,9 +165,7 @@ export const ProfileSettings = () => {
       <div className='flex items-center justify-center'>
         <div className='w-full max-w-sm'>
           {error && <p className='max-w-xs mx-auto mb-4 text-center text-red-500'>{error}</p>}
-          {success && (
-            <p className='max-w-xs mx-auto mb-4 text-center text-emerald-500'>{success}</p>
-          )}
+          {success && <p className='max-w-xs mx-auto mb-4 text-center text-brand-500'>{success}</p>}
           <form onSubmit={handleSubmit} className='mb-4'>
             <TextInput
               placeholder='Nombre'
@@ -261,7 +259,7 @@ export const ProfileSettings = () => {
               loading={loading}
               loaderProps={{ type: 'dots' }}
               fullWidth
-              color='teal'
+              color='brand'
               mt='lg'
             >
               Guardar cambios

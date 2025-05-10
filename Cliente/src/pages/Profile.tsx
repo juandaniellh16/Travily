@@ -5,8 +5,8 @@ import { ActiveTab } from '@/layouts/MainLayout'
 import { itineraryService } from '@/services/itineraryService'
 import { userService } from '@/services/userService'
 import { ItineraryListType, ItinerarySimpleType, UserWithFollowStatus } from '@/types'
-import { Button, Loader, Modal, ScrollArea, SegmentedControl } from '@mantine/core'
-import { useEffect, useRef, useState } from 'react'
+import { Button, Loader, Modal, SegmentedControl } from '@mantine/core'
+import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router'
 import { NotFound } from './NotFound'
 import { ItinerariesList } from '@/components/ItinerariesList'
@@ -28,8 +28,6 @@ export const Profile = () => {
   const [itineraries, setItineraries] = useState<ItinerarySimpleType[] | null>(null)
   const [favoriteItineraries, setFavoriteItineraries] = useState<ItinerarySimpleType[] | null>(null)
   const [itineraryLists, setItineraryLists] = useState<ItineraryListType[] | null>(null)
-  const scrollRef = useRef<HTMLDivElement | null>(null)
-  const scrollPosition = useRef(0)
   const [notFoundError, setNotFoundError] = useState(false)
   const [error, setError] = useState('')
 
@@ -59,7 +57,6 @@ export const Profile = () => {
     setTimeout(() => {
       setFollowers(null)
       setFollowing(null)
-      scrollPosition.current = 0
     }, 200)
   }, [username])
 
@@ -174,19 +171,13 @@ export const Profile = () => {
     fetchFollowingData()
   }, [userId, location.state?.fromProfile, location.pathname, username, navigate])
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollPosition.current
-    }
-  }, [followers, following, authUser])
-
   if (notFoundError) {
     return <NotFound from='profile' />
   }
   if (!userId || loadingProfile) {
     return (
       <div className='flex items-center justify-center w-full h-full my-[25%]'>
-        <Loader color='teal' />
+        <Loader color='brand' />
       </div>
     )
   }
@@ -198,26 +189,14 @@ export const Profile = () => {
         onClose={() => {
           setOpened(false)
           navigate(`/${username}`)
-          scrollPosition.current = 0
         }}
         size='md'
         centered
         radius='lg'
-        scrollAreaComponent={ScrollArea.Autosize.withProps({
-          scrollbars: false
-        })}
       >
         <div className='flex flex-col h-[70vh] px-2'>
           <FollowersFollowingTabs />
-          <div
-            ref={scrollRef}
-            className='overflow-y-auto h-[70vh] mt-5'
-            onScroll={() => {
-              if (scrollRef.current) {
-                scrollPosition.current = scrollRef.current.scrollTop
-              }
-            }}
-          >
+          <div className='overflow-y-auto h-[70vh] mt-5'>
             <Outlet
               context={{
                 followers,
@@ -255,7 +234,7 @@ export const Profile = () => {
                   ? `/${username}/favorites`
                   : `/${username}/lists`
             }
-            className='text-sm font-medium text-emerald-600'
+            className='text-sm font-medium text-brand-600'
           >
             <div className='flex items-center gap-0.5 leading-none'>
               <span className='pb-0.5'>Ver todos</span>
@@ -268,7 +247,7 @@ export const Profile = () => {
         (activeTab === 'Favoritos' && !favoriteItineraries) ||
         (activeTab === 'Listas' && !itineraryLists) ? (
           <div className='flex items-center justify-center h-[136px]'>
-            <Loader color='teal' />
+            <Loader color='brand' />
           </div>
         ) : activeTab === 'Listas' ? (
           itineraryLists?.length === 0 ? (
@@ -276,7 +255,7 @@ export const Profile = () => {
               <div className='flex items-center justify-center h-[136px]'>
                 <Button
                   variant='outline'
-                  color='teal'
+                  color='brand'
                   size='sm'
                   radius='sm'
                   className='text-nowrap'
@@ -307,7 +286,7 @@ export const Profile = () => {
               <div className='flex items-center justify-center h-[136px]'>
                 <Button
                   variant='outline'
-                  color='teal'
+                  color='brand'
                   size='sm'
                   radius='sm'
                   className='text-nowrap'
@@ -345,7 +324,7 @@ export const Profile = () => {
             <div className='flex items-center justify-center'>
               <Button
                 variant='outline'
-                color='teal'
+                color='brand'
                 size='sm'
                 radius='sm'
                 className='mt-5 text-nowrap'

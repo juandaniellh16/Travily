@@ -1,6 +1,6 @@
 import { useAuth } from '@/hooks/useAuth'
 import { UserWithFollowStatus } from '@/types'
-import { Button } from '@mantine/core'
+import { Button, Text } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useEffect, useRef, useState } from 'react'
 import { BiSolidUserX } from 'react-icons/bi'
@@ -75,7 +75,7 @@ export const FollowButton = ({ user, handleFollow }: FollowButtonProps) => {
           radius='xl'
           size='sm'
           variant={user.isFollowing ? 'outline' : 'filled'}
-          color='teal'
+          color='brand'
           className={`self-center text-nowrap border !py-1 !px-2 !text-[13px]
             ${
               user.isFollowing
@@ -111,9 +111,13 @@ export const FollowButton = ({ user, handleFollow }: FollowButtonProps) => {
               }}
             >
               <span className='flex items-center justify-between w-full'>
-                <div className='flex flex-col'>
+                <div className='flex flex-col w-[75%] overflow-hidden'>
                   <span>Dejar de seguir a</span>
-                  <span>@{user.username}</span>
+                  <span>
+                    <Text truncate='end' className='!text-sm'>
+                      @{user.username}
+                    </Text>
+                  </span>
                 </div>
                 <BiSolidUserX size={22} />
               </span>

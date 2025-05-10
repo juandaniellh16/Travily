@@ -1,7 +1,7 @@
 export const AboutUs = () => {
   return (
     <div className='max-w-4xl p-6 mx-auto text-gray-700'>
-      <h1 className='mb-6 text-3xl font-bold text-emerald-600'>Sobre Nosotros</h1>
+      <h1 className='mb-6 text-3xl font-bold text-brand-600'>Sobre Nosotros</h1>
 
       <section className='mb-6'>
         <h2 className='mb-3 text-2xl font-bold'>Nuestra Misión</h2>

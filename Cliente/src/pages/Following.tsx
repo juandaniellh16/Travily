@@ -32,7 +32,7 @@ export const Following = () => {
   if (following === null) {
     return (
       <div className='flex items-center justify-center w-full my-[25%]'>
-        <Loader color='teal' />
+        <Loader color='brand' />
       </div>
     )
   }

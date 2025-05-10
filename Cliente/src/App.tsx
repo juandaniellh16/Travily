@@ -24,12 +24,31 @@ import { PrivacyPolicy } from './pages/PrivacyPolicy'
 import { AboutUs } from './pages/AboutUs'
 import { ContactUs } from './pages/ContactUs'
 import ScrollToTop from './components/utils/ScrollToTop'
+import { Friends } from './pages/Friends'
+import { FriendsItineraries } from './pages/FriendsItineraries'
+import { FriendsLists } from './pages/FriendsLists'
 
 function App() {
   return (
     <MantineProvider
       defaultColorScheme='light'
       theme={{
+        primaryColor: 'brand',
+        primaryShade: 5,
+        colors: {
+          brand: [
+            '#e6fcf5', // 0
+            '#c3fae8', // 1
+            '#96f2d7', // 2
+            '#63e6be', // 3
+            '#38d9a9', // 4
+            '#20c997', // 5 ← principal
+            '#12b886', // 6
+            '#0ca678', // 7
+            '#099268', // 8
+            '#087f5b' // 9
+          ]
+        },
         breakpoints: {
           xxs: '30rem',
           xs: '35rem',
@@ -62,6 +81,15 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute />}>
             <Route path='/connect' element={<Connect />} />
+          </Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path='/friends' element={<Friends />} />
+          </Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path='/friends/itineraries' element={<FriendsItineraries />} />
+          </Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path='/friends/lists' element={<FriendsLists />} />
           </Route>
           <Route element={<ProtectedRoute />}>
             <Route path='/settings' element={<ProfileSettings />} />

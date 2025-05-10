@@ -90,7 +90,7 @@ export const SideBar = ({ activeTab, setActiveTab }: SideBarProps) => {
       <div className='flex justify-center w-full my-3'>
         <Button
           variant='filled'
-          color='teal'
+          color='brand'
           radius='xl'
           h={45}
           leftSection={<FaPlus size={12} />}

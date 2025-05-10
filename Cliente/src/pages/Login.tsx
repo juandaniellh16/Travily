@@ -57,7 +57,7 @@ export const Login = ({ onLoginSuccess }: { onLoginSuccess?: () => void }) => {
   if (isLoading || user) {
     return (
       <div className='flex items-center justify-center w-full h-full my-[25%]'>
-        <Loader color='teal' />
+        <Loader color='brand' />
       </div>
     )
   }
@@ -96,7 +96,7 @@ export const Login = ({ onLoginSuccess }: { onLoginSuccess?: () => void }) => {
             loading={loading}
             loaderProps={{ type: 'dots' }}
             fullWidth
-            color='teal'
+            color='brand'
             mt='xl'
           >
             Entrar

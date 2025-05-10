@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { itineraryService } from '@/services/itineraryService'
 import { userService } from '@/services/userService'
 import { ItinerarySimpleType, UserPublic } from '@/types'
-import { ActionIcon, Loader } from '@mantine/core'
+import { ActionIcon, Loader, Text } from '@mantine/core'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { NotFound } from './NotFound'
@@ -101,7 +101,7 @@ export const UserItineraries = () => {
         <div className='grid items-center grid-cols-3 gap-3 py-1.5 xxs:py-1 px-1 xxs:px-1.5 rounded-t-lg bg-[#12b886]'>
           <Link
             to={`/${profileUser.username}`}
-            className='group flex items-center xxs:gap-1.5 mr-auto'
+            className='group flex items-center xxs:gap-1.5 mr-auto w-[110%] overflow-hidden'
           >
             {window.innerWidth > 480 ? (
               <ActionIcon
@@ -120,14 +120,16 @@ export const UserItineraries = () => {
                   size={22}
                   strokeWidth={3}
                   transform='translate(-3, 0)'
-                  className='text-gray-50 group-hover:text-emerald-300 pt-0.5'
+                  className='text-gray-50 group-hover:text-brand-300 pt-0.5'
                 />
               </button>
             )}
-
-            <span className='text-sm leading-none xxs:text-md xs:text-lg text-gray-50 group-hover:text-emerald-300 xxs:group-hover:text-gray-50'>
+            <Text
+              truncate='end'
+              className='!text-sm !leading-tight xxs:!text-md xs:!text-lg !text-gray-50 xxs:group-hover:!text-gray-50 group-hover:!text-brand-300'
+            >
               {profileUser.username}
-            </span>
+            </Text>
           </Link>
           <div className='text-center'>
             <h2 className='text-lg font-semibold leading-none text-white xs:text-xl'>
@@ -157,7 +159,7 @@ export const UserItineraries = () => {
                 <FiPlus
                   size={22}
                   strokeWidth={3}
-                  className='text-gray-50 group-hover:text-emerald-300'
+                  className='text-gray-50 group-hover:text-brand-300'
                 />
               </button>
             )}
@@ -168,7 +170,7 @@ export const UserItineraries = () => {
         {deleteError && <p className='mb-2 text-center text-red-500'>{deleteError}</p>}
         {loadingItineraries ? (
           <div className='flex items-center justify-center w-full my-[25%]'>
-            <Loader color='teal' />
+            <Loader color='brand' />
           </div>
         ) : itineraries?.length === 0 ? (
           <div className='flex items-center justify-center my-[25%]'>

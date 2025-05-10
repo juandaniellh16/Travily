@@ -15,9 +15,9 @@ export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: str
           className={`inline-flex flex-col items-center justify-center px-5
             ${
               activeButton === 'home'
-                ? 'text-emerald-600 text-opacity-100'
-                : 'text-emerald-700 text-opacity-80'
-            } dark:text-gray-400 hover:text-opacity-100 hover:text-emerald-600 dark:hover:text-blue-500 group`}
+                ? 'text-brand-600 text-opacity-100'
+                : 'text-brand-700 text-opacity-80'
+            } dark:text-gray-400 hover:text-opacity-100 hover:text-brand-600 dark:hover:text-blue-500 group`}
           onClick={() => setActiveButton('home')}
         >
           {activeButton === 'home' ? (
@@ -51,9 +51,9 @@ export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: str
           className={`inline-flex flex-col items-center justify-center px-5  
             ${
               activeButton === 'search'
-                ? 'text-emerald-600 text-opacity-100'
-                : 'text-emerald-700 text-opacity-80'
-            } dark:text-gray-400 hover:text-opacity-100 hover:text-emerald-600 dark:hover:text-blue-500 group`}
+                ? 'text-brand-600 text-opacity-100'
+                : 'text-brand-700 text-opacity-80'
+            } dark:text-gray-400 hover:text-opacity-100 hover:text-brand-600 dark:hover:text-blue-500 group`}
           onClick={() => setActiveButton('search')}
         >
           {activeButton === 'search' ? (
@@ -113,49 +113,74 @@ export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: str
             </svg>
           </button>
         </div>
-        <Link
-          to='#'
+        <button
+          type='button'
           className={`inline-flex flex-col items-center justify-center px-5  
             ${
-              activeButton === 'notifications'
-                ? 'text-emerald-600 text-opacity-100'
-                : 'text-emerald-700 text-opacity-80'
-            } dark:text-gray-400 hover:text-opacity-100 hover:text-emerald-600 dark:hover:text-blue-500 group`}
-          onClick={() => setActiveButton('notifications')}
+              activeButton === 'friends'
+                ? 'text-brand-600 text-opacity-100'
+                : 'text-brand-700 text-opacity-80'
+            } dark:text-gray-400 hover:text-opacity-100 hover:text-brand-600 dark:hover:text-blue-500 group`}
+          onClick={() => {
+            if (user) {
+              setActiveButton('friends')
+              navigate(`/friends`)
+            } else {
+              setActiveButton('')
+              navigate('/login')
+            }
+          }}
         >
-          {activeButton === 'notifications' ? (
+          {activeButton === 'friends' ? (
             <svg
               className='w-8 h-8'
-              viewBox='0 0 24 24'
+              viewBox='-100.4 -100.4 780.80 780.80'
               fill='currentColor'
               xmlns='http://www.w3.org/2000/svg'
             >
-              <g transform='translate(3,2.5) scale(0.8)'>
-                <path d='M11.996 2c-4.062 0-7.49 3.021-7.999 7.051L2.866 18H7.1c.463 2.282 2.481 4 4.9 4s4.437-1.718 4.9-4h4.236l-1.143-8.958C19.48 5.017 16.054 2 11.996 2zM9.171 18h5.658c-.412 1.165-1.523 2-2.829 2s-2.417-.835-2.829-2z'></path>
+              <g
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                stroke='currentColor'
+                strokeWidth='51.2'
+              >
+                <path d='M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z'></path>
+              </g>
+              <g>
+                <path d='M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z'></path>
               </g>
             </svg>
           ) : (
             <svg
               className='w-8 h-8'
-              viewBox='0 0 24 24'
-              fill='currentColor'
+              viewBox='-100.4 -100.4 780.80 780.80'
+              fill='#ffffff'
+              stroke='currentColor'
               xmlns='http://www.w3.org/2000/svg'
             >
-              <g transform='translate(3,2.5) scale(0.8)'>
-                <path d='M19.993 9.042C19.48 5.017 16.054 2 11.996 2s-7.49 3.021-7.999 7.051L2.866 18H7.1c.463 2.282 2.481 4 4.9 4s4.437-1.718 4.9-4h4.236l-1.143-8.958zM12 20c-1.306 0-2.417-.835-2.829-2h5.658c-.412 1.165-1.523 2-2.829 2zm-6.866-4l.847-6.698C6.364 6.272 8.941 4 11.996 4s5.627 2.268 6.013 5.295L18.864 16H5.134z'></path>
+              <g
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                stroke='currentColor'
+                strokeWidth='78.08'
+              >
+                <path d='M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z'></path>
+              </g>
+              <g>
+                <path d='M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z'></path>
               </g>
             </svg>
           )}
-          <span className='text-xs'>Notificaciones</span>
-        </Link>
+          <span className='text-xs'>Amigos</span>
+        </button>
         <button
           type='button'
           className={`inline-flex flex-col items-center justify-center px-5  
             ${
               activeButton === 'profile'
-                ? 'text-emerald-600 text-opacity-100'
-                : 'text-emerald-700 text-opacity-80'
-            } dark:text-gray-400 hover:text-opacity-100 hover:text-emerald-600 dark:hover:text-blue-500 group`}
+                ? 'text-brand-600 text-opacity-100'
+                : 'text-brand-700 text-opacity-80'
+            } dark:text-gray-400 hover:text-opacity-100 hover:text-brand-600 dark:hover:text-blue-500 group`}
           onClick={() => {
             if (user) {
               setActiveButton('profile')

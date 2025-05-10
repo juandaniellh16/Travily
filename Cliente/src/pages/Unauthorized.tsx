@@ -5,7 +5,7 @@ export const Unauthorized = () => {
     <>
       <div className='w-full px-8 pt-5 pb-8 mx-auto lg:pb-16 lg:pt-[52px]'>
         <div className='max-w-lg mx-auto text-center'>
-          <h1 className='mb-4 font-extrabold tracking-tight text-8xl lg:text-9xl text-emerald-500'>
+          <h1 className='mb-4 font-extrabold tracking-tight text-8xl lg:text-9xl text-brand-500'>
             401
           </h1>
           <p className='mb-4 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl dark:text-white'>

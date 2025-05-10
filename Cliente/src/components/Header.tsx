@@ -1,9 +1,7 @@
 import { Link, useNavigate } from 'react-router'
-import { ColorSchemeToggle } from './ColorSchemeToggle'
-import { Avatar, Button, Menu } from '@mantine/core'
+import { ActionIcon, Avatar, Button, Menu } from '@mantine/core'
 import { useAuth } from '@/hooks/useAuth'
-import { NotificationBell } from './NotificationBell'
-import { FaUser } from 'react-icons/fa'
+import { FaUser, FaUsers } from 'react-icons/fa'
 import { IoSettingsSharp } from 'react-icons/io5'
 import { TbLogout } from 'react-icons/tb'
 
@@ -32,14 +30,25 @@ export const Header = () => {
         </Link>
         {!isLoading && (
           <div className='flex items-center gap-1.5 sm:gap-3'>
-            <div className='hidden sm:block'>
+            {/* <div className='hidden sm:block'>
               <ColorSchemeToggle />
-            </div>
+            </div> */}
             {user && (
               <>
-                <div className='hidden sm:block'>
+                {/* <div className='hidden sm:block'>
                   <NotificationBell />
-                </div>
+                </div> */}
+                <Link to='/friends' className='hidden sm:block'>
+                  <ActionIcon
+                    variant='light'
+                    size='lg'
+                    radius='md'
+                    aria-label='Amigos'
+                    color='brand.6'
+                  >
+                    <FaUsers size='23' />
+                  </ActionIcon>
+                </Link>
                 <Menu position='bottom-end' shadow='md' width={160} withArrow>
                   <Menu.Target>
                     <Avatar
@@ -68,7 +77,7 @@ export const Header = () => {
                     <Menu.Divider />
 
                     <Button
-                      color='teal'
+                      color='brand'
                       h={40}
                       onClick={handleLogout}
                       leftSection={<TbLogout size={15} />}
@@ -86,7 +95,7 @@ export const Header = () => {
                 <Link to='/login'>
                   <Button
                     variant='outline'
-                    color='teal'
+                    color='brand'
                     radius='xl'
                     className='text-nowrap !py-1 !px-3 !text-[13px] sm:!py-2 sm:!px-4 sm:!text-sm'
                   >
@@ -96,7 +105,7 @@ export const Header = () => {
                 <Link to='/register'>
                   <Button
                     variant='filled'
-                    color='teal'
+                    color='brand'
                     radius='xl'
                     className='text-nowrap !py-1 !px-3 !text-[13px] sm:!py-2 sm:!px-4 sm:!text-sm'
                   >

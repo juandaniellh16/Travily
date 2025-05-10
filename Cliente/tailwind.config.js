@@ -25,6 +25,18 @@ export default {
           DEFAULT: 'hsl(var(--popover))',
           foreground: 'hsl(var(--popover-foreground))'
         },
+        brand: {
+          50: '#e6fcf4', // Teal 50
+          100: '#b2f2bb', // Teal 100
+          200: '#66d9a3', // Teal 200
+          300: '#38d9a9', // Teal 300
+          400: '#20c997', // Teal 400
+          500: '#12b886', // Teal 500 (Main brand color)
+          600: '#0f9f76', // Teal 600
+          700: '#0a7d63', // Teal 700
+          800: '#065f4d', // Teal 800
+          900: '#044c39' // Teal 900
+        },
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))'

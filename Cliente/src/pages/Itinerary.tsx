@@ -787,7 +787,7 @@ export const Itinerary = () => {
   if (!itineraryData) {
     return (
       <div className='flex items-center justify-center w-full h-full my-[25%]'>
-        <Loader color='teal' />
+        <Loader color='brand' />
       </div>
     )
   }
@@ -874,7 +874,7 @@ export const Itinerary = () => {
                     radius='xl'
                     size={26}
                     aria-label='Opciones'
-                    color='teal'
+                    color='brand'
                     className='self-start mt-2 ml-4 sm:self-center sm:mt-0'
                   >
                     <HiOutlineDotsVertical size={20} />
@@ -932,7 +932,7 @@ export const Itinerary = () => {
                               }}
                             />
                             <Button
-                              color='teal'
+                              color='brand'
                               size='xs'
                               onClick={handleAddCollaborator}
                               leftSection={<FaUsers size={17} />}
@@ -945,7 +945,7 @@ export const Itinerary = () => {
 
                           <Switch
                             size='sm'
-                            color='teal'
+                            color='brand'
                             onLabel={<MdOutlineVisibility size={18} />}
                             offLabel={<MdOutlineVisibilityOff size={18} />}
                             label={isPublic ? 'Público' : 'Privado'}
@@ -1043,7 +1043,7 @@ export const Itinerary = () => {
             </p>
           )}
           <div className='flex items-center justify-between w-full mt-6'>
-            <div className='flex items-center'>
+            <div className='flex items-center w-[70%] overflow-hidden'>
               <Link to={`/${userData?.username}`}>
                 <Avatar
                   src={userData?.avatar || '/images/placeholder/avatar-placeholder.svg'}
@@ -1051,10 +1051,14 @@ export const Itinerary = () => {
                   size={32}
                 />
               </Link>
-              <div className='leading-none'>
+              <div className='leading-none overflow-hidden'>
                 <Link to={`/${userData?.username}`}>
-                  <p className='text-xs font-medium'>{userData?.name}</p>
-                  <p className='text-xs text-gray-500'>@{userData?.username}</p>
+                  <Text truncate='end' className='!font-medium !text-xs'>
+                    {userData?.name}
+                  </Text>
+                  <Text truncate='end' className='!text-gray-500 !text-xs'>
+                    @{userData?.username}
+                  </Text>
                 </Link>
               </div>
             </div>
@@ -1184,7 +1188,7 @@ export const Itinerary = () => {
                                         <div className='flex flex-col self-start justify-center h-[80px] sm:h-[100px] gap-1 ml-2 cursor-default'>
                                           <ActionIcon
                                             variant='light'
-                                            color='teal'
+                                            color='brand'
                                             size='lg'
                                             radius='xl'
                                             aria-label='Editar'
@@ -1221,7 +1225,7 @@ export const Itinerary = () => {
                       <div className='flex justify-center'>
                         <Button
                           variant='outline'
-                          color='teal'
+                          color='brand'
                           onClick={() => openAddEventModal(day.id)}
                         >
                           Añadir evento
@@ -1244,7 +1248,7 @@ export const Itinerary = () => {
         </Accordion>
         {isEditingItinerary && itineraryData.days.length < totalDays && (
           <div className='flex justify-center mt-4'>
-            <Button variant='outline' onClick={() => handleAddDay()} color='teal'>
+            <Button variant='outline' onClick={() => handleAddDay()} color='brand'>
               Añadir día
             </Button>
           </div>
@@ -1265,7 +1269,7 @@ export const Itinerary = () => {
           </Title>
           {!userLists ? (
             <div className='flex px-8 items-center justify-center w-full my-[25%]'>
-              <Loader color='teal' />
+              <Loader color='brand' />
             </div>
           ) : userLists.length === 0 ? (
             <div className='px-8'>
@@ -1273,7 +1277,7 @@ export const Itinerary = () => {
               <div className='flex items-center justify-center mt-10'>
                 <Button
                   variant='outline'
-                  color='teal'
+                  color='brand'
                   size='sm'
                   radius='sm'
                   className='text-nowrap'
@@ -1293,7 +1297,7 @@ export const Itinerary = () => {
                     key={list.id}
                     fullWidth
                     variant='light'
-                    color='teal'
+                    color='brand'
                     onClick={() => handleAddToList(list.id)}
                     className='mb-2'
                   >
@@ -1416,7 +1420,7 @@ export const Itinerary = () => {
                     </button>
                   )}
                 </div>
-                <Button type='submit' color='teal' fullWidth mt='lg'>
+                <Button type='submit' color='brand' fullWidth mt='lg'>
                   Guardar
                 </Button>
               </form>
@@ -1540,7 +1544,7 @@ export const Itinerary = () => {
                     </button>
                   )}
                 </div>
-                <Button type='submit' color='teal' fullWidth mt='lg'>
+                <Button type='submit' color='brand' fullWidth mt='lg'>
                   Guardar
                 </Button>
               </form>

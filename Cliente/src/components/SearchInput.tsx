@@ -99,7 +99,7 @@ export const SearchInput = ({
                   size={32}
                   radius='xl'
                   variant='filled'
-                  color='teal'
+                  color='brand'
                   onClick={() => handleSearch()}
                 >
                   <GoArrowRight size={18} strokeWidth={1.5} />

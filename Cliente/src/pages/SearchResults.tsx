@@ -95,7 +95,7 @@ export const SearchResults = () => {
           <div className='flex items-center justify-center mt-3'>
             <Checkbox
               label='Solo itinerarios de amigos'
-              color='teal'
+              color='brand'
               checked={onlyFriends}
               onChange={() => {
                 const newVal = !onlyFriends
@@ -125,7 +125,7 @@ export const SearchResults = () => {
 
       <div className='w-full mt-5 mb-8'>
         <Tabs
-          color='teal'
+          color='brand'
           value={type}
           onChange={(value) => {
             if (value === 'itinerary') {
@@ -149,10 +149,10 @@ export const SearchResults = () => {
             {query &&
               (loading || !itineraries ? (
                 <div className='flex items-center justify-center w-full h-[295px]'>
-                  <Loader color='teal' />
+                  <Loader color='brand' />
                 </div>
               ) : error ? (
-                <div className='flex items-center justify-center h-[295px] mx-9 md:mx-0'>
+                <div className='flex items-center justify-center h-[295px] mx-8 md:mx-0'>
                   <span className='text-center text-gray-500'>
                     No se han podido obtener resultados en este momento.
                     <br />
@@ -160,15 +160,18 @@ export const SearchResults = () => {
                   </span>
                 </div>
               ) : itineraries.length === 0 ? (
-                <div className='flex items-center justify-center h-[295px] mx-9 md:mx-0'>
+                <div className='flex items-center justify-center h-[295px] mx-8 md:mx-0'>
                   <span className='text-center text-gray-500'>
                     No se han encontrado resultados para "{query}" en itinerarios.
                   </span>
                 </div>
               ) : (
-                <div className='grid grid-cols-1 gap-4 mx-9 xxs:mx-16 xs:mx-0 xs:grid-cols-2 md:!grid-cols-3'>
+                <div className='grid grid-cols-1 gap-4 mx-8 xxs:mx-16 xs:mx-0 xs:grid-cols-2 md:!grid-cols-3'>
                   {itineraries.map((itinerary) => (
-                    <div key={itinerary.id} className='flex h-[295px] overflow-hidden rounded-xl'>
+                    <div
+                      key={itinerary.id}
+                      className='flex h-[295px] overflow-hidden rounded-xl mb-5'
+                    >
                       <ItineraryCard itinerary={itinerary} />
                     </div>
                   ))}
@@ -180,10 +183,10 @@ export const SearchResults = () => {
             {query &&
               (loading || !users ? (
                 <div className='flex items-center justify-center w-full h-[295px]'>
-                  <Loader color='teal' />
+                  <Loader color='brand' />
                 </div>
               ) : error ? (
-                <div className='flex items-center justify-center h-[295px] mx-9 md:mx-0'>
+                <div className='flex items-center justify-center h-[295px] mx-8 md:mx-0'>
                   <span className='text-center text-gray-500'>
                     No se han podido obtener resultados en este momento.
                     <br />
@@ -191,13 +194,13 @@ export const SearchResults = () => {
                   </span>
                 </div>
               ) : users.length === 0 ? (
-                <div className='flex items-center justify-center h-[295px] mx-9 md:mx-0'>
+                <div className='flex items-center justify-center h-[295px] mx-8 md:mx-0'>
                   <span className='text-center text-gray-500'>
                     No se han encontrado resultados para "{query}" en usuarios.
                   </span>
                 </div>
               ) : (
-                <div className='w-full h-[295px] mx-9 md:mx-0'>
+                <div className='flex justify-center max-w-md sm:max-w-full mx-auto px-9'>
                   <UsersList users={users} handleFollow={handleFollow} />
                 </div>
               ))}

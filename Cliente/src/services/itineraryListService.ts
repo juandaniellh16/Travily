@@ -7,6 +7,7 @@ export const itineraryListService = {
     userId?: string
     username?: string
     likedBy?: string
+    followedBy?: string
     visibility?: 'public' | 'all'
     sort?: string
     limit?: number
@@ -22,6 +23,9 @@ export const itineraryListService = {
     }
     if (params.likedBy) {
       queryParams.append('likedBy', params.likedBy)
+    }
+    if (params.followedBy) {
+      queryParams.append('followedBy', params.followedBy)
     }
     if (params.visibility) {
       queryParams.append('visibility', params.visibility)

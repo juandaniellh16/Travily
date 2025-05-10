@@ -1,7 +1,7 @@
 export const TermsOfUse = () => {
   return (
     <div className='max-w-4xl p-6 mx-auto text-gray-700'>
-      <h1 className='mb-6 text-3xl font-bold text-emerald-600'>Términos de Uso</h1>
+      <h1 className='mb-6 text-3xl font-bold text-brand-600'>Términos de Uso</h1>
       <p className='mb-6 text-gray-600'>Última actualización: 28 de marzo de 2025</p>
 
       <section className='mb-8'>

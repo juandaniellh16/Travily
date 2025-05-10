@@ -7,7 +7,7 @@ export const ShareButton = ({ url }: { url?: string }) => {
     e.preventDefault()
 
     await navigator.clipboard.writeText(url ? url : window.location.href)
-    toast('¡URL copiada al portapapeles!', {
+    toast.success('¡URL copiada al portapapeles!', {
       style: {
         display: 'flex',
         justifyContent: 'center',

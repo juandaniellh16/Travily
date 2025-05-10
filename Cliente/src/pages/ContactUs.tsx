@@ -86,7 +86,7 @@ export const ContactUs = () => {
               loading={loading}
               loaderProps={{ type: 'dots' }}
               fullWidth
-              color='teal'
+              color='brand'
               mt='xl'
             >
               Enviar mensaje

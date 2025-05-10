@@ -35,7 +35,7 @@ import { FiMinus, FiPlus } from 'react-icons/fi'
 
 interface ItineraryCardLargeProps {
   itinerary: ItinerarySimpleType
-  handleDelete: (id: string) => void
+  handleDelete?: (id: string) => void
   fromOwnerList: boolean
   handleRemoveFromList?: (id: string) => void
 }
@@ -189,24 +189,30 @@ export const ItineraryCardLarge = ({
               </span>
 
               <div className='flex items-center justify-between w-full'>
-                <div className='flex items-center'>
-                  <Link to={`/${userData?.username}`} onClick={(e) => e.stopPropagation()}>
-                    <Center>
+                <div className='flex items-center w-[67%] overflow-hidden'>
+                  <Center className='overflow-hidden'>
+                    <Link to={`/${userData?.username}`} onClick={(e) => e.stopPropagation()}>
                       <Avatar
                         src={userData?.avatar || '/images/placeholder/avatar-placeholder.svg'}
                         mr='xs'
                         size={32}
                       />
-                      <div className='leading-none'>
-                        <p className='text-xs font-medium'>{userData?.name}</p>
-                        <p className='text-xs text-gray-500'>@{userData?.username}</p>
-                      </div>
-                    </Center>
-                  </Link>
+                    </Link>
+                    <div className='leading-none overflow-hidden'>
+                      <Link to={`/${userData?.username}`} onClick={(e) => e.stopPropagation()}>
+                        <Text truncate='end' className='!text-xs !font-medium'>
+                          {userData?.name}
+                        </Text>
+                        <Text truncate='end' className='!text-xs !text-gray-500'>
+                          @{userData?.username}
+                        </Text>
+                      </Link>
+                    </div>
+                  </Center>
                 </div>
                 <Group gap={0}>
                   <LikeButton itinerary={itinerary} />
-                  <ShareButton url={`https://miapp.com/itineraries/${itinerary.id}`} />
+                  <ShareButton url={`${window.location.origin}/itineraries/${itinerary.id}`} />
                 </Group>
               </div>
             </div>
@@ -221,7 +227,7 @@ export const ItineraryCardLarge = ({
                   radius='xl'
                   size={26}
                   aria-label='Opciones'
-                  color='teal'
+                  color='brand'
                   className='self-start'
                 >
                   <HiOutlineDotsVertical size={20} />
@@ -250,7 +256,7 @@ export const ItineraryCardLarge = ({
                     <Menu.Item
                       color='red'
                       leftSection={<IoTrashOutline size={14} />}
-                      onClick={() => handleDelete(itinerary.id)}
+                      onClick={() => handleDelete?.(itinerary.id)}
                     >
                       Borrar itinerario
                     </Menu.Item>
@@ -268,7 +274,7 @@ export const ItineraryCardLarge = ({
                         }}
                       />
                       <Button
-                        color='teal'
+                        color='brand'
                         size='xs'
                         onClick={handleAddCollaborator}
                         leftSection={<FaUsers size={17} />}
@@ -280,7 +286,7 @@ export const ItineraryCardLarge = ({
                     </div>
                     <Switch
                       size='sm'
-                      color='teal'
+                      color='brand'
                       onLabel={<MdOutlineVisibility size={18} />}
                       offLabel={<MdOutlineVisibilityOff size={18} />}
                       label={isPublic ? 'Público' : 'Privado'}
@@ -311,7 +317,7 @@ export const ItineraryCardLarge = ({
           </Title>
           {!userLists ? (
             <div className='flex px-8 items-center justify-center w-full my-[25%]'>
-              <Loader color='teal' />
+              <Loader color='brand' />
             </div>
           ) : userLists.length === 0 ? (
             <div className='px-8'>
@@ -319,7 +325,7 @@ export const ItineraryCardLarge = ({
               <div className='flex items-center justify-center mt-10'>
                 <Button
                   variant='outline'
-                  color='teal'
+                  color='brand'
                   size='sm'
                   radius='sm'
                   className='text-nowrap'
@@ -340,7 +346,7 @@ export const ItineraryCardLarge = ({
                       key={list.id}
                       fullWidth
                       variant='light'
-                      color='teal'
+                      color='brand'
                       onClick={() => handleAddToList(list.id)}
                       className='mb-2'
                     >

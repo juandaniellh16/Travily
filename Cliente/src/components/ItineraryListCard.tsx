@@ -13,7 +13,7 @@ import { itineraryListService } from '@/services/itineraryListService'
 
 interface ItineraryListCardProps {
   list: ItineraryListType
-  handleDelete: (id: string) => void
+  handleDelete?: (id: string) => void
 }
 
 export const ItineraryListCard = ({ list, handleDelete }: ItineraryListCardProps) => {
@@ -77,24 +77,30 @@ export const ItineraryListCard = ({ list, handleDelete }: ItineraryListCardProps
             </span>
 
             <div className='flex items-center justify-between w-full'>
-              <div className='flex items-center'>
-                <Link to={`/${userData?.username}`} onClick={(e) => e.stopPropagation()}>
-                  <Center>
+              <div className='flex items-center w-[67%] overflow-hidden'>
+                <Center className='overflow-hidden'>
+                  <Link to={`/${userData?.username}`} onClick={(e) => e.stopPropagation()}>
                     <Avatar
                       src={userData?.avatar || '/images/placeholder/avatar-placeholder.svg'}
                       mr='xs'
                       size={32}
                     />
-                    <div className='leading-none'>
-                      <p className='text-xs font-medium'>{userData?.name}</p>
-                      <p className='text-xs text-gray-500'>@{userData?.username}</p>
-                    </div>
-                  </Center>
-                </Link>
+                  </Link>
+                  <div className='leading-none overflow-hidden'>
+                    <Link to={`/${userData?.username}`} onClick={(e) => e.stopPropagation()}>
+                      <Text truncate='end' className='!text-xs !font-medium'>
+                        {userData?.name}
+                      </Text>
+                      <Text truncate='end' className='!text-xs !text-gray-500'>
+                        @{userData?.username}
+                      </Text>
+                    </Link>
+                  </div>
+                </Center>
               </div>
               <Group gap={0}>
                 <LikeButton itineraryList={list} />
-                <ShareButton url={`https://miapp.com/lists/${list.id}`} />
+                <ShareButton url={`${window.location.origin}/lists/${list.id}`} />
               </Group>
             </div>
           </div>
@@ -109,7 +115,7 @@ export const ItineraryListCard = ({ list, handleDelete }: ItineraryListCardProps
                 radius='xl'
                 size={26}
                 aria-label='Opciones'
-                color='teal'
+                color='brand'
                 className='self-start'
               >
                 <HiOutlineDotsVertical size={20} />
@@ -120,7 +126,7 @@ export const ItineraryListCard = ({ list, handleDelete }: ItineraryListCardProps
               <Menu.Item
                 color='red'
                 leftSection={<IoTrashOutline size={14} />}
-                onClick={() => handleDelete(list.id)}
+                onClick={() => handleDelete?.(list.id)}
               >
                 Borrar lista
               </Menu.Item>
@@ -129,7 +135,7 @@ export const ItineraryListCard = ({ list, handleDelete }: ItineraryListCardProps
 
               <Switch
                 size='sm'
-                color='teal'
+                color='brand'
                 onLabel={<MdOutlineVisibility size={18} />}
                 offLabel={<MdOutlineVisibilityOff size={18} />}
                 label={isPublic ? 'Pública' : 'Privada'}

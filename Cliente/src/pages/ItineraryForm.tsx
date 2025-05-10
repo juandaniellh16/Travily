@@ -237,7 +237,7 @@ export const ItineraryForm = () => {
           </div>
           <Switch
             size='lg'
-            color='teal'
+            color='brand'
             onLabel={<MdOutlineVisibility size={21} />}
             offLabel={<MdOutlineVisibilityOff size={21} />}
             label={isPublic ? 'Público' : 'Privado'}
@@ -252,7 +252,7 @@ export const ItineraryForm = () => {
             loaderProps={{ type: 'dots' }}
             fullWidth
             mt='lg'
-            color='teal'
+            color='brand'
             className='py-2 rounded-lg'
           >
             Crear

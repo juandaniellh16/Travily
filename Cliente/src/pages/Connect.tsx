@@ -13,7 +13,7 @@ export const Connect = () => {
     const fetchSuggestedUsers = async () => {
       if (authUser) {
         try {
-          const users = await userService.getSuggestedUsers({ limit: 10 })
+          const users = await userService.getSuggestedUsers({})
           setSuggestedUsers(users)
         } catch {
           console.error('Error fetching suggested users')

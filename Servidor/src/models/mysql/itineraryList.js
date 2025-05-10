@@ -2,7 +2,16 @@ import { getConnection } from '../../database/db.js'
 import { DatabaseError, NotFoundError } from '../../errors/errors.js'
 
 export class ItineraryListModel {
-  static async getAll({ userId, username, likedBy, visibility, sort, limit, userIdSession }) {
+  static async getAll({
+    userId,
+    username,
+    likedBy,
+    followedBy,
+    visibility,
+    sort,
+    limit,
+    userIdSession
+  }) {
     const connection = await getConnection()
     try {
       const queryParams = []
@@ -50,6 +59,17 @@ export class ItineraryListModel {
         query += ' JOIN likes_lists li ON i.id = li.list_id'
         filters.push('li.user_id = UUID_TO_BIN(?)')
         queryParams.push(likedBy)
+      }
+
+      if (followedBy) {
+        filters.push(`
+          i.user_id IN (
+            SELECT following_id
+            FROM followers
+            WHERE follower_id = UUID_TO_BIN(?)
+          )
+        `)
+        queryParams.push(followedBy)
       }
 
       if (visibility === 'public') {

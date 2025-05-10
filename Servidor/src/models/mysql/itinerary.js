@@ -156,14 +156,15 @@ export class ItineraryModel {
 
         switch (parts.length) {
           case 1:
-            query += ' HAVING LOWER(locationName) LIKE ?'
-            queryParams.push(`${parts[0]}%`)
+            query +=
+              ' HAVING LOWER(locationName) LIKE ? OR LOWER(locationAdminName1) LIKE ? OR LOWER(locationCountryName) LIKE ?'
+            queryParams.push(`${parts[0]}%`, `${parts[0]}%`, `${parts[0]}%`)
             break
 
           case 2:
             query +=
-              ' HAVING (LOWER(locationName) LIKE ? AND (LOWER(locationAdminName1) LIKE ? OR LOWER(locationCountryName) LIKE ?))'
-            queryParams.push(`${parts[0]}%`, `${parts[1]}%`, `${parts[1]}%`)
+              ' HAVING (LOWER(locationName) LIKE ? AND LOWER(locationAdminName1) LIKE ?) OR (LOWER(locationAdminName1) LIKE ? AND LOWER(locationCountryName) LIKE ?)'
+            queryParams.push(`${parts[0]}%`, `${parts[1]}%`, `${parts[0]}%`, `${parts[1]}%`)
             break
 
           case 3:

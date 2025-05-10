@@ -1,3 +1,5 @@
+import { ACCEPTED_ORIGINS } from './cors.js'
+
 export const verifyOrigin = (req, res, next) => {
   const origin = req.get('Origin')
 

@@ -3,7 +3,7 @@ import { Avatar, Group, Text, UnstyledButton } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { SlArrowRight } from 'react-icons/sl'
 import { useNavigate } from 'react-router'
-import { LoginModal } from './LoginModal'
+import { LoginModal } from '../../ui/LoginModal'
 
 export const ProfileButton = () => {
   const { user } = useAuth()

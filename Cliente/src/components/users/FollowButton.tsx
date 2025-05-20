@@ -5,7 +5,7 @@ import { useDisclosure } from '@mantine/hooks'
 import { useEffect, useRef, useState } from 'react'
 import { BiSolidUserX } from 'react-icons/bi'
 import { useNavigate, useLocation } from 'react-router'
-import { LoginModal } from './LoginModal'
+import { LoginModal } from '../ui/LoginModal'
 
 interface FollowButtonProps {
   user: UserWithFollowStatus

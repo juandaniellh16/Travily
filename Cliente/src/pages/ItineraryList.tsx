@@ -1,4 +1,4 @@
-import { ItinerariesList } from '@/components/ItinerariesList'
+import { ItinerariesList } from '@/components/itineraries/ItinerariesList'
 import { useAuth } from '@/hooks/useAuth'
 import { itineraryService } from '@/services/itineraryService'
 import { userService } from '@/services/userService'
@@ -21,11 +21,11 @@ import { NotFound } from './NotFound'
 import { HiOutlineDotsVertical } from 'react-icons/hi'
 import { MdEdit, MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 import { IoTrashOutline } from 'react-icons/io5'
-import { ShareButton } from '@/components/ShareButton'
+import { ShareButton } from '@/components/ui/ShareButton'
 import { API_BASE_URL } from '@/config/config'
 import { itineraryListService } from '@/services/itineraryListService'
 import { Unauthorized } from './Unauthorized'
-import { LikeButton } from '@/components/LikeButton'
+import { LikeButton } from '@/components/itineraries/LikeButton'
 
 export const ItineraryList = () => {
   const navigate = useNavigate()
@@ -387,7 +387,7 @@ export const ItineraryList = () => {
                   size={32}
                 />
               </Link>
-              <div className='leading-none overflow-hidden'>
+              <div className='overflow-hidden leading-none'>
                 <Link to={`/${userData?.username}`}>
                   <Text truncate='end' className='!font-medium !text-xs'>
                     {userData?.name}

@@ -7,7 +7,7 @@ import { Link, useParams } from 'react-router'
 import { NotFound } from './NotFound'
 import { IoIosArrowBack } from 'react-icons/io'
 import { itineraryListService } from '@/services/itineraryListService'
-import { ItineraryListsList } from '@/components/ItineraryListsList'
+import { ItineraryListsList } from '@/components/itineraries/ItineraryListsList'
 import { FiPlus } from 'react-icons/fi'
 
 export const UserItineraryLists = () => {

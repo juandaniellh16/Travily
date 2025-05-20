@@ -5,7 +5,7 @@ import { ActionIcon } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
 import { FaHeart, FaRegHeart } from 'react-icons/fa'
-import { LoginModal } from './LoginModal'
+import { LoginModal } from '../ui/LoginModal'
 import { useLocation, useNavigate } from 'react-router'
 import { itineraryListService } from '@/services/itineraryListService'
 

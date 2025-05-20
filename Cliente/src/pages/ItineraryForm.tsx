@@ -8,7 +8,7 @@ import { LuCalendarDays } from 'react-icons/lu'
 import { DatePickerInput } from '@mantine/dates'
 import '@mantine/dates/styles.css'
 import { MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
-import { LocationCombobox } from '@/components/LocationCombobox'
+import { LocationCombobox } from '@/components/search/LocationCombobox'
 import { LocationSuggestion, LocationType } from '@/types'
 import { getSpanishName } from '@/utils'
 

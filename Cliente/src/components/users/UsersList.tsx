@@ -29,7 +29,7 @@ export const UsersList = ({ users, handleFollow }: UsersListProps) => {
                 mr='xs'
                 className='!size-[40px] sm:!size-[45px]'
               />
-              <div className='leading-none overflow-hidden'>
+              <div className='overflow-hidden leading-none'>
                 <Text truncate='end' className='!mb-0.5 !font-medium !text-sm'>
                   {user.name}
                 </Text>

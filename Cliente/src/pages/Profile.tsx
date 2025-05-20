@@ -1,5 +1,5 @@
-import { FollowersFollowingTabs } from '@/components/FollowersFollowingTabs'
-import { ProfileCard } from '@/components/ProfileCard'
+import { FollowersFollowingTabs } from '@/components/users/profile/FollowersFollowingTabs'
+import { ProfileCard } from '@/components/users/profile/ProfileCard'
 import { useAuth } from '@/hooks/useAuth'
 import { ActiveTab } from '@/layouts/MainLayout'
 import { itineraryService } from '@/services/itineraryService'
@@ -9,10 +9,10 @@ import { Button, Loader, Modal, SegmentedControl } from '@mantine/core'
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router'
 import { NotFound } from './NotFound'
-import { ItinerariesList } from '@/components/ItinerariesList'
+import { ItinerariesList } from '@/components/itineraries/ItinerariesList'
 import { IoIosArrowForward } from 'react-icons/io'
 import { itineraryListService } from '@/services/itineraryListService'
-import { ItineraryListsList } from '@/components/ItineraryListsList'
+import { ItineraryListsList } from '@/components/itineraries/ItineraryListsList'
 
 export const Profile = () => {
   const { user: authUser } = useAuth()

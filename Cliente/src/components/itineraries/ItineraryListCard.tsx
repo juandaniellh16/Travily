@@ -8,7 +8,7 @@ import { IoTrashOutline } from 'react-icons/io5'
 import { useAuth } from '@/hooks/useAuth'
 import { HiOutlineDotsVertical } from 'react-icons/hi'
 import { MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
-import { ShareButton } from './ShareButton'
+import { ShareButton } from '../ui/ShareButton'
 import { itineraryListService } from '@/services/itineraryListService'
 
 interface ItineraryListCardProps {
@@ -86,7 +86,7 @@ export const ItineraryListCard = ({ list, handleDelete }: ItineraryListCardProps
                       size={32}
                     />
                   </Link>
-                  <div className='leading-none overflow-hidden'>
+                  <div className='overflow-hidden leading-none'>
                     <Link to={`/${userData?.username}`} onClick={(e) => e.stopPropagation()}>
                       <Text truncate='end' className='!text-xs !font-medium'>
                         {userData?.name}

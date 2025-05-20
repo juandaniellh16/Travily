@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router'
-import { Header } from '@/components/Header'
-import { Footer } from '@/components/Footer'
-import { BottomNavBar } from '@/components/BottomNavBar'
+import { Header } from '@/components/layout/Header'
+import { Footer } from '@/components/layout/Footer'
+import { BottomNavBar } from '@/components/layout/BottomNavBar'
 
 export const AuthLayout = () => {
   return (

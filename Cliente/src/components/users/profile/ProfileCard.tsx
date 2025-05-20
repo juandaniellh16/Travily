@@ -5,7 +5,7 @@ import { Avatar, Button, Card, Group, Text } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { LoginModal } from './LoginModal'
+import { LoginModal } from '../../ui/LoginModal'
 
 interface ProfileCardProps {
   setOpened: (opened: boolean) => void

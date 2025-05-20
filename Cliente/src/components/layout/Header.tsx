@@ -30,14 +30,8 @@ export const Header = () => {
         </Link>
         {!isLoading && (
           <div className='flex items-center gap-1.5 sm:gap-3'>
-            {/* <div className='hidden sm:block'>
-              <ColorSchemeToggle />
-            </div> */}
             {user && (
               <>
-                {/* <div className='hidden sm:block'>
-                  <NotificationBell />
-                </div> */}
                 <Link to='/friends' className='hidden sm:block'>
                   <ActionIcon
                     variant='light'

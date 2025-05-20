@@ -28,7 +28,7 @@ import { FaUsers } from 'react-icons/fa'
 import { itineraryService } from '@/services/itineraryService'
 import { MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
 import { calculateTotalDays } from '@/utils'
-import { ShareButton } from './ShareButton'
+import { ShareButton } from '../ui/ShareButton'
 import { useDisclosure } from '@mantine/hooks'
 import { itineraryListService } from '@/services/itineraryListService'
 import { FiMinus, FiPlus } from 'react-icons/fi'
@@ -198,7 +198,7 @@ export const ItineraryCardLarge = ({
                         size={32}
                       />
                     </Link>
-                    <div className='leading-none overflow-hidden'>
+                    <div className='overflow-hidden leading-none'>
                       <Link to={`/${userData?.username}`} onClick={(e) => e.stopPropagation()}>
                         <Text truncate='end' className='!text-xs !font-medium'>
                           {userData?.name}

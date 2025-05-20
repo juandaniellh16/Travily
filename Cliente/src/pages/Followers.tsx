@@ -1,4 +1,4 @@
-import { UsersList } from '@/components/UsersList'
+import { UsersList } from '@/components/users/UsersList'
 import { useAuth } from '@/hooks/useAuth'
 import { userService } from '@/services/userService'
 import { UserWithFollowStatus } from '@/types'

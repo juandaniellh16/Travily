@@ -1,4 +1,4 @@
-import { ItineraryListsList } from '@/components/ItineraryListsList'
+import { ItineraryListsList } from '@/components/itineraries/ItineraryListsList'
 import { useAuth } from '@/hooks/useAuth'
 import { itineraryListService } from '@/services/itineraryListService'
 import { ItineraryListType } from '@/types'

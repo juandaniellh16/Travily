@@ -1,11 +1,12 @@
 USE defaultdb;
 
 INSERT INTO users (name, username, email, password_hash, avatar, followers, following) VALUES
-  ('Javi Pérez', 'javi_perez', 'javi.perez@example.com', 'hashed_password_123', 'https://images.pexels.com/photos/1452717/pexels-photo-1452717.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', 4, 4),
-  ('Antonio Gómez', 'antonio_gomez1', 'antonio.gomez@example.com', 'hashed_password_456', 'https://images.pexels.com/photos/1084165/pexels-photo-1084165.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', 4, 4),
-  ('Marta López', 'marta_lopez25', 'marta.lopez@example.com', 'hashed_password_789', 'https://images.pexels.com/photos/20787/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', 4, 4),
-  ('Lucía Fernández', 'lucia_fernandez', 'lucia.fernandez@example.com', 'hashed_password_101', 'https://images.pexels.com/photos/731022/pexels-photo-731022.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', 4, 4),
-  ('Dani García', 'dani_garcia10', 'dani.garcia@example.com', 'hashed_password_202', 'https://images.pexels.com/photos/2194261/pexels-photo-2194261.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', 4, 4);
+  ('Javi Pérez', 'javi_perez', 'javi.perez@example.com', '$2b$10$rChE4CBp0eNVptrddHXCSOMFZHnLPOWhvf1Ux0wK.QCioX.2nqppq', 'https://images.pexels.com/photos/1452717/pexels-photo-1452717.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', 4, 4),
+  ('Antonio Gómez', 'antonio_gomez1', 'antonio.gomez@example.com', '$2b$10$rChE4CBp0eNVptrddHXCSOMFZHnLPOWhvf1Ux0wK.QCioX.2nqppq', 'https://images.pexels.com/photos/1084165/pexels-photo-1084165.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', 4, 4),
+  ('Marta López', 'marta_lopez25', 'marta.lopez@example.com', '$2b$10$rChE4CBp0eNVptrddHXCSOMFZHnLPOWhvf1Ux0wK.QCioX.2nqppq', 'https://images.pexels.com/photos/20787/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', 4, 4),
+  ('Lucía Fernández', 'lucia_fernandez', 'lucia.fernandez@example.com', '$2b$10$rChE4CBp0eNVptrddHXCSOMFZHnLPOWhvf1Ux0wK.QCioX.2nqppq', 'https://images.pexels.com/photos/731022/pexels-photo-731022.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', 4, 4),
+  ('Dani García', 'dani_garcia10', 'dani.garcia@example.com', '$2b$10$rChE4CBp0eNVptrddHXCSOMFZHnLPOWhvf1Ux0wK.QCioX.2nqppq', 'https://images.pexels.com/photos/2194261/pexels-photo-2194261.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', 4, 4),
+  ('Juan Daniel', 'juandaniel16', 'juandaniel16@gmail.com', '$2b$10$rChE4CBp0eNVptrddHXCSOMFZHnLPOWhvf1Ux0wK.QCioX.2nqppq', null, 0, 0);
 
 INSERT INTO followers (follower_id, following_id) VALUES
 ((SELECT id FROM users WHERE username = 'javi_perez'), (SELECT id FROM users WHERE username = 'antonio_gomez1')),
@@ -41,7 +42,7 @@ INSERT INTO locations (geoname_id, name, country_name, admin_name_1, fcode, lat,
   (2650225, 'Edimburgo', 'Reino Unido', 'Escocia', 'PPLA', 55.95206, -3.19648);
 
 INSERT INTO itineraries (title, description, image, start_date, end_date, location_id, is_public, user_id) VALUES
-  ('Viaje a Roma con amigos', 'Explorando la antigua Roma y su cultura.', 'https://images.pexels.com/photos/2676642/pexels-photo-2676642.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', '2025-04-01', '2025-04-03', (SELECT id FROM locations WHERE geoname_id = 3169070), true, (SELECT id FROM users WHERE username = 'javi_perez')),
+  ('Viaje a Roma con amigos', 'Explorando la antigua Roma y su cultura.', 'https://images.pexels.com/photos/2676642/pexels-photo-2676642.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', '2025-04-01', '2025-04-03', (SELECT id FROM locations WHERE geoname_id = 3169070), true, (SELECT id FROM users WHERE username = 'juandaniel16')),
   ('Viaje a Escocia con la familia', 'Recorrido por las tierras altas y castillos escoceses.', 'https://images.pexels.com/photos/3061171/pexels-photo-3061171.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', '2025-04-04', '2025-04-06', (SELECT id FROM locations WHERE geoname_id = 2650225), true, (SELECT id FROM users WHERE username = 'antonio_gomez1')),
   ('Fin de semana en Madrid', 'Disfrutando de la capital de España.', 'https://images.pexels.com/photos/3757144/pexels-photo-3757144.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', '2025-04-07', '2025-04-08', (SELECT id FROM locations WHERE geoname_id = 3117735), true, (SELECT id FROM users WHERE username = 'marta_lopez25')),
   ('Escapada a Londres', 'Visita a los monumentos y museos más emblemáticos de Londres.', 'https://images.pexels.com/photos/672532/pexels-photo-672532.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', '2025-04-09', '2025-04-11', (SELECT id FROM locations WHERE geoname_id = 2643743), true, (SELECT id FROM users WHERE username = 'lucia_fernandez')),

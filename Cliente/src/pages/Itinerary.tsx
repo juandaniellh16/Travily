@@ -212,14 +212,6 @@ export const Itinerary = () => {
     }
   }
 
-  /*
-  const handleUpdateEvent = async (eventData: Event) => {
-    if (!itineraryId) return
-
-    socket.emit('update-event', { itineraryId, eventData })
-  }
-  */
-
   const openAddToListModal = async () => {
     addToListDisclosure.open()
     const userListsLocal = await itineraryListService.getAll({
@@ -1051,7 +1043,7 @@ export const Itinerary = () => {
                   size={32}
                 />
               </Link>
-              <div className='leading-none overflow-hidden'>
+              <div className='overflow-hidden leading-none'>
                 <Link to={`/${userData?.username}`}>
                   <Text truncate='end' className='!font-medium !text-xs'>
                     {userData?.name}

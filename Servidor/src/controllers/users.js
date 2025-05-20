@@ -70,7 +70,6 @@ export class UserController {
     }
   }
 
-  /*
   create = async (req, res, next) => {
     try {
       const result = validateCreateUser(req.body)
@@ -88,7 +87,6 @@ export class UserController {
       next(error)
     }
   }
-  */
 
   delete = async (req, res, next) => {
     const { user } = req.session

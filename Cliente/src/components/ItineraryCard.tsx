@@ -74,7 +74,7 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
                   size={32}
                 />
               </Link>
-              <div className='leading-none overflow-hidden'>
+              <div className='overflow-hidden leading-none'>
                 <Link to={`/${userData?.username}`}>
                   <Text truncate='end' className='!font-medium !text-xs'>
                     {userData?.name}

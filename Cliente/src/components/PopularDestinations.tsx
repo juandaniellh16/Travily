@@ -4,41 +4,35 @@ import { Link } from 'react-router'
 const destinations = [
   {
     name: 'Londres',
-    image:
-      'https://assets.editorial.aetnd.com/uploads/2019/03/topic-london-gettyimages-760251843-feature.jpg'
+    image: '/images/destinations/londres.jpg'
   },
   {
     name: 'Paris',
-    image: 'https://a.eu.mktgcdn.com/f/100004519/N2BB4ohwclor2uLoZ7XMHgJmxOZaMOokMdQqqXQAq3s.jpg'
+    image: '/images/destinations/paris.jpg'
   },
   {
     name: 'Roma',
-    image:
-      'https://media.gq-magazine.co.uk/photos/5d13a3a9b6fee91a87c9f87f/16:9/w_2560%2Cc_limit/Rome-hp-GQ-24May16_istock_b.jpg'
+    image: '/images/destinations/roma.jpg'
   },
   {
     name: 'Tokio',
-    image:
-      'https://media.audleytravel.com/-/media/images/home/north-asia-and-russia/japan/activities/tokyo-gettyimages-1131743616-1000x3000.jpg?q=79&w=1920&h=685'
+    image: '/images/destinations/tokio.jpg'
   },
   {
     name: 'Madrid',
-    image:
-      'https://content.r9cdn.net/rimg/dimg/5f/38/353ec907-ap-MAD-551b0685.jpg?width=1366&height=768&xhint=826&yhint=409&crop=true'
+    image: '/images/destinations/madrid.jpg'
   },
   {
     name: 'Praga',
-    image:
-      'https://images.pexels.com/photos/161077/prague-vencel-square-czech-republic-church-161077.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+    image: '/images/destinations/praga.jpg'
   },
   {
     name: 'Nueva York',
-    image: 'https://gentleman.com.mx/wp-content/uploads/2024/10/new-york.jpeg'
+    image: '/images/destinations/nueva-york.jpg'
   },
   {
     name: 'Florencia',
-    image:
-      'https://tourismmedia.italia.it/is/image/mitur/20210401173629-firenze-toscana-gettyimages-1145040590-1?wid=1600&hei=900&fit=constrain,1&fmt=webp'
+    image: '/images/destinations/florencia.jpg'
   }
 ]
 

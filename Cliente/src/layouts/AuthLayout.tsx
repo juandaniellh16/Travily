@@ -12,7 +12,7 @@ export const AuthLayout = () => {
       </main>
       <Footer />
       <div className='block sm:hidden'>
-        <BottomNavBar defaultActiveButton='' />
+        <BottomNavBar defaultActiveButton='profile' />
       </div>
     </div>
   )

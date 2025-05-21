@@ -35,7 +35,7 @@ export const MainLayout = () => {
       </main>
       <Footer />
       <div className='block sm:hidden'>
-        <BottomNavBar defaultActiveButton='home' />
+        <BottomNavBar defaultActiveButton='' />
       </div>
     </div>
   )

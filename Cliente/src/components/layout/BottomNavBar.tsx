@@ -1,11 +1,38 @@
 import { useAuth } from '@/hooks/useAuth'
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router'
 
 export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: string }) => {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [activeButton, setActiveButton] = useState<string>(defaultActiveButton)
+
+  const location = useLocation()
+
+  useEffect(() => {
+    switch (true) {
+      case location.pathname.startsWith('/login') || location.pathname.startsWith('/register'):
+        setActiveButton('profile')
+        break
+      case location.pathname === '/search':
+        setActiveButton('search')
+        break
+      case user && location.pathname === '/create-itinerary':
+        setActiveButton('create')
+        break
+      case user && location.pathname === '/friends':
+        setActiveButton('friends')
+        break
+      case user && location.pathname === `/${user.username}`:
+        setActiveButton('profile')
+        break
+      case location.pathname.startsWith('/'):
+        setActiveButton('home')
+        break
+      default:
+        setActiveButton('')
+    }
+  }, [location.pathname])
 
   return (
     <div className='fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-gray-200 drop-shadow-[0_-4px_5px_rgba(0,0,0,0.04)] dark:bg-gray-700 dark:border-gray-600'>
@@ -18,7 +45,6 @@ export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: str
                 ? 'text-brand-600 text-opacity-100'
                 : 'text-brand-700 text-opacity-80'
             } dark:text-gray-400 hover:text-opacity-100 hover:text-brand-600 dark:hover:text-blue-500 group`}
-          onClick={() => setActiveButton('home')}
         >
           {activeButton === 'home' ? (
             <svg
@@ -54,7 +80,6 @@ export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: str
                 ? 'text-brand-600 text-opacity-100'
                 : 'text-brand-700 text-opacity-80'
             } dark:text-gray-400 hover:text-opacity-100 hover:text-brand-600 dark:hover:text-blue-500 group`}
-          onClick={() => setActiveButton('search')}
         >
           {activeButton === 'search' ? (
             <svg
@@ -86,16 +111,15 @@ export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: str
         <div className='flex items-center justify-center'>
           <button
             type='button'
+            aria-label='Crear nuevo itinerario'
             className={`p-1 rounded-full shadow-md 
               ${
                 activeButton === 'create' ? 'bg-emerald-600' : 'bg-emerald-500'
               } hover:bg-emerald-600 dark:text-gray-400 dark:hover:text-blue-500 dark:hover:bg-gray-800 group`}
             onClick={() => {
               if (user) {
-                setActiveButton('create')
                 navigate('/create-itinerary')
               } else {
-                setActiveButton('')
                 navigate('/login')
               }
             }}
@@ -123,10 +147,8 @@ export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: str
             } dark:text-gray-400 hover:text-opacity-100 hover:text-brand-600 dark:hover:text-blue-500 group`}
           onClick={() => {
             if (user) {
-              setActiveButton('friends')
               navigate(`/friends`)
             } else {
-              setActiveButton('')
               navigate('/login')
             }
           }}
@@ -183,10 +205,8 @@ export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: str
             } dark:text-gray-400 hover:text-opacity-100 hover:text-brand-600 dark:hover:text-blue-500 group`}
           onClick={() => {
             if (user) {
-              setActiveButton('profile')
               navigate(`/${user.username}`)
             } else {
-              setActiveButton('')
               navigate('/login')
             }
           }}

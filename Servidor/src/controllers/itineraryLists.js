@@ -21,7 +21,7 @@ export class ItineraryListController {
       if (userId && username) {
         throw new InvalidInputError('You cannot filter by userId and username at the same time')
       }
-      if (followedBy && (!user || user.id !== followedBy)) {
+      if (followedBy && (!user || user.sub !== followedBy)) {
         throw new UnauthorizedError(
           "You are not authorized to view lists from another user's following list"
         )
@@ -38,7 +38,7 @@ export class ItineraryListController {
         visibility,
         sort,
         limit: limitValue,
-        userIdSession: user?.id
+        userIdSession: user?.sub
       })
       res.json(lists)
     } catch (error) {
@@ -54,7 +54,7 @@ export class ItineraryListController {
 
       const list = await this.itineraryListModel.getById({ id })
 
-      if (!list.isPublic && (!user || user.id !== list.userId)) {
+      if (!list.isPublic && (!user || user.sub !== list.userId)) {
         throw new UnauthorizedError('You are not authorized to view this itinerary list')
       }
 
@@ -77,7 +77,7 @@ export class ItineraryListController {
         )
       }
 
-      if (user.id !== req.body.userId) {
+      if (user.sub !== req.body.userId) {
         throw new UnauthorizedError(
           'You are not authorized to create an itinerary list for another user'
         )
@@ -103,7 +103,7 @@ export class ItineraryListController {
       if (!id) throw new InvalidInputError('Id parameter is required')
 
       const list = await this.itineraryListModel.getById({ id })
-      if (list.userId !== user.id) {
+      if (list.userId !== user.sub) {
         throw new UnauthorizedError('You are not authorized to delete this itinerary list')
       }
 
@@ -130,7 +130,7 @@ export class ItineraryListController {
       }
 
       const list = await this.itineraryListModel.getById({ id })
-      if (list.userId !== user.id) {
+      if (list.userId !== user.sub) {
         throw new UnauthorizedError('You are not authorized to update this itinerary list')
       }
 
@@ -150,7 +150,7 @@ export class ItineraryListController {
         throw new InvalidInputError('Itinerary list id parameter is required')
       }
 
-      const userId = user.id
+      const userId = user.sub
 
       await this.itineraryListModel.likeItineraryList({ userId, listId })
       res.status(204).end()
@@ -168,7 +168,7 @@ export class ItineraryListController {
         throw new InvalidInputError('Itinerary list id parameter is required')
       }
 
-      const userId = user.id
+      const userId = user.sub
 
       await this.itineraryListModel.unlikeItineraryList({ userId, listId })
       res.status(204).end()
@@ -186,7 +186,7 @@ export class ItineraryListController {
         throw new InvalidInputError('Itinerary list id parameter is required')
       }
 
-      const userId = user.id
+      const userId = user.sub
 
       const result = await this.itineraryListModel.checkIfLiked({
         listId,
@@ -209,7 +209,7 @@ export class ItineraryListController {
       }
 
       const list = await this.itineraryListModel.getById({ id: listId })
-      if (list.userId !== user.id) {
+      if (list.userId !== user.sub) {
         throw new UnauthorizedError('You are not authorized to add itineraries to this list')
       }
 
@@ -231,7 +231,7 @@ export class ItineraryListController {
       }
 
       const list = await this.itineraryListModel.getById({ id: listId })
-      if (list.userId !== user.id) {
+      if (list.userId !== user.sub) {
         throw new UnauthorizedError('You are not authorized to remove itineraries from this list')
       }
 

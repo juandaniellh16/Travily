@@ -23,7 +23,7 @@ export class ItineraryController {
       if (userId && username) {
         throw new InvalidInputError('You cannot filter by userId and username at the same time')
       }
-      if (followedBy && (!user || user.id !== followedBy)) {
+      if (followedBy && (!user || user.sub !== followedBy)) {
         throw new UnauthorizedError(
           "You are not authorized to view itineraries from another user's following list"
         )
@@ -42,7 +42,7 @@ export class ItineraryController {
         visibility,
         sort,
         limit: limitValue,
-        userIdSession: user?.id
+        userIdSession: user?.sub
       })
       res.json(itineraries)
     } catch (error) {
@@ -63,7 +63,7 @@ export class ItineraryController {
           !user ||
           !(await this.itineraryModel.checkIfCollaborator({
             itineraryId: id,
-            userId: user.id
+            userId: user.sub
           }))
         ) {
           throw new UnauthorizedError('You are not authorized to view this itinerary')
@@ -89,7 +89,7 @@ export class ItineraryController {
         )
       }
 
-      if (user.id !== req.body.userId) {
+      if (user.sub !== req.body.userId) {
         throw new UnauthorizedError(
           'You are not authorized to create an itinerary for another user'
         )
@@ -115,7 +115,7 @@ export class ItineraryController {
       if (!id) throw new InvalidInputError('Id parameter is required')
 
       const itinerary = await this.itineraryModel.getById({ id })
-      if (itinerary.userId !== user.id) {
+      if (itinerary.userId !== user.sub) {
         throw new UnauthorizedError('You are not authorized to delete this itinerary')
       }
 
@@ -142,7 +142,7 @@ export class ItineraryController {
       }
 
       const itinerary = await this.itineraryModel.getById({ id })
-      if (itinerary.userId !== user.id) {
+      if (itinerary.userId !== user.sub) {
         throw new UnauthorizedError('You are not authorized to update this itinerary')
       }
 
@@ -160,7 +160,7 @@ export class ItineraryController {
       if (!user) throw new UnauthorizedError('Access not authorized')
       if (!itineraryId) throw new InvalidInputError('Itinerary id parameter is required')
 
-      const userId = user.id
+      const userId = user.sub
 
       await this.itineraryModel.likeItinerary({ userId, itineraryId })
       res.status(204).end()
@@ -176,7 +176,7 @@ export class ItineraryController {
       if (!user) throw new UnauthorizedError('Access not authorized')
       if (!itineraryId) throw new InvalidInputError('Itinerary id parameter is required')
 
-      const userId = user.id
+      const userId = user.sub
 
       await this.itineraryModel.unlikeItinerary({ userId, itineraryId })
       res.status(204).end()
@@ -192,7 +192,7 @@ export class ItineraryController {
       if (!user) throw new UnauthorizedError('Access not authorized')
       if (!itineraryId) throw new InvalidInputError('Itinerary id parameter is required')
 
-      const userId = user.id
+      const userId = user.sub
 
       const result = await this.itineraryModel.checkIfLiked({
         itineraryId,
@@ -217,7 +217,7 @@ export class ItineraryController {
       await this.itineraryModel.addCollaborator({
         itineraryId,
         username,
-        userIdSession: user.id
+        userIdSession: user.sub
       })
       res.status(204).end()
     } catch (error) {
@@ -232,7 +232,7 @@ export class ItineraryController {
       if (!itineraryId) throw new InvalidInputError('Itinerary id parameter is required')
       const collaborators = await this.itineraryModel.getCollaborators({
         itineraryId,
-        userIdSession: user?.id
+        userIdSession: user?.sub
       })
       res.json(collaborators)
     } catch (error) {
@@ -248,7 +248,7 @@ export class ItineraryController {
         throw new UnauthorizedError('You must be logged in to check if you are a collaborator')
       if (!itineraryId) throw new InvalidInputError('Itinerary id parameter is required')
 
-      const userId = user.id
+      const userId = user.sub
 
       const result = await this.itineraryModel.checkIfCollaborator({
         itineraryId,

@@ -29,7 +29,7 @@ export class UserController {
       if (!user) throw new UnauthorizedError('Access not authorized')
       const limitValue = parseInt(limit, 10)
       const users = await this.userModel.getSuggestedUsers({
-        userId: user.id,
+        userId: user.sub,
         limit: limitValue
       })
       res.json(users)
@@ -60,7 +60,7 @@ export class UserController {
         })
       }
 
-      if (includeEmailBool && authUser.id !== user.id) {
+      if (includeEmailBool && authUser.sub !== user.id) {
         throw new UnauthorizedError('Access not authorized')
       }
 
@@ -94,7 +94,7 @@ export class UserController {
     try {
       if (!user) throw new UnauthorizedError('Access not authorized')
       if (!id) throw new InvalidInputError('Id parameter is required')
-      if (user.id !== id) {
+      if (user.sub !== id) {
         throw new UnauthorizedError('You are not authorized to delete this user')
       }
       await this.userModel.delete({ id })
@@ -117,7 +117,7 @@ export class UserController {
         throw new InvalidInputError('Invalid user data: ' + JSON.stringify(result.error.message))
       }
 
-      if (user.id !== id) {
+      if (user.sub !== id) {
         throw new UnauthorizedError('You are not authorized to update this user')
       }
 
@@ -135,7 +135,7 @@ export class UserController {
       if (!user) throw new UnauthorizedError('Access not authorized')
       if (!userId) throw new InvalidInputError('User id parameter is required')
 
-      const followerId = user.id
+      const followerId = user.sub
 
       if (userId === followerId) {
         throw new InvalidInputError('You cannot follow yourself')
@@ -155,7 +155,7 @@ export class UserController {
       if (!user) throw new UnauthorizedError('Access not authorized')
       if (!userId) throw new InvalidInputError('User id parameter is required')
 
-      const followerId = user.id
+      const followerId = user.sub
 
       if (userId === followerId) {
         throw new InvalidInputError('You cannot unfollow yourself')
@@ -175,7 +175,7 @@ export class UserController {
       if (!user) throw new UnauthorizedError('Access not authorized')
       if (!userId) throw new InvalidInputError('User id parameter is required')
 
-      const followerId = user.id
+      const followerId = user.sub
 
       const result = await this.userModel.checkIfFollowing({
         userId,
@@ -194,7 +194,7 @@ export class UserController {
       if (!user) throw new UnauthorizedError('Access not authorized')
       if (!id) throw new InvalidInputError('Id parameter is required')
 
-      const currentUserId = user.id
+      const currentUserId = user.sub
 
       const users = await this.userModel.getFollowers({ id, currentUserId })
       res.json(users)
@@ -210,7 +210,7 @@ export class UserController {
       if (!user) throw new UnauthorizedError('Access not authorized')
       if (!id) throw new InvalidInputError('Id parameter is required')
 
-      const currentUserId = user.id
+      const currentUserId = user.sub
 
       const users = await this.userModel.getFollowing({ id, currentUserId })
       res.json(users)

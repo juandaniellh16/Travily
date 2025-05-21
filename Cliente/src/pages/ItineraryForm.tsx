@@ -109,7 +109,7 @@ export const ItineraryForm = () => {
             body: formData
           })
           const data = await response.json()
-          imageUrl = data.imageUrl
+          imageUrl = data.itineraryImageUrl
         }
 
         const relativePath = await itineraryService.create(

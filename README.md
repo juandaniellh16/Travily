@@ -46,17 +46,19 @@ Desarrollada como **Trabajo de Fin de Grado**, Travily ofrece una experiencia fl
 
 ```
 Travily/
-├── backend/     # API REST y lógica de servidor
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── schemas/
-│   └── middlewares/
-├── frontend/    # Aplicación React con TypeScript
-│   ├── components/
-│   ├── pages/
-│   ├── hooks/
-│   └── services/
+├── Servidor/                  # API REST y lógica del backend
+│   └── src/
+│       ├── controllers/
+│       ├── models/
+│       ├── routes/
+│       ├── schemas/
+│       └── middlewares/
+├── Cliente/                   # Aplicación React con TypeScript (frontend)
+│   └── src/
+│       ├── components/
+│       ├── pages/
+│       ├── hooks/
+│       └── services/
 └── README.md
 ```
 

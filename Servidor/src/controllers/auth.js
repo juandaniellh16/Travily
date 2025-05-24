@@ -125,7 +125,7 @@ export class AuthController {
       const data = jwt.verify(refreshToken, JWT_SECRET)
 
       const tokenPayload = {
-        sub: data.id,
+        sub: data.sub,
         username: data.username
       }
       const newAccessToken = jwt.sign(tokenPayload, JWT_SECRET, {

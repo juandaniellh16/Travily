@@ -24,8 +24,6 @@ export class ItineraryController {
         throw new InvalidInputError('You cannot filter by userId and username at the same time')
       }
 
-      console.log(user)
-      console.log(followedBy)
       if (followedBy && (!user || user.sub !== followedBy)) {
         throw new UnauthorizedError(
           "You are not authorized to view itineraries from another user's following list"

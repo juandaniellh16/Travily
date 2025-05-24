@@ -1334,7 +1334,7 @@ export const Itinerary = () => {
                   mt='sm'
                   maxLength={250}
                 />
-                <div className='flex items-center flex-grow gap-4 mt-5'>
+                <div className='flex items-center flex-grow gap-2.5 mt-5'>
                   <TimeInput
                     label='Hora de inicio'
                     leftSection={<GoClock size={18} />}
@@ -1342,7 +1342,23 @@ export const Itinerary = () => {
                     onChange={(event) => setEventStartTime(event.currentTarget.value)}
                     size='md'
                     className='w-full'
+                    rightSection={
+                      eventStartTime ? (
+                        <ActionIcon
+                          size={20}
+                          radius='xl'
+                          variant='transparent'
+                          onClick={() => setEventStartTime('')}
+                          aria-label='Borrar hora de inicio'
+                          tabIndex={-1}
+                        >
+                          <IoClose size={16} />
+                        </ActionIcon>
+                      ) : null
+                    }
+                    rightSectionWidth={30}
                   />
+
                   <TimeInput
                     label='Hora de fin'
                     leftSection={<GoClock size={18} />}
@@ -1350,6 +1366,21 @@ export const Itinerary = () => {
                     onChange={(event) => setEventEndTime(event.currentTarget.value)}
                     size='md'
                     className='w-full'
+                    rightSection={
+                      eventEndTime ? (
+                        <ActionIcon
+                          size={20}
+                          radius='xl'
+                          variant='transparent'
+                          onClick={() => setEventEndTime('')}
+                          aria-label='Borrar hora de fin'
+                          tabIndex={-1}
+                        >
+                          <IoClose size={16} />
+                        </ActionIcon>
+                      ) : null
+                    }
+                    rightSectionWidth={30}
                   />
                 </div>
                 <Text size='md' fw={500} mt='sm' className='!mb-1'>

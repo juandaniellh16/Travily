@@ -1154,7 +1154,7 @@ export const Itinerary = () => {
                                             {(props) => (
                                               <Avatar
                                                 src={
-                                                  eventImage ||
+                                                  event.image ||
                                                   getCategoryImage(event.category) ||
                                                   '/images/placeholder/landscape-placeholder.svg'
                                                 }
@@ -1167,7 +1167,7 @@ export const Itinerary = () => {
                                         ) : (
                                           <Avatar
                                             src={
-                                              eventImage ||
+                                              event.image ||
                                               getCategoryImage(event.category) ||
                                               '/images/placeholder/landscape-placeholder.svg'
                                             }

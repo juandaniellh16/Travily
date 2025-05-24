@@ -90,7 +90,7 @@ export class EventModel {
         updateFields.push('category = ?')
         queryParams.push(updatedEventData.category || 'other')
       }
-      if (updatedEventData.image) {
+      if ('image' in updatedEventData) {
         updateFields.push('image = ?')
         queryParams.push(updatedEventData.image)
       }

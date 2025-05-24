@@ -24,7 +24,7 @@ import { ItineraryType, Event, UserPublic, ItineraryListType, EventCategory } fr
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { FaGripVertical, FaUsers } from 'react-icons/fa6'
 import { MdEdit, MdOutlineVisibility, MdOutlineVisibilityOff } from 'react-icons/md'
-import { IoTrashOutline } from 'react-icons/io5'
+import { IoClose, IoTrashOutline } from 'react-icons/io5'
 import { HiOutlineDotsVertical } from 'react-icons/hi'
 import { API_BASE_URL } from '@/config/config'
 import { io, Socket } from 'socket.io-client'
@@ -312,8 +312,8 @@ export const Itinerary = () => {
         orderIndex: itineraryData?.days.find((d) => d.id === editingDayId)?.events.length || 0,
         label: eventLabel,
         description: eventDescription,
-        startTime: eventStartTime,
-        endTime: eventEndTime,
+        startTime: eventStartTime === '' ? null : eventStartTime,
+        endTime: eventEndTime === '' ? null : eventEndTime,
         category: eventCategory,
         image: eventImage
       }
@@ -332,8 +332,8 @@ export const Itinerary = () => {
         ...editingEvent,
         label: eventLabel,
         description: eventDescription,
-        startTime: eventStartTime,
-        endTime: eventEndTime,
+        startTime: eventStartTime === '' ? null : eventStartTime,
+        endTime: eventEndTime === '' ? null : eventEndTime,
         category: eventCategory,
         image: eventImage
       }
@@ -1458,7 +1458,7 @@ export const Itinerary = () => {
                   mt='sm'
                   maxLength={250}
                 />
-                <div className='flex items-center flex-grow gap-4 mt-5'>
+                <div className='flex items-center flex-grow gap-2.5 mt-5'>
                   <TimeInput
                     label='Hora de inicio'
                     leftSection={<GoClock size={18} />}
@@ -1466,7 +1466,23 @@ export const Itinerary = () => {
                     onChange={(event) => setEventStartTime(event.currentTarget.value)}
                     size='md'
                     className='w-full'
+                    rightSection={
+                      eventStartTime ? (
+                        <ActionIcon
+                          size={20}
+                          radius='xl'
+                          variant='transparent'
+                          onClick={() => setEventStartTime('')}
+                          aria-label='Borrar hora de inicio'
+                          tabIndex={-1}
+                        >
+                          <IoClose size={16} />
+                        </ActionIcon>
+                      ) : null
+                    }
+                    rightSectionWidth={30}
                   />
+
                   <TimeInput
                     label='Hora de fin'
                     leftSection={<GoClock size={18} />}
@@ -1474,6 +1490,21 @@ export const Itinerary = () => {
                     onChange={(event) => setEventEndTime(event.currentTarget.value)}
                     size='md'
                     className='w-full'
+                    rightSection={
+                      eventEndTime ? (
+                        <ActionIcon
+                          size={20}
+                          radius='xl'
+                          variant='transparent'
+                          onClick={() => setEventEndTime('')}
+                          aria-label='Borrar hora de fin'
+                          tabIndex={-1}
+                        >
+                          <IoClose size={16} />
+                        </ActionIcon>
+                      ) : null
+                    }
+                    rightSectionWidth={30}
                   />
                 </div>
                 <Text size='md' fw={500} mt='sm' className='!mb-1'>

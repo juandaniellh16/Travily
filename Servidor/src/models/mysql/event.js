@@ -94,11 +94,11 @@ export class EventModel {
         updateFields.push('image = ?')
         queryParams.push(updatedEventData.image)
       }
-      if (updatedEventData.startTime) {
+      if ('startTime' in updatedEventData) {
         updateFields.push('start_time = ?')
         queryParams.push(updatedEventData.startTime)
       }
-      if (updatedEventData.endTime) {
+      if ('endTime' in updatedEventData) {
         updateFields.push('end_time = ?')
         queryParams.push(updatedEventData.endTime)
       }

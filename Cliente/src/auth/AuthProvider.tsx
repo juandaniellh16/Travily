@@ -10,6 +10,7 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<UserPublic | null>(null)
+  const [isCachedUser, setIsCachedUser] = useState<boolean | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const refreshUser = useCallback(async (userId?: string) => {
@@ -28,6 +29,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   useEffect(() => {
     const userId = localStorage.getItem('userId')
+    setIsCachedUser(userId !== null)
 
     if (userId) {
       refreshUser(userId)
@@ -51,16 +53,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const userData = await authService.login(usernameOrEmail, password)
     setUser(userData)
     localStorage.setItem('userId', userData.id)
+    setIsCachedUser(true)
   }
 
   const logout = async () => {
     await authService.logout()
     setUser(null)
     localStorage.removeItem('userId')
+    setIsCachedUser(false)
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, register, login, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, isCachedUser, register, login, logout, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   )

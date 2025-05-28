@@ -66,12 +66,12 @@ export const ItineraryListCard = ({ list, handleDelete }: ItineraryListCardProps
                   fw={500}
                   lineClamp={1}
                   lh={1.3}
-                  className='!text-[14.5px] sm:!text-[16px] sm:!mb-0.5'
+                  className='!text-[14.5px] sm:!text-[16px] !mb-1.5'
                 >
                   {list.title}
                 </Text>
               </div>
-              <Text fz='sm' c='dimmed' lh={1.3} className='hidden sm:block sm:!line-clamp-1'>
+              <Text fz='sm' c='dimmed' lh={1.3} className='!line-clamp-1 sm:!line-clamp-2'>
                 {list.description}
               </Text>
             </span>

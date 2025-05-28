@@ -169,6 +169,14 @@ export const ItineraryList = () => {
 
     try {
       await itineraryListService.update(listId, updatedListData)
+      setListData((prevData) => {
+        if (!prevData) return prevData
+
+        return {
+          ...prevData,
+          ...updatedListData
+        }
+      })
     } catch {
       console.error('Error updating itinerary list')
     }

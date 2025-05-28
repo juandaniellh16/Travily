@@ -4,6 +4,7 @@ import { createContext } from 'react'
 interface AuthContextType {
   user: UserPublic | null
   isLoading: boolean
+  isCachedUser: boolean | null
   register: (
     name: string,
     username: string,

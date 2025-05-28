@@ -128,6 +128,8 @@ export const SearchResults = () => {
           color='brand'
           value={type}
           onChange={(value) => {
+            if (value === type) return
+
             if (value === 'itinerary') {
               setItineraries(null)
             } else if (value === 'user') {
@@ -200,7 +202,7 @@ export const SearchResults = () => {
                   </span>
                 </div>
               ) : (
-                <div className='flex justify-center max-w-md sm:max-w-full mx-auto px-9'>
+                <div className='flex justify-center max-w-md mx-auto sm:max-w-full px-9'>
                   <UsersList users={users} handleFollow={handleFollow} />
                 </div>
               ))}

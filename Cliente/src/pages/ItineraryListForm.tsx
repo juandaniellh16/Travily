@@ -46,7 +46,7 @@ export const ItineraryListForm = () => {
             body: formData
           })
           const data = await response.json()
-          imageUrl = data.imageUrl
+          imageUrl = data.listImageUrl
         }
 
         const relativePath = await itineraryListService.create(

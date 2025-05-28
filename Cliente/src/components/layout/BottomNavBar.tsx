@@ -3,13 +3,17 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 
 export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: string }) => {
-  const { user } = useAuth()
-  const navigate = useNavigate()
+  const { user, isLoading, isCachedUser } = useAuth()
   const [activeButton, setActiveButton] = useState<string>(defaultActiveButton)
 
+  const navigate = useNavigate()
   const location = useLocation()
 
+  const hasUser = user || isCachedUser
+
   useEffect(() => {
+    if (isLoading || isCachedUser === null) return
+
     switch (true) {
       case location.pathname.startsWith('/login') || location.pathname.startsWith('/register'):
         setActiveButton('profile')
@@ -17,13 +21,13 @@ export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: str
       case location.pathname === '/search':
         setActiveButton('search')
         break
-      case user && location.pathname === '/create-itinerary':
+      case hasUser && user && location.pathname === '/create-itinerary':
         setActiveButton('create')
         break
-      case user && location.pathname === '/friends':
+      case hasUser && user && location.pathname === '/friends':
         setActiveButton('friends')
         break
-      case user && location.pathname === `/${user.username}`:
+      case hasUser && user && location.pathname === `/${user.username}`:
         setActiveButton('profile')
         break
       case location.pathname.startsWith('/'):
@@ -32,13 +36,20 @@ export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: str
       default:
         setActiveButton('')
     }
-  }, [location.pathname])
+  }, [location.pathname, isLoading, isCachedUser, user, hasUser])
+
+  if (isLoading && isCachedUser === null) {
+    return null
+  }
 
   return (
     <div className='fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-gray-200 drop-shadow-[0_-4px_5px_rgba(0,0,0,0.04)] dark:bg-gray-700 dark:border-gray-600'>
-      <div className='grid h-full grid-cols-5 mx-auto font-medium'>
+      <div className={`grid h-full ${hasUser ? 'grid-cols-5' : 'grid-cols-3'} mx-auto font-medium`}>
         <Link
           to='/'
+          onClick={() => {
+            if (!(activeButton === 'profile' && !hasUser)) setActiveButton('home')
+          }}
           className={`inline-flex flex-col items-center justify-center px-5
             ${
               activeButton === 'home'
@@ -74,6 +85,9 @@ export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: str
         </Link>
         <Link
           to='/search'
+          onClick={() => {
+            if (!(activeButton === 'profile' && !hasUser)) setActiveButton('search')
+          }}
           className={`inline-flex flex-col items-center justify-center px-5  
             ${
               activeButton === 'search'
@@ -108,93 +122,101 @@ export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: str
           )}
           <span className='text-xs'>Explorar</span>
         </Link>
-        <div className='flex items-center justify-center'>
-          <button
-            type='button'
-            aria-label='Crear nuevo itinerario'
-            className={`p-1 rounded-full shadow-md 
+        {hasUser && (
+          <div className='flex items-center justify-center'>
+            <button
+              type='button'
+              aria-label='Crear nuevo itinerario'
+              className={`p-1 rounded-full shadow-md 
               ${
                 activeButton === 'create' ? 'bg-emerald-600' : 'bg-emerald-500'
               } hover:bg-emerald-600 dark:text-gray-400 dark:hover:text-blue-500 dark:hover:bg-gray-800 group`}
-            onClick={() => {
-              if (user) {
-                navigate('/create-itinerary')
-              } else {
-                navigate('/login')
-              }
-            }}
-          >
-            <svg
-              className='w-8 h-8'
-              viewBox='0 0 24 24'
-              fill='currentColor'
-              xmlns='http://www.w3.org/2000/svg'
+              onClick={() => {
+                if (user) {
+                  setActiveButton('create')
+                  navigate('/create-itinerary')
+                } else {
+                  setActiveButton('profile')
+                  navigate('/login')
+                }
+              }}
             >
-              <path
-                fill='white'
-                d='M12.75 11.25V5a.75.75 0 1 0-1.5 0v6.25H5a.75.75 0 1 0 0 1.5h6.25V19a.75.75 0 1 0 1.5 0v-6.25H19a.75.75 0 1 0 0-1.5h-6.25z'
-              ></path>
-            </svg>
-          </button>
-        </div>
-        <button
-          type='button'
-          className={`inline-flex flex-col items-center justify-center px-5  
+              <svg
+                className='w-8 h-8'
+                viewBox='0 0 24 24'
+                fill='currentColor'
+                xmlns='http://www.w3.org/2000/svg'
+              >
+                <path
+                  fill='white'
+                  d='M12.75 11.25V5a.75.75 0 1 0-1.5 0v6.25H5a.75.75 0 1 0 0 1.5h6.25V19a.75.75 0 1 0 1.5 0v-6.25H19a.75.75 0 1 0 0-1.5h-6.25z'
+                ></path>
+              </svg>
+            </button>
+          </div>
+        )}
+        {hasUser && (
+          <button
+            type='button'
+            className={`inline-flex flex-col items-center justify-center px-5  
             ${
               activeButton === 'friends'
                 ? 'text-brand-600 text-opacity-100'
                 : 'text-brand-700 text-opacity-80'
             } dark:text-gray-400 hover:text-opacity-100 hover:text-brand-600 dark:hover:text-blue-500 group`}
-          onClick={() => {
-            if (user) {
-              navigate(`/friends`)
-            } else {
-              navigate('/login')
-            }
-          }}
-        >
-          {activeButton === 'friends' ? (
-            <svg
-              className='w-8 h-8'
-              viewBox='-100.4 -100.4 780.80 780.80'
-              fill='currentColor'
-              xmlns='http://www.w3.org/2000/svg'
-            >
-              <g
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                stroke='currentColor'
-                strokeWidth='51.2'
+            onClick={() => {
+              if (user) {
+                setActiveButton('friends')
+                navigate('/friends')
+              } else {
+                setActiveButton('profile')
+                navigate('/login')
+              }
+            }}
+          >
+            {activeButton === 'friends' ? (
+              <svg
+                className='w-8 h-8'
+                viewBox='-100.4 -100.4 780.80 780.80'
+                fill='currentColor'
+                xmlns='http://www.w3.org/2000/svg'
               >
-                <path d='M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z'></path>
-              </g>
-              <g>
-                <path d='M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z'></path>
-              </g>
-            </svg>
-          ) : (
-            <svg
-              className='w-8 h-8'
-              viewBox='-100.4 -100.4 780.80 780.80'
-              fill='#ffffff'
-              stroke='currentColor'
-              xmlns='http://www.w3.org/2000/svg'
-            >
-              <g
-                strokeLinecap='round'
-                strokeLinejoin='round'
+                <g
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  stroke='currentColor'
+                  strokeWidth='51.2'
+                >
+                  <path d='M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z'></path>
+                </g>
+                <g>
+                  <path d='M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z'></path>
+                </g>
+              </svg>
+            ) : (
+              <svg
+                className='w-8 h-8'
+                viewBox='-100.4 -100.4 780.80 780.80'
+                fill='#ffffff'
                 stroke='currentColor'
-                strokeWidth='78.08'
+                xmlns='http://www.w3.org/2000/svg'
               >
-                <path d='M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z'></path>
-              </g>
-              <g>
-                <path d='M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z'></path>
-              </g>
-            </svg>
-          )}
-          <span className='text-xs'>Amigos</span>
-        </button>
+                <g
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  stroke='currentColor'
+                  strokeWidth='78.08'
+                >
+                  <path d='M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z'></path>
+                </g>
+                <g>
+                  <path d='M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h66c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c61.9 0 112-50.1 112-112S381.9 32 320 32 208 82.1 208 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C179.6 288 128 339.6 128 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zm-223.7-13.4C161.5 263.1 145.6 256 128 256H64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h65.9c6.3-47.4 34.9-87.3 75.2-109.4z'></path>
+                </g>
+              </svg>
+            )}
+            <span className='text-xs'>Amigos</span>
+          </button>
+        )}
         <button
           type='button'
           className={`inline-flex flex-col items-center justify-center px-5  
@@ -204,6 +226,7 @@ export const BottomNavBar = ({ defaultActiveButton }: { defaultActiveButton: str
                 : 'text-brand-700 text-opacity-80'
             } dark:text-gray-400 hover:text-opacity-100 hover:text-brand-600 dark:hover:text-blue-500 group`}
           onClick={() => {
+            setActiveButton('profile')
             if (user) {
               navigate(`/${user.username}`)
             } else {

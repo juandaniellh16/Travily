@@ -385,12 +385,36 @@ export class ItineraryModel {
         [title, description, image, startDate, endDate, locationId, isPublic, userId]
       )
 
-      if (!itineraryResult.insertId) {
+      const itineraryId = itineraryResult.insertId
+
+      if (!itineraryId) {
         throw new DatabaseError('Failed to create itinerary: ' + itineraryResult.message)
       }
 
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+      const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+
+      for (let i = 0; i < duration; i++) {
+        const date = new Date(start)
+        date.setDate(date.getDate() + i)
+
+        const formatted = date.toLocaleDateString('es-ES', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long'
+        })
+
+        const label = `Día ${i + 1} - ${formatted.charAt(0).toUpperCase()}${formatted.slice(1)}`
+
+        await connection.query(
+          `INSERT INTO itinerary_days (itinerary_id, label, day_number) VALUES (?, ?, ?);`,
+          [itineraryId, label, i + 1]
+        )
+      }
+
       await connection.commit()
-      return itineraryResult.insertId
+      return itineraryId
     } catch (error) {
       await connection.rollback()
       throw new DatabaseError('Error creating itinerary: ' + error.message)
@@ -439,7 +463,7 @@ export class ItineraryModel {
         updateFields.push('title = ?')
         queryParams.push(title)
       }
-      if (description) {
+      if (typeof description !== 'undefined') {
         updateFields.push('description = ?')
         queryParams.push(description)
       }

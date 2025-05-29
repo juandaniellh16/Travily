@@ -718,7 +718,7 @@ export class ItineraryModel {
       const itinerary = existingItinerary[0]
 
       const [collaborators] = await connection.query(
-        `SELECT BIN_TO_UUID(u.id) id, u.name, u.username
+        `SELECT BIN_TO_UUID(u.id) id, u.name, u.username, u.avatar
         FROM users u
         WHERE u.id = (
           SELECT i.user_id 
@@ -726,7 +726,7 @@ export class ItineraryModel {
           WHERE i.id = ?
         )
         UNION
-        SELECT BIN_TO_UUID(u.id) id, u.name, u.username
+        SELECT BIN_TO_UUID(u.id) id, u.name, u.username, u.avatar
         FROM users u
         JOIN itinerary_collaborators ic ON u.id = ic.user_id
         WHERE ic.itinerary_id = ?;`,

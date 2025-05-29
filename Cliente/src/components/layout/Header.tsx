@@ -40,7 +40,7 @@ export const Header = () => {
                     aria-label='Amigos'
                     color='brand.6'
                   >
-                    <FaUsers size='23' />
+                    <FaUsers size='24' />
                   </ActionIcon>
                 </Link>
                 <Menu position='bottom-end' shadow='md' width={160} withArrow>

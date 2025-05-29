@@ -11,6 +11,7 @@ import {
   Loader,
   Menu,
   Modal,
+  Popover,
   ScrollArea,
   Switch,
   Text,
@@ -57,6 +58,7 @@ export const Itinerary = () => {
   const { itineraryId } = useParams()
   const [itineraryData, setItineraryData] = useState<ItineraryType | null>(null)
   const [userData, setUserData] = useState<UserPublic | null>(null)
+  const [collaborators, setCollaborators] = useState<UserPublic[]>([])
   const socketRef = useRef<Socket | null>(null)
   const [notFoundError, setNotFoundError] = useState(false)
   const [unauthorizedError, setUnauthorizedError] = useState(false)
@@ -405,6 +407,9 @@ export const Itinerary = () => {
               setUserData(localUserData)
             }
           }
+
+          const localCollaborators = await itineraryService.getCollaborators(itineraryId)
+          setCollaborators(localCollaborators)
         }
       } catch (error) {
         if (error instanceof Error) {
@@ -1085,6 +1090,79 @@ export const Itinerary = () => {
                   </Text>
                 </Link>
               </div>
+              <Popover position='bottom'>
+                <Popover.Target>
+                  <div className='cursor-pointer'>
+                    <Avatar.Group className='ml-4' spacing='md'>
+                      {collaborators.filter((collaborator) => collaborator.id !== user?.id).length <
+                      3 ? (
+                        <>
+                          {collaborators
+                            .filter((collaborator) => collaborator.id !== user?.id)
+                            .map((collaborator) => (
+                              <Avatar
+                                src={
+                                  collaborator.avatar ||
+                                  '/images/placeholder/avatar-placeholder.svg'
+                                }
+                                size={32}
+                              />
+                            ))}
+                          {collaborators.length > 1 && <Avatar size={32}>+1</Avatar>}
+                        </>
+                      ) : (
+                        <>
+                          {collaborators
+                            .filter((collaborator) => collaborator.id !== user?.id)
+                            .slice(0, 3)
+                            .map((collaborator) => (
+                              <Avatar
+                                src={
+                                  collaborator.avatar ||
+                                  '/images/placeholder/avatar-placeholder.svg'
+                                }
+                                size={32}
+                              />
+                            ))}
+                          <Avatar size={32}>+{collaborators.length - 3}</Avatar>
+                        </>
+                      )}
+                    </Avatar.Group>
+                  </div>
+                </Popover.Target>
+
+                <Popover.Dropdown className='p-2 overflow-hidden shadow-md w-60 rounded-xl'>
+                  <div className='flex flex-col gap-3.5'>
+                    {collaborators.map((collaborator) => (
+                      <>
+                        {collaborator.id === user?.id && (
+                          <span className='text-[13px] font-semibold'>Propietario</span>
+                        )}
+                        <Link
+                          to={`/${collaborator.username}`}
+                          key={collaborator.id}
+                          className={`flex items-center gap-2 ${collaborator.id === user?.id ? 'border-b pb-3' : ''}`}
+                        >
+                          <Avatar
+                            src={
+                              collaborator.avatar || '/images/placeholder/avatar-placeholder.svg'
+                            }
+                            size={32}
+                          />
+                          <div className='overflow-hidden leading-none max-w-[8rem]'>
+                            <Text truncate='end' className='!font-medium !text-xs'>
+                              {collaborator.name}
+                            </Text>
+                            <Text truncate='end' className='!text-gray-500 !text-xs'>
+                              @{collaborator.username}
+                            </Text>
+                          </div>
+                        </Link>
+                      </>
+                    ))}
+                  </div>
+                </Popover.Dropdown>
+              </Popover>
             </div>
             <Group gap={0}>
               <LikeButton itinerary={itineraryData} />

@@ -1100,7 +1100,7 @@ export const Itinerary = () => {
                       {isMobile ? (
                         <>
                           {collaborators
-                            .filter((c) => c.id !== user?.id)
+                            .filter((c) => c.id !== itineraryData.userId)
                             .slice(0, 1)
                             .map((collaborator) => (
                               <Avatar
@@ -1116,10 +1116,10 @@ export const Itinerary = () => {
                             <Avatar size={32}>+{collaborators.length - 1}</Avatar>
                           )}
                         </>
-                      ) : collaborators.filter((c) => c.id !== user?.id).length < 3 ? (
+                      ) : collaborators.filter((c) => c.id !== itineraryData.userId).length < 3 ? (
                         <>
                           {collaborators
-                            .filter((c) => c.id !== user?.id)
+                            .filter((c) => c.id !== itineraryData.userId)
                             .map((collaborator) => (
                               <Avatar
                                 key={collaborator.id}
@@ -1135,7 +1135,7 @@ export const Itinerary = () => {
                       ) : (
                         <>
                           {collaborators
-                            .filter((c) => c.id !== user?.id)
+                            .filter((c) => c.id !== itineraryData.userId)
                             .slice(0, 3)
                             .map((collaborator) => (
                               <Avatar
@@ -1158,13 +1158,13 @@ export const Itinerary = () => {
                   <div className='flex flex-col gap-3.5'>
                     {collaborators.map((collaborator) => (
                       <>
-                        {collaborator.id === user?.id && (
+                        {collaborator.id === itineraryData.userId && (
                           <span className='text-[13px] font-semibold'>Propietario</span>
                         )}
                         <Link
                           to={`/${collaborator.username}`}
                           key={collaborator.id}
-                          className={`flex items-center gap-2 ${collaborator.id === user?.id ? 'border-b pb-3' : ''}`}
+                          className={`flex items-center gap-2 ${collaborator.id === itineraryData.userId ? 'border-b pb-3' : ''}`}
                         >
                           <Avatar
                             src={

@@ -29,7 +29,7 @@ import { IoClose, IoTrashOutline } from 'react-icons/io5'
 import { HiOutlineDotsVertical } from 'react-icons/hi'
 import { API_BASE_URL } from '@/config/config'
 import { io, Socket } from 'socket.io-client'
-import { useDisclosure } from '@mantine/hooks'
+import { useDisclosure, useMediaQuery } from '@mantine/hooks'
 import {
   calculateTotalDays,
   eventCategories,
@@ -53,6 +53,9 @@ import { itineraryListService } from '@/services/itineraryListService'
 export const Itinerary = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const isMobile = useMediaQuery('(max-width: 480px)')
+  const isTooSmallScreen = useMediaQuery('(max-width: 370px)')
+
   const { user, isLoading: userIsLoading } = useAuth()
   const [isCollaborator, setIsCollaborator] = useState(false)
   const { itineraryId } = useParams()
@@ -1092,15 +1095,34 @@ export const Itinerary = () => {
               </div>
               <Popover position='bottom'>
                 <Popover.Target>
-                  <div className='cursor-pointer'>
-                    <Avatar.Group className='ml-4' spacing='md'>
-                      {collaborators.filter((collaborator) => collaborator.id !== user?.id).length <
-                      3 ? (
+                  <div className={`cursor-pointer ${isTooSmallScreen ? 'hidden' : 'block'}`}>
+                    <Avatar.Group className='ml-1.5 sm:ml-4' spacing={isMobile ? 'lg' : 'md'}>
+                      {isMobile ? (
                         <>
                           {collaborators
-                            .filter((collaborator) => collaborator.id !== user?.id)
+                            .filter((c) => c.id !== user?.id)
+                            .slice(0, 1)
                             .map((collaborator) => (
                               <Avatar
+                                key={collaborator.id}
+                                src={
+                                  collaborator.avatar ||
+                                  '/images/placeholder/avatar-placeholder.svg'
+                                }
+                                size={32}
+                              />
+                            ))}
+                          {collaborators.length > 1 && (
+                            <Avatar size={32}>+{collaborators.length - 1}</Avatar>
+                          )}
+                        </>
+                      ) : collaborators.filter((c) => c.id !== user?.id).length < 3 ? (
+                        <>
+                          {collaborators
+                            .filter((c) => c.id !== user?.id)
+                            .map((collaborator) => (
+                              <Avatar
+                                key={collaborator.id}
                                 src={
                                   collaborator.avatar ||
                                   '/images/placeholder/avatar-placeholder.svg'
@@ -1113,10 +1135,11 @@ export const Itinerary = () => {
                       ) : (
                         <>
                           {collaborators
-                            .filter((collaborator) => collaborator.id !== user?.id)
+                            .filter((c) => c.id !== user?.id)
                             .slice(0, 3)
                             .map((collaborator) => (
                               <Avatar
+                                key={collaborator.id}
                                 src={
                                   collaborator.avatar ||
                                   '/images/placeholder/avatar-placeholder.svg'

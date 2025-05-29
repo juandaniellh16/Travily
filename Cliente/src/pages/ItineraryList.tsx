@@ -383,7 +383,9 @@ export const ItineraryList = () => {
                 }
               }}
             >
-              {listDescription || listData.description || 'Sin descripción'}
+              {isEditingList && !(listDescription || listData.description)
+                ? 'Añade una descripción...'
+                : listDescription || listData.description}
             </p>
           )}
           <div className='flex items-center justify-between w-full mt-6'>

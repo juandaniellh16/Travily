@@ -61,7 +61,9 @@ export const ItineraryListCard = ({ list, handleDelete }: ItineraryListCardProps
 
           <div className='flex flex-col justify-between w-[70%] px-3 sm:px-5 py-2.5 gap-2'>
             <span>
-              <div className='flex items-center justify-between mb-1.5 w-full pr-10'>
+              <div
+                className={`flex items-center justify-between mb-1.5 w-full ${list.userId === user?.id ? 'pr-10' : ''}`}
+              >
                 <Text
                   fw={500}
                   lineClamp={1}

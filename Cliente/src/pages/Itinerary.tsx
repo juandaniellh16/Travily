@@ -116,49 +116,73 @@ export const Itinerary = () => {
   }
 
   const handleStartDateChange = (date: Date | null) => {
-    if (date) {
-      const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-      localDate.setUTCHours(0, 0, 0, 0)
-      const newStartDate = localDate.toISOString()
-
-      if (itineraryId && itineraryData && newStartDate !== itineraryData.startDate) {
-        if (newStartDate <= itineraryData.endDate) {
-          setItineraryStartDate(newStartDate)
-          handleEditItinerary(itineraryId, {
-            startDate: newStartDate
-          })
-          setTotalDays(calculateTotalDays(newStartDate, itineraryData.endDate))
-          if (error) setError('')
-        } else {
-          setError('La fecha de inicio no puede ser posterior a la fecha de fin.')
-        }
-      }
-    } else {
+    if (!date || !itineraryData || !itineraryId) {
       setItineraryStartDate('')
+      return
     }
+
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    localDate.setUTCHours(0, 0, 0, 0)
+    const newStartDate = localDate.toISOString()
+
+    if (newStartDate === itineraryData.startDate) return
+
+    if (newStartDate > itineraryData.endDate) {
+      setError('La fecha de inicio no puede ser posterior a la fecha de fin.')
+      return
+    }
+
+    const oldTotalDays = itineraryData.days.length
+    const newTotalDays = calculateTotalDays(newStartDate, itineraryData.endDate)
+
+    if (newTotalDays < oldTotalDays) {
+      setError(
+        `Este itinerario tiene ${oldTotalDays} días. Elimina días del itinerario antes de retrasar la fecha de inicio.`
+      )
+      return
+    }
+
+    setItineraryStartDate(newStartDate)
+    handleEditItinerary(itineraryId, {
+      startDate: newStartDate
+    })
+    setTotalDays(newTotalDays)
+    if (error) setError('')
   }
 
   const handleEndDateChange = (date: Date | null) => {
-    if (date) {
-      const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-      localDate.setUTCHours(0, 0, 0, 0)
-      const newEndDate = localDate.toISOString()
-
-      if (itineraryId && itineraryData && newEndDate !== itineraryData.endDate) {
-        if (newEndDate >= itineraryData.startDate) {
-          setItineraryEndDate(newEndDate)
-          handleEditItinerary(itineraryId, {
-            endDate: newEndDate
-          })
-          setTotalDays(calculateTotalDays(itineraryData.startDate, newEndDate))
-          if (error) setError('')
-        } else {
-          setError('La fecha de fin no puede ser anterior a la fecha de inicio.')
-        }
-      }
-    } else {
+    if (!date || !itineraryData || !itineraryId) {
       setItineraryEndDate('')
+      return
     }
+
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    localDate.setUTCHours(0, 0, 0, 0)
+    const newEndDate = localDate.toISOString()
+
+    if (newEndDate === itineraryData.endDate) return
+
+    if (newEndDate < itineraryData.startDate) {
+      setError('La fecha de fin no puede ser anterior a la fecha de inicio.')
+      return
+    }
+
+    const oldTotalDays = itineraryData.days.length
+    const newTotalDays = calculateTotalDays(itineraryData.startDate, newEndDate)
+
+    if (newTotalDays < oldTotalDays) {
+      setError(
+        `Este itinerario tiene ${oldTotalDays} días. Elimina días del itinerario antes de adelantar la fecha de fin.`
+      )
+      return
+    }
+
+    setItineraryEndDate(newEndDate)
+    handleEditItinerary(itineraryId, {
+      endDate: newEndDate
+    })
+    setTotalDays(newTotalDays)
+    if (error) setError('')
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -1031,7 +1055,9 @@ export const Itinerary = () => {
                 }
               }}
             >
-              {itineraryDescription || itineraryData.description || 'Sin descripción'}
+              {isEditingItinerary && !(itineraryDescription || itineraryData.description)
+                ? 'Añade una descripción...'
+                : itineraryDescription || itineraryData.description}
             </p>
           )}
           <div className='flex items-center justify-between w-full mt-6'>

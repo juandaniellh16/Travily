@@ -54,7 +54,7 @@ export const Itinerary = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const isMobile = useMediaQuery('(max-width: 480px)')
-  const isTooSmallScreen = useMediaQuery('(max-width: 370px)')
+  const isTooSmallScreen = useMediaQuery('(max-width: 360px)')
 
   const { user, isLoading: userIsLoading } = useAuth()
   const [isCollaborator, setIsCollaborator] = useState(false)
@@ -1096,7 +1096,7 @@ export const Itinerary = () => {
               <Popover position='bottom'>
                 <Popover.Target>
                   <div className={`cursor-pointer ${isTooSmallScreen ? 'hidden' : 'block'}`}>
-                    <Avatar.Group className='ml-1.5 sm:ml-4' spacing={isMobile ? 'lg' : 'md'}>
+                    <Avatar.Group className='ml-1.5 sm:ml-4' spacing='md'>
                       {isMobile ? (
                         <>
                           {collaborators
@@ -1187,7 +1187,7 @@ export const Itinerary = () => {
                 </Popover.Dropdown>
               </Popover>
             </div>
-            <Group gap={0}>
+            <Group gap={0} className='flex-none'>
               <LikeButton itinerary={itineraryData} />
               <ShareButton />
             </Group>

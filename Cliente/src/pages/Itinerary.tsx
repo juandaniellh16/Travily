@@ -811,7 +811,7 @@ export const Itinerary = () => {
   return (
     <>
       <div className='relative flex justify-center w-full mb-16'>
-        {isEditingItinerary ? (
+        {isEditingItinerary && itineraryData.userId === user?.id ? (
           <FileButton
             onChange={(file) => {
               handleItineraryImageChange(file)
@@ -838,7 +838,7 @@ export const Itinerary = () => {
         <div className='absolute bottom-[-20%] p-4 flex flex-col bg-white rounded-lg shadow-md w-[80%]'>
           <div className='flex items-center justify-between w-full mb-4'>
             <div className='items-center gap-3.5 sm:flex'>
-              {isEditingItineraryTitle ? (
+              {isEditingItineraryTitle && itineraryData.userId === user?.id ? (
                 <TextInput
                   value={itineraryTitle}
                   onChange={handleItineraryTitleChange}
@@ -855,10 +855,12 @@ export const Itinerary = () => {
               ) : (
                 <h2
                   className={`text-xl sm:text-2xl min-h-11 !place-content-center !leading-none font-bold sm:!mb-0.5 ${
-                    isEditingItinerary ? 'rounded-md hover:bg-neutral-100' : ''
+                    isEditingItinerary && itineraryData.userId === user?.id
+                      ? 'rounded-md hover:bg-neutral-100'
+                      : ''
                   }`}
                   onClick={() => {
-                    if (isEditingItinerary) {
+                    if (isEditingItinerary && itineraryData.userId === user?.id) {
                       setItineraryTitle(itineraryData.title)
                       setIsEditingItineraryTitle(true)
                     }
@@ -980,7 +982,7 @@ export const Itinerary = () => {
           <div className='flex items-center gap-2 mb-3 text-[15px] text-gray-500'>
             <LuCalendarDays size={18} strokeWidth={1.5} />
             <div className='flex items-center gap-1'>
-              {isEditingItinerary ? (
+              {isEditingItinerary && itineraryData.userId === user?.id ? (
                 <>
                   <DatePickerInput
                     valueFormat='DD-MM-YYYY'
@@ -1020,7 +1022,7 @@ export const Itinerary = () => {
               )}
             </div>
           </div>
-          {isEditingItineraryDescription ? (
+          {isEditingItineraryDescription && itineraryData.userId === user?.id ? (
             <Textarea
               ref={(el) => {
                 if (el) {
@@ -1046,16 +1048,20 @@ export const Itinerary = () => {
           ) : (
             <p
               className={`!text-[15px] sm:!text-[16px] min-h-7 !leading-normal break-words text-gray-800 ${
-                isEditingItinerary ? 'rounded-md hover:bg-neutral-100' : ''
+                isEditingItinerary && itineraryData.userId === user?.id
+                  ? 'rounded-md hover:bg-neutral-100'
+                  : ''
               }`}
               onClick={() => {
-                if (isEditingItinerary) {
+                if (isEditingItinerary && itineraryData.userId === user?.id) {
                   setItineraryDescription(itineraryData.description)
                   setIsEditingItineraryDescription(true)
                 }
               }}
             >
-              {isEditingItinerary && !(itineraryDescription || itineraryData.description)
+              {isEditingItinerary &&
+              itineraryData.userId === user?.id &&
+              !(itineraryDescription || itineraryData.description)
                 ? 'Añade una descripción...'
                 : itineraryDescription || itineraryData.description}
             </p>
